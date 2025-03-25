@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Socket Communication</title>
+    <script>
+        async function sendCommand() {
+            let command = document.getElementById("commandInput").value;
+            if (!command) {
+                alert("Please enter a command.");
+                return;
+            }
+
+            try {
+                let requestStr = `/api/GetVersion/${encodeURIComponent(command)}`;
+                let response = await fetch(requestStr);
+                let data = await response.text();
+                document.getElementById("result").innerHTML = data;
+            } catch (error) {
+                console.error("Error:", error);
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Socket Communication Webpage</h1>
+    <input type="text" id="commandInput" placeholder="Enter command">
+    <button onclick="sendCommand()">Send Command</button>
+    <div id="result"><p>Awaiting response...</p></div>
+</body>
+</html>
