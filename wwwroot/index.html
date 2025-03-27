@@ -6,14 +6,9 @@
     <title>Socket Communication</title>
     <script>
         async function sendCommand() {
-            let command = document.getElementById("commandInput").value;
-            if (!command) {
-                alert("Please enter a command.");
-                return;
-            }
-
             try {
-                let requestStr = `/api/GetVersion/${encodeURIComponent(command)}`;
+                document.getElementById("result").innerHTML = "";
+                let requestStr = `/api/GetVersion`;
                 let response = await fetch(requestStr);
                 let data = await response.text();
                 document.getElementById("result").innerHTML = data;
@@ -25,8 +20,7 @@
 </head>
 <body>
     <h1>Socket Communication Webpage</h1>
-    <input type="text" id="commandInput" placeholder="Enter command">
-    <button onclick="sendCommand()">Send Command</button>
+    <button onclick="sendCommand()">Get Version</button>
     <div id="result"><p>Awaiting response...</p></div>
 </body>
 </html>

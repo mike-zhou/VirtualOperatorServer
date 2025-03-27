@@ -3,16 +3,6 @@
 namespace VirtualOperatorServer.CommandAndReply
 {
 
-static class CommandSequenceNumber
-{
-    private static byte sequenceNumber = 0;
-
-    public static byte GetSequenceNumber()
-    {
-        return sequenceNumber++;
-    }
-}
-
 enum CommandEnum
 {
     GET_VERSION = 0,
@@ -23,7 +13,7 @@ enum CommandEnum
 class CommandAndReply
 {
     private byte[] command;
-    private byte[]? reply;
+    protected byte[]? reply;
 
     public CommandAndReply(byte[] command)
     {

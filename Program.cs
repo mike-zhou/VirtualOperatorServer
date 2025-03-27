@@ -12,7 +12,7 @@ app.UseStaticFiles();
 
 static CommandAndReply onCommand(string command)
 {
-    Console.WriteLine("onCommand: {command}");
+    Console.WriteLine($"onCommand: {command}");
     
     CommandAndReply cmd = new(Array.Empty<byte>());
 
@@ -27,7 +27,7 @@ static CommandAndReply onCommand(string command)
     }
     else
     {
-        Console.WriteLine("Error: unknown command: {command}");
+        Console.WriteLine($"Error: unknown command: {command}");
     }
 
     return cmd;

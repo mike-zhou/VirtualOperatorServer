@@ -89,9 +89,9 @@ namespace VirtualOperatorServer.Services
                         switch(state)
                         {
                             case ReplyState.TAG:
-                                if(tmp[0] == 0xCC)
+                                if(tmp[0] == 0xDD)
                                 {
-                                    cache[0]= 0xCC;
+                                    cache[0]= 0xDD;
                                     state = ReplyState.LENGTH;
                                 }
                                 break;
