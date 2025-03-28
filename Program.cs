@@ -10,7 +10,7 @@ var app = builder.Build();
 app.UseDefaultFiles(); 
 app.UseStaticFiles();
 
-static CommandAndReply onCommand(string command)
+static CommandAndReply buildCommand(string command)
 {
     Console.WriteLine($"onCommand: {command}");
     
@@ -33,15 +33,15 @@ static CommandAndReply onCommand(string command)
     return cmd;
 }
 
-app.MapGet("/api/{*command}", (string command, BackSocket backSocket) =>
+app.MapGet("/api/{*command}", async(string command, BackSocket backSocket) =>
 {
     if(command.Length == 0)
     {
         return Results.Text("Empty command", "text/html");
     }
 
-    CommandAndReply cmd = onCommand(command);
-    cmd.Reply = backSocket.SendCommand(cmd.Command);
+    CommandAndReply cmd = buildCommand(command);
+    cmd.Reply = await backSocket.SendAndReceive(cmd.Command);
     return Results.Text(cmd.ParseReply(), "text/html");
 });
 
