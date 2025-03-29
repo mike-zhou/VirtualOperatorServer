@@ -3,9 +3,15 @@
 namespace VirtualOperatorServer.CommandAndReply
 {
 
+public class InvalidRequestBodyException: Exception
+{
+    public InvalidRequestBodyException(string message) : base(message) {}
+}
+
 enum CommandEnum
 {
     GET_VERSION = 0,
+    ECHO,
     GET_GPIO,
     SET_GPIO
 }
