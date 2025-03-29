@@ -97,9 +97,7 @@ namespace VirtualOperatorServer.Services
                     if(bytesRead == 0)
                     {
                         Console.WriteLine("Peer socket is closed while reading, closing socket");
-                        _stream?.Close();
-                        _client?.Close();
-                        _client = null;
+                        Dispose();
                         break;
                     }
                     switch(state)
@@ -147,7 +145,7 @@ namespace VirtualOperatorServer.Services
             catch (Exception ex)
             {
                 Console.WriteLine($"⚠️ Error sending command: {ex.Message}");
-                Disconnect(); // disconnect socket connection
+                Dispose(); // disconnect socket connection
             }
             finally
             {
@@ -157,7 +155,7 @@ namespace VirtualOperatorServer.Services
             return [];
         }
 
-        private void Disconnect()
+        public void Dispose()
         {
             _stream?.Close();
             _client?.Close();
