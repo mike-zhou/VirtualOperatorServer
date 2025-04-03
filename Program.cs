@@ -20,9 +20,13 @@ static CommandAndReply buildGetCommand(string command)
     {
         cmd = new CmdGetVersion();
     }
+    else if(cmdSegments[0] == "GPIOMode")
+    {
+        cmd = new CmdGetGPIOMode();
+    }
     else if(cmdSegments[0] == "GPIO")
     {
-        cmd = new CmdGetGPIO();
+        cmd = new CmdReadGPIO();
     }
     else
     {

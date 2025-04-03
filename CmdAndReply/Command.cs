@@ -12,7 +12,8 @@ enum CommandEnum
 {
     GET_VERSION = 0,
     ECHO,
-    GET_GPIO,
+    GET_GPIO_MODE,
+    READ_GPIO,
     SET_GPIO
 }
 

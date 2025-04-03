@@ -7,11 +7,11 @@
     <script>
         async function getVersion() {
             try {
-                document.getElementById("result").innerHTML = "";
+                document.getElementById("versionResult").innerHTML = "";
                 let requestStr = `/get/Version`;
                 let response = await fetch(requestStr);
                 let data = await response.text();
-                document.getElementById("result").innerHTML = data;
+                document.getElementById("versionResult").innerHTML = data;
             } catch (error) {
                 console.error("Error:", error);
             }
@@ -57,11 +57,36 @@
 
                     document.getElementById("echoProgress").value = i * 100 / echoCount;
                 }
+                document.getElementById("echoProgress").value = 100;
             } catch (error) {
                 console.error("Error:", error);
             }
         }
 
+        async function getGPIOMode()
+        {
+            try {
+                document.getElementById("gpioModeResult").innerHTML = "";
+                let requestStr = `/get/GPIOMode`;
+                let response = await fetch(requestStr);
+                let data = await response.text();
+                document.getElementById("gpioModeResult").innerHTML = data;
+            } catch (error) {
+                console.error("Error:", error);
+            }
+        }
+
+        async function getGPIO() {
+            try {
+                document.getElementById("getGpioResult").innerHTML = "";
+                let requestStr = `/get/GPIO`;
+                let response = await fetch(requestStr);
+                let data = await response.text();
+                document.getElementById("getGpioResult").innerHTML = data;
+            } catch (error) {
+                console.error("Error:", error);
+            }
+        }
     </script>
 </head>
 <body>
@@ -69,7 +94,7 @@
     <div>
         <h2>Version test</h2>
         <button onclick="getVersion()">Get Version</button>
-        <label id="result">Awaiting response...</label>
+        <label id="versionResult">Awaiting response...</label>
     </div>
     <div>
         <h2>Echo test</h2>
@@ -77,6 +102,17 @@
             Count: <input type="number" id="echoCount" min="1"> <button onclick="testEcho()">Test Echo</button> 
         </p>
         <progress id="echoProgress" width="300px" height="25px" value="0" max="100"></progress>
+    </div>
+    <div>
+        <h2>GPIO test</h2>
+        <div>
+            <button onclick="getGPIOMode()">Get GPIO Mode</button>
+            <div id="gpioModeResult">Unknown</div>
+        </div>
+        <div>
+            <button onclick="getGPIO()">Read GPIO</button>
+            <div id="getGpioResult"></div>
+        </div>
     </div>
 </body>
 </html>
