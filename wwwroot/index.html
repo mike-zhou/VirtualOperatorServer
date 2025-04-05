@@ -10,25 +10,25 @@
     <h1>Socket Communication Webpage</h1>
     <div>
         <h2>Version test</h2>
-        <button onclick="getVersion()">Get Version</button>
-        <label id="versionResult">Awaiting response...</label>
+        <button id = "id_getVersion">Get Version</button>
+        <label id="id_versionResult">Awaiting response...</label>
     </div>
     <div>
         <h2>Echo test</h2>
         <p>
-            Count: <input type="number" id="echoCount" min="1"> <button onclick="testEcho()">Test Echo</button> 
+            Count: <input type="number" id="id_echoCount" min="1"> <button id="id_testEcho">Test Echo</button> 
         </p>
-        <progress id="echoProgress" width="300px" height="25px" value="0" max="100"></progress>
+        <progress id="id_echoProgress" width="300px" height="25px" value="0" max="100"></progress>
     </div>
     <div>
         <h2>GPIO test</h2>
         <div>
-            <button onclick="getGPIOMode()">Get GPIO Mode</button>
-            <div id="gpioModeResult">Unknown</div>
+            <button id="id_getGpioMode">Get GPIO Mode</button>
+            <div id="id_gpioModeResult">Unknown</div>
         </div>
         <div>
-            <button onclick="getGPIO()">Read GPIO</button>
-            <div id="getGpioResult"></div>
+            <button id="id_readGpio">Read GPIO</button>
+            <div id="id_readGpioResult"></div>
         </div>
     </div>
 </body>

@@ -1,11 +1,11 @@
 
 async function getVersion() {
     try {
-        document.getElementById("versionResult").innerHTML = "";
+        document.getElementById("id_versionResult").innerHTML = "";
         let requestStr = `/get/Version`;
         let response = await fetch(requestStr);
         let data = await response.text();
-        document.getElementById("versionResult").innerHTML = data;
+        document.getElementById("id_versionResult").innerHTML = data;
     } catch (error) {
         console.error("Error:", error);
     }
@@ -13,7 +13,7 @@ async function getVersion() {
 
 async function testEcho() {
     try {
-        let echoCount = parseInt(document.getElementById("echoCount").value);
+        let echoCount = parseInt(document.getElementById("id_echoCount").value);
         if(isNaN(echoCount))
         {
             alert("Please enter a valid integer");
@@ -49,9 +49,9 @@ async function testEcho() {
                 return;
             }
 
-            document.getElementById("echoProgress").value = i * 100 / echoCount;
+            document.getElementById("id_echoProgress").value = i * 100 / echoCount;
         }
-        document.getElementById("echoProgress").value = 100;
+        document.getElementById("id_echoProgress").value = 100;
     } catch (error) {
         console.error("Error:", error);
     }
@@ -60,24 +60,54 @@ async function testEcho() {
 async function getGPIOMode()
 {
     try {
-        document.getElementById("gpioModeResult").innerHTML = "";
+        document.getElementById("id_gpioModeResult").innerHTML = "";
         let requestStr = `/get/GPIOMode`;
         let response = await fetch(requestStr);
         let data = await response.text();
-        document.getElementById("gpioModeResult").innerHTML = data;
+        document.getElementById("id_gpioModeResult").innerHTML = data;
     } catch (error) {
         console.error("Error:", error);
     }
 }
 
-async function getGPIO() {
+async function readGPIO() {
     try {
-        document.getElementById("getGpioResult").innerHTML = "";
+        document.getElementById("id_readGpioResult").innerHTML = "";
         let requestStr = `/get/GPIO`;
         let response = await fetch(requestStr);
         let data = await response.text();
-        document.getElementById("getGpioResult").innerHTML = data;
+        document.getElementById("id_readGpioResult").innerHTML = data;
     } catch (error) {
         console.error("Error:", error);
     }
 }
+
+async function onDocumentClick(event)
+{
+    const element = event.target;
+    const targetWithId = element.closest('[id]');
+
+    switch(targetWithId.id)
+    {
+        case 'id_getVersion':
+            await getVersion();
+            break;
+        case 'id_testEcho':
+            await testEcho();
+            break;
+        case 'id_getGpioMode':
+            await getGPIOMode();
+            break;
+        case 'id_readGpio':
+            await readGPIO();
+            break;
+
+        default:
+            break;
+    }
+}
+
+document.addEventListener('click', async function(event) {
+    onDocumentClick(event);
+} );
+
