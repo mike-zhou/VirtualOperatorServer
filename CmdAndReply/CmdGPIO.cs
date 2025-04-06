@@ -108,7 +108,6 @@ class CmdReadGPIO: CommandAndReply
         };
         Debug.Assert(portNameList.Count == 11);
 
-
         htmlBuilder.Append("<table>");
         for(int portIndex = 0; portIndex < portNameList.Count; portIndex++)
         {
@@ -124,7 +123,7 @@ class CmdReadGPIO: CommandAndReply
             htmlBuilder.Append("<tr>");
             for(int bitIndex = 0; bitIndex < 16; bitIndex++)
             {
-                string gpioId = $"gpio_{portName}_{bitIndex}";
+                string gpioId = $"id_setGpio_{portName}_{bitIndex}";
                 bool isInput = ((mode & 0x1) == 0);
 
                 htmlBuilder.Append("<td>");

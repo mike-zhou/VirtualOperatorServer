@@ -1,10 +1,29 @@
 
+async function get(endpoint)
+{
+    response = await fetch(`/get/${endpoint}`);
+    data = await response.text();
+    return data;
+}
+
+async function post(endpoint, payload)
+{
+    response = await fetch(`/post/${endpoint}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+    });
+    data = await response.text();
+
+    return data;
+}
+
 async function getVersion() {
     try {
         document.getElementById("id_versionResult").innerHTML = "";
-        let requestStr = `/get/Version`;
-        let response = await fetch(requestStr);
-        let data = await response.text();
+        data = await get('Version');
         document.getElementById("id_versionResult").innerHTML = data;
     } catch (error) {
         console.error("Error:", error);
@@ -33,16 +52,7 @@ async function testEcho() {
                 data: Array.from(content)
             };
             
-            let requestStr = `/post/Echo`;
-            let response = await fetch(requestStr, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            });
-
-            let data = await response.text();
+            data = await post('Echo', payload);
             if(data != "success")
             {
                 alert(`ECHO failed at ${i}, reason: ${data}`);
@@ -61,9 +71,7 @@ async function getGPIOMode()
 {
     try {
         document.getElementById("id_gpioModeResult").innerHTML = "";
-        let requestStr = `/get/GPIOMode`;
-        let response = await fetch(requestStr);
-        let data = await response.text();
+        data = await get('GPIOMode');
         document.getElementById("id_gpioModeResult").innerHTML = data;
     } catch (error) {
         console.error("Error:", error);
@@ -73,12 +81,48 @@ async function getGPIOMode()
 async function readGPIO() {
     try {
         document.getElementById("id_readGpioResult").innerHTML = "";
-        let requestStr = `/get/GPIO`;
-        let response = await fetch(requestStr);
-        let data = await response.text();
+        data = await get('GPIO');
         document.getElementById("id_readGpioResult").innerHTML = data;
     } catch (error) {
         console.error("Error:", error);
+    }
+}
+
+async function setGpio(id)
+{
+    segments = id.split("_");
+    if( (segments.length != 4) ||
+        (segments[0] != 'id') ||
+        (segments[1] != 'setGpio'))
+    
+    {
+        console.error(`Error: wrong element id '${id}' for setGpio`);
+        return;
+    }
+    
+    const checkbox = document.getElementById(id);
+    newValue = 1;
+    if(checkbox.checked)
+        newValue = 0;
+
+    payload = {
+        portName : segments[2],
+        bitIndex : segments[3],
+        level: newValue
+    }
+
+    data = await post('setGpio', payload);
+    if(data == "success")
+    {
+        // toggle checkbox
+        if(newValue == 0)
+            checkbox.checked = false;
+        else 
+            checkbox.checked = true;
+    }
+    else
+    {
+        console.error(`Error: failed to toggle GPIO ${id}, info: ${data}`);
     }
 }
 
@@ -86,25 +130,20 @@ async function onDocumentClick(event)
 {
     const element = event.target;
     const targetWithId = element.closest('[id]');
+    const elementId = targetWithId.id;
 
-    switch(targetWithId.id)
-    {
-        case 'id_getVersion':
-            await getVersion();
-            break;
-        case 'id_testEcho':
-            await testEcho();
-            break;
-        case 'id_getGpioMode':
-            await getGPIOMode();
-            break;
-        case 'id_readGpio':
-            await readGPIO();
-            break;
-
-        default:
-            break;
-    }
+    if (elementId == "id_getVersion")
+        await getVersion();
+    else if (elementId == "id_testEcho")
+        await testEcho();
+    else if (elementId == 'id_getGpioMode')
+        await getGPIOMode();
+    else if (elementId == 'id_readGpio')
+        await readGPIO();
+    else if (elementId.starttsWidth("id_setGpio_"))
+        await setGpio(elementId);
+    else
+        console.error(`Error: unknown element id: '${elementId}' in onDocumentClick()`);
 }
 
 document.addEventListener('click', async function(event) {
