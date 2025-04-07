@@ -101,26 +101,18 @@ async function setGpio(id)
     }
     
     const checkbox = document.getElementById(id);
-    newValue = 1;
+    newValue = 0;
     if(checkbox.checked)
-        newValue = 0;
+        newValue = 1;
 
     payload = {
         portName : segments[2],
-        bitIndex : segments[3],
+        bitIndex : parseInt(segments[3], 10),
         level: newValue
     }
 
     data = await post('setGpio', payload);
-    if(data == "success")
-    {
-        // toggle checkbox
-        if(newValue == 0)
-            checkbox.checked = false;
-        else 
-            checkbox.checked = true;
-    }
-    else
+    if(data != "success")
     {
         console.error(`Error: failed to toggle GPIO ${id}, info: ${data}`);
     }
@@ -140,7 +132,7 @@ async function onDocumentClick(event)
         await getGPIOMode();
     else if (elementId == 'id_readGpio')
         await readGPIO();
-    else if (elementId.starttsWidth("id_setGpio_"))
+    else if (elementId.startsWith("id_setGpio_"))
         await setGpio(elementId);
     else
         console.error(`Error: unknown element id: '${elementId}' in onDocumentClick()`);

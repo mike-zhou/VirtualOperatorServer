@@ -35,34 +35,31 @@ class CmdEcho: CommandAndReply
         {
             return "No echo is received";
         }
-        else
+        if(reply.Length < 1)
         {
-            if(reply.Length < 1)
-            {
-                return "Invalid reply";
-            }
-
-            var cmd = Command;
-            if(cmd[0] != reply[0])
-            {
-                return $"Wrong ECHO reply: {reply[0]}";
-            }
-
-            if(cmd.Length != reply.Length)
-            {
-                return $"Echo cmd length({cmd.Length}) != reply length({reply.Length})";
-            }
-
-            for(int i = 0; i < reply.Length; i++)
-            {
-                if(cmd[i] != reply[i])
-                {
-                    return $"Wrong data at {i}";
-                }
-            }
-
-            return "success";
+            return "Invalid reply";
         }
+
+        var cmd = Command;
+        if(cmd[0] != reply[0])
+        {
+            return $"Not ECHO reply: {reply[0]}";
+        }
+
+        if(cmd.Length != reply.Length)
+        {
+            return $"Echo cmd length({cmd.Length}) != reply length({reply.Length})";
+        }
+
+        for(int i = 0; i < reply.Length; i++)
+        {
+            if(cmd[i] != reply[i])
+            {
+                return $"Wrong data at {i}";
+            }
+        }
+
+        return "success";
     }
 }
 

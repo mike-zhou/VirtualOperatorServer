@@ -41,20 +41,17 @@ static CommandAndReply buildPostCommand(string command, JsonElement jsonRoot)
     CommandAndReply cmd = new([]);
 
     string[] cmdSegments = command.Split('/');
-    try
+    if(cmdSegments[0] == "Echo")
     {
-        if(cmdSegments[0] == "Echo")
-        {
-            cmd = new CmdEcho(jsonRoot);
-        }
-        else
-        {
-            Console.WriteLine($"Error: unknown POST command: {command}");
-        }
+        cmd = new CmdEcho(jsonRoot);
     }
-    catch(InvalidRequestBodyException e)
+    else if (cmdSegments[0] == "setGpio")
     {
-        Console.WriteLine($"Error: exception in buildPostCommand(): {e.Message}");
+        cmd = new CmdSetGPIO(jsonRoot);
+    }
+    else
+    {
+        Console.WriteLine($"Error: unknown POST command: {command}");
     }
 
     return cmd;
@@ -63,27 +60,51 @@ static CommandAndReply buildPostCommand(string command, JsonElement jsonRoot)
 app.MapGet("/get/{*command}", async(string command, BackSocket backSocket) =>
 {
     Console.WriteLine($"/get/{command}");
-    
     if(command.Length == 0)
     {
         return Results.Text("Empty command", "text/html");
     }
 
     CommandAndReply cmd = buildGetCommand(command);
-    cmd.Reply = await backSocket.SendAndReceive(cmd.Command);
-    return Results.Text(cmd.ParseReply(), "text/html");
+    if(cmd.Command.Length > 0)
+    {
+        cmd.Reply = await backSocket.SendAndReceive(cmd.Command);
+        return Results.Text(cmd.ParseReply(), "text/html");
+    }
+
+    return Results.Text("", "text/html");
 });
 
 app.MapPost("/post/{*command}", async(HttpRequest request, string command, BackSocket backSocket) =>
 {
     Console.WriteLine($"/post/{command}");
+    if(command.Length == 0)
+    {
+        return Results.Text("Empty command", "text/html");
+    }
 
     using var jsonDoc = await JsonDocument.ParseAsync(request.Body);
     var jsonRoot = jsonDoc.RootElement;
-    CommandAndReply cmd = buildPostCommand(command, jsonRoot);
-    cmd.Reply = await backSocket.SendAndReceive(cmd.Command);
 
-    return Results.Text(cmd.ParseReply(), "text/html");
+    try
+    {
+        CommandAndReply cmd = buildPostCommand(command, jsonRoot);
+        if(cmd.Command.Length > 0)
+        {
+            cmd.Reply = await backSocket.SendAndReceive(cmd.Command);
+            return Results.Text(cmd.ParseReply(), "text/html");
+        }
+    }
+    catch(InvalidRequestBodyException e)
+    {
+        Console.WriteLine($"Error: exception in buildPostCommand(): {e.Message}");
+    }
+    catch(Exception e)
+    {
+        Console.WriteLine($"Error: exception in MapPost: {e.Message}");
+    }
+
+    return Results.Text("", "text/html");
 });
 
 app.Run();

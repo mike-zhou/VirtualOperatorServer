@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.Json;
 
 namespace VirtualOperatorServer.CommandAndReply
 {
@@ -22,25 +23,22 @@ class CmdGetGPIOMode: CommandAndReply
         {
             return "No reply was received";
         }
-        else
+        if(reply.Length != 23)
         {
-            if(reply.Length != 23)
-            {
-                return "Invalid rely";
-            }
-            if(reply.Length == 0)
-            {
-                return "Invalid reply";
-            }
-            var cmd = Command;
-            if(cmd[0] != reply[0])
-            {
-                return "Wrong reply";
-            }
-
-            GpioMode = reply;
-            return "Succeed";
+            return "Invalid rely";
         }
+        if(reply.Length == 0)
+        {
+            return "Invalid reply";
+        }
+        var cmd = Command;
+        if(cmd[0] != reply[0])
+        {
+            return "Wrong reply";
+        }
+
+        GpioMode = reply;
+        return "Succeed";
     }
 
     static public byte[]? GpioMode { get; private set; }
@@ -87,9 +85,13 @@ class CmdReadGPIO: CommandAndReply
     private string ParseGpioRead()
     {
         var gpioMode = CmdGetGPIOMode.GpioMode;
-        if((gpioMode == null) || (reply == null))
+        if(gpioMode == null)
         {
-            return "";
+            return "No GPIO mode data";
+        }
+        if(reply == null)
+        {
+            return "No reply";
         }
 
         StringBuilder htmlBuilder = new StringBuilder();
@@ -173,5 +175,92 @@ class CmdReadGPIO: CommandAndReply
     }
 }
 
+class CmdSetGPIO: CommandAndReply
+{
+    static private byte[] createCommand(JsonElement jsonRoot)
+    {
+        var portName = jsonRoot.GetProperty("portName").GetString();
+        var bitIndex = jsonRoot.GetProperty("bitIndex").GetUInt16();
+        var level = jsonRoot.GetProperty("level").GetUInt16();
+
+        byte[] cmd = new byte[4];
+        
+        cmd[0] = (byte)CommandEnum.SET_GPIO;
+
+        if (portName == "PA")
+            cmd[1] = 0;
+        else if (portName == "PB")
+            cmd[1] = 1;
+        else if (portName == "PC")
+            cmd[1] = 2;
+        else if (portName == "PD")
+            cmd[1] = 3;
+        else if (portName == "PE")
+            cmd[1] = 4;
+        else if (portName == "PF")
+            cmd[1] = 5;
+        else if (portName == "PG")
+            cmd[1] = 6;
+        else if (portName == "PH")
+            cmd[1] = 7;
+        else if (portName == "PI")
+            cmd[1] = 8;
+        else if (portName == "PJ")
+            cmd[1] = 9;
+        else if (portName == "PK")
+            cmd[1] = 10;
+        else 
+            throw new InvalidRequestBodyException($"Invalid portName '{portName}' in SetGPIO command");
+        
+        if(bitIndex > 15)
+        {
+            throw new InvalidRequestBodyException($"Invalid bitIndex '{bitIndex}' in SetGPIO command");
+        }
+        cmd[2] = (byte)bitIndex;
+
+        if ((level != 0) && (level != 1))
+        {
+            throw new InvalidRequestBodyException($"Invalid level '{level}' in SetGPIO command");
+        }
+        cmd[3] = (byte)level;
+
+        return cmd;
+    }
+
+    public CmdSetGPIO(JsonElement jsonRoot) : base(createCommand(jsonRoot)) { }
+
+    
+    public override string ParseReply()
+    {
+        if(reply == null)
+        {
+            return "No reply is received";
+        }
+        if(reply.Length < 1)
+        {
+            return "Invalid reply";
+        }
+
+        var cmd = Command;
+        if(cmd[0] != reply[0])
+        {
+            return $"Not SetGPIO reply: {reply[0]}";
+        }
+        if(reply.Length == 1)
+        {
+            return $"Failed to run SetGPIO";
+        }
+        if(reply.Length != 4)
+        {
+            return $"Wrong SetGPIO reply length: {reply.Length}";
+        }        
+        if(reply[3] != cmd[3])
+        {
+            return $"Failed to set GPIO to {cmd[3]}";
+        }
+
+        return "success";
+    }
+}
 
 }
