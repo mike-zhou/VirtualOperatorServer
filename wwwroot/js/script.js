@@ -138,7 +138,150 @@ async function onDocumentClick(event)
         console.error(`Error: unknown element id: '${elementId}' in onDocumentClick()`);
 }
 
+async function checkPeripharalStatus()
+{
+    try {
+        data = await get('PeripharalStatus')
+        const status = JSON.parse(data)
+        // Power
+        let powerStatus = status.Power;
+        for(let i=0; i<6; i++)
+        {
+            let po = `PO${i}`;
+            let enabled = powerStatus[po]["Enabled"];
+            let available = powerStatus[po]["Available"];
+
+            let id = `id_powerOutput_set_${i}`;
+            let powerSet = document.getElementById(id);
+            powerSet.checked = enabled;
+            
+            id = `id_powerOutput_state_${i}`
+            let powerState = document.getElementById(id);
+            if(available)
+            {
+                powerState.className = "active-green-dot";
+            }
+            else
+            {
+                powerState.className = "inactive-green-dot";
+            }
+        }
+
+        // Stepper Power
+        powerStatus = status.StepperPower;
+        for(let i=6; i<12; i++)
+        {
+            let po = `PO${i}`;
+            let enabled = powerStatus[po]["Enabled"];
+            let available = powerStatus[po]["Available"];
+
+            let id = `id_powerOutput_set_${i}`;
+            let powerSet = document.getElementById(id);
+            powerSet.checked = enabled;
+            
+            id = `id_powerOutput_state_${i}`
+            let powerState = document.getElementById(id);
+            if(available)
+            {
+                powerState.className = "active-green-dot";
+            }
+            else
+            {
+                powerState.className = "inactive-green-dot";
+            }
+        }
+
+        // BDC main power
+        powerStatus = status.BDCPower;
+        {
+            let id = "id_bdcPowerMain_set";
+            let powerSet = document.getElementById(id);
+            powerSet.checked = powerStatus["Enabled"];
+
+            id = "id_bdcPowerMain_state";
+            let powerState = document.getElementById(id);
+            if(powerStatus["Available"])
+            {
+                powerState.className = "active-green-dot";
+            }
+            else
+            {
+                powerState.className = "inactive-green-dot";
+            }
+        }
+
+        // BDC motors
+        let motorStatus = status.BDCMotor;
+        for(let i=0; i<3; i++)
+        {
+            let bdc = motorStatus[`BDC${i}`];
+            let control = bdc["Control"];
+            let powerAvailable = bdc["PowerAvailable"];
+
+            if(powerAvailable)
+                document.getElementById(`id_bdcPowerOutput_state_${i}`).className = "active-green-dot";
+            else
+                document.getElementById(`id_bdcPowerOutput_state_${i}`).className = "inactive-green-dot";
+
+            if(control == "Coast")
+                document.getElementById(`id_bdc_coast_${i}`).checked = true;
+            else if(control == "Forward")
+                document.getElementById(`id_bdc_forward_${i}`).checked = true;
+            else if(control == "Reverse")
+                document.getElementById(`id_bdc_reverse_${i}`).checked = true;
+            else if(control == "Brake")
+                document.getElementById(`id_bdc_brake_${i}`).checked = true;
+            else
+                console.error(`Error: unknown BDC motor control '${control}'`);
+        }
+
+        // stepper motors
+        motorStatus = status.StepperMotor;
+        for(let i=0; i<10; i++)
+        {
+            let stepper = motorStatus[`stepper${i}`];
+            let forward = stepper["forward"];
+            let enable = stepper["enable"];
+            let alarm = stepper["alarm"];
+
+            if(alarm)
+                document.getElementById(`id_stepperAlarm_state_${i}`).className = "active-red-dot";
+            else
+                document.getElementById(`id_stepperAlarm_state_${i}`).className = "inactive-red-dot";
+
+            document.getElementById(`id_stepper_enable_${i}`).checked = enable;
+            document.getElementById(`id_stepper_forward_${i}`).checked = forward;
+        }
+
+        // position detectors
+        let pdStatus = status.PositionDetector;
+        for(let i=0; i<20; i++)
+        {
+            let activated = pdStatus[`pd${i}`];
+            if(activated)
+                document.getElementById(`id_positionDetector_${i}`).className = "active-red-dot";
+            else
+                document.getElementById(`id_positionDetector_${i}`).className = "inactive-red-dot";
+        }
+        for(let i=20; i<49; i++)
+        {
+            let activated = pdStatus[`pd${i}`];
+            if(activated)
+                document.getElementById(`id_positionDetector_${i}`).className = "active-green-dot";
+            else
+                document.getElementById(`id_positionDetector_${i}`).className = "inactive-green-dot";
+        }
+        
+    } catch (error) {
+        console.error("Error:", error);
+    }
+
+    setTimeout(() => { checkPeripharalStatus(); }, 1000);
+}
+
 document.addEventListener('click', async function(event) {
     onDocumentClick(event);
 } );
+
+setTimeout(() => { checkPeripharalStatus(); }, 1000);
 

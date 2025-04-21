@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Socket Communication</title>
     <script src="/js/script.js" defer></script>
+    <link rel="stylesheet" href="/css/vp.css">
 </head>
 <body>
     <h1>Socket Communication Webpage</h1>
@@ -29,6 +30,688 @@
         <div>
             <button id="id_readGpio">Read GPIO</button>
             <div id="id_readGpioResult"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="item">
+            <h1>Power Switch</h1>
+            <div>
+                <label>PO 0: </label>
+                <div class="unknown-dot" id="id_powerOutput_state_0"></div>
+                <label for="id_powerOutput_set_0"> Enable </label>
+                <input type="checkbox" id="id_powerOutput_set_0">
+            </div>        
+            <div>
+                <label>PO 1: </label>
+                <div class="unknown-dot" id="id_powerOutput_state_1"></div>
+                <label for="id_powerOutput_set_1"> Enable </label>
+                <input type="checkbox" id="id_powerOutput_set_1">
+            </div>        
+            <div>
+                <label>PO 2: </label>
+                <div class="unknown-dot" id="id_powerOutput_state_2"></div>
+                <label for="id_powerOutput_set_2"> Enable </label>
+                <input type="checkbox" id="id_powerOutput_set_2">
+            </div>        
+            <div>
+                <label>PO 3: </label>
+                <div class="unknown-dot" id="id_powerOutput_state_3"></div>
+                <label for="id_powerOutput_set_3"> Enable </label>
+                <input type="checkbox" id="id_powerOutput_set_3">
+            </div>        
+            <div>
+                <label>PO 4: </label>
+                <div class="unknown-dot" id="id_powerOutput_state_4"></div>
+                <label for="id_powerOutput_set_4"> Enable </label>
+                <input type="checkbox" id="id_powerOutput_set_4">
+            </div>        
+            <div>
+                <label>PO 5: </label>
+                <div class="unknown-dot" id="id_powerOutput_state_5"></div>
+                <label for="id_powerOutput_set_5"> Enable </label>
+                <input type="checkbox" id="id_powerOutput_set_5">
+            </div>
+        </div>
+        <div class="item">
+            <h1>Motor Power Switch</h1>
+            <div>
+                <label>PO 6: </label>
+                <div class="unknown-dot" id="id_powerOutput_state_6"></div>
+                <label for="id_powerOutput_set_6"> Enable </label>
+                <input type="checkbox" id="id_powerOutput_set_6">
+            </div>
+            <div>
+                <label>PO 7: </label>
+                <div class="unknown-dot" id="id_powerOutput_state_7"></div>
+                <label for="id_powerOutput_set_7"> Enable </label>
+                <input type="checkbox" id="id_powerOutput_set_7">
+            </div>
+            <div>
+                <label>PO 8: </label>
+                <div class="unknown-dot" id="id_powerOutput_state_8"></div>
+                <label for="id_powerOutput_set_8"> Enable </label>
+                <input type="checkbox" id="id_powerOutput_set_8">
+            </div>
+            <div>
+                <label>PO 9: </label>
+                <div class="unknown-dot" id="id_powerOutput_state_9"></div>
+                <label for="id_powerOutput_set_9"> Enable </label>
+                <input type="checkbox" id="id_powerOutput_set_9">
+            </div>
+            <div>
+                <label>PO 10: </label>
+                <div class="unknown-dot" id="id_powerOutput_state_10"></div>
+                <label for="id_powerOutput_set_10"> Enable </label>
+                <input type="checkbox" id="id_powerOutput_set_10">
+            </div>
+            <div>
+                <label>PO 11: </label>
+                <div class="unknown-dot" id="id_powerOutput_state_11"></div>
+                <label for="id_powerOutput_set_11"> Enable </label>
+                <input type="checkbox" id="id_powerOutput_set_11">
+            </div>
+        </div>
+        <div class="item">
+            <h1>BDC Power</h1>
+            <div>
+                <label>BDC Power: </label>
+                <div class="unknown-dot" id="id_bdcPowerMain_state"></div>
+                <label for="id_bdcPowerMain_set"> Enable </label>
+                <input type="checkbox" id="id_bdcPowerMain_set">
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <h1>Position Detector</h1>
+        <div class="container">
+            <div class="item">
+                <div>
+                    <label>PD 0: </label>
+                    <div class="unknown-dot" id="id_positionDetector_0"></div>
+                </div>
+                <div>
+                    <label>PD 1: </label>
+                    <div class="unknown-dot" id="id_positionDetector_1"></div>
+                </div>
+                <div>
+                    <label>PD 2: </label>
+                    <div class="unknown-dot" id="id_positionDetector_2"></div>
+                </div>
+                <div>
+                    <label>PD 3: </label>
+                    <div class="unknown-dot" id="id_positionDetector_3"></div>
+                </div>
+                <div>
+                    <label>PD 4: </label>
+                    <div class="unknown-dot" id="id_positionDetector_4"></div>
+                </div>
+                <div>
+                    <label>PD 5: </label>
+                    <div class="unknown-dot" id="id_positionDetector_5"></div>
+                </div>
+                <div>
+                    <label>PD 6: </label>
+                    <div class="unknown-dot" id="id_positionDetector_6"></div>
+                </div>
+                <div>
+                    <label>PD 7: </label>
+                    <div class="unknown-dot" id="id_positionDetector_7"></div>
+                </div>
+                <div>
+                    <label>PD 8: </label>
+                    <div class="unknown-dot" id="id_positionDetector_8"></div>
+                </div>
+                <div>
+                    <label>PD 9: </label>
+                    <div class="unknown-dot" id="id_positionDetector_9"></div>
+                </div>
+            </div>
+            <div class="item">
+                <div>
+                    <label>PD 10: </label>
+                    <div class="unknown-dot" id="id_positionDetector_10"></div>
+                </div>
+                <div>
+                    <label>PD 11: </label>
+                    <div class="unknown-dot" id="id_positionDetector_11"></div>
+                </div>
+                <div>
+                    <label>PD 12: </label>
+                    <div class="unknown-dot" id="id_positionDetector_12"></div>
+                </div>
+                <div>
+                    <label>PD 13: </label>
+                    <div class="unknown-dot" id="id_positionDetector_13"></div>
+                </div>
+                <div>
+                    <label>PD 14: </label>
+                    <div class="unknown-dot" id="id_positionDetector_14"></div>
+                </div>
+                <div>
+                    <label>PD 15: </label>
+                    <div class="unknown-dot" id="id_positionDetector_15"></div>
+                </div>
+                <div>
+                    <label>PD 16: </label>
+                    <div class="unknown-dot" id="id_positionDetector_16"></div>
+                </div>
+                <div>
+                    <label>PD 17: </label>
+                    <div class="unknown-dot" id="id_positionDetector_17"></div>
+                </div>
+                <div>
+                    <label>PD 18: </label>
+                    <div class="unknown-dot" id="id_positionDetector_18"></div>
+                </div>
+                <div>
+                    <label>PD 19: </label>
+                    <div class="unknown-dot" id="id_positionDetector_19"></div>
+                </div>
+                
+            </div>
+            <div class="item">
+                <div>
+                    <label>PD 20: </label>
+                    <div class="unknown-dot" id="id_positionDetector_20"></div>
+                </div>
+                <div>
+                    <label>PD 21: </label>
+                    <div class="unknown-dot" id="id_positionDetector_21"></div>
+                </div>
+                <div>
+                    <label>PD 22: </label>
+                    <div class="unknown-dot" id="id_positionDetector_22"></div>
+                </div>
+                <div>
+                    <label>PD 23: </label>
+                    <div class="unknown-dot" id="id_positionDetector_23"></div>
+                </div>
+                <div>
+                    <label>PD 24: </label>
+                    <div class="unknown-dot" id="id_positionDetector_24"></div>
+                </div>
+                <div>
+                    <label>PD 25: </label>
+                    <div class="unknown-dot" id="id_positionDetector_25"></div>
+                </div>
+                <div>
+                    <label>PD 26: </label>
+                    <div class="unknown-dot" id="id_positionDetector_26"></div>
+                </div>
+                <div>
+                    <label>PD 27: </label>
+                    <div class="unknown-dot" id="id_positionDetector_27"></div>
+                </div>
+                <div>
+                    <label>PD 28: </label>
+                    <div class="unknown-dot" id="id_positionDetector_28"></div>
+                </div>
+                <div>
+                    <label>PD 29: </label>
+                    <div class="unknown-dot" id="id_positionDetector_29"></div>
+                </div>
+                
+            </div>
+            <div class="item">
+                <div>
+                    <label>PD 30: </label>
+                    <div class="unknown-dot" id="id_positionDetector_30"></div>
+                </div>
+                <div>
+                    <label>PD 31: </label>
+                    <div class="unknown-dot" id="id_positionDetector_31"></div>
+                </div>
+                <div>
+                    <label>PD 32: </label>
+                    <div class="unknown-dot" id="id_positionDetector_32"></div>
+                </div>
+                <div>
+                    <label>PD 33: </label>
+                    <div class="unknown-dot" id="id_positionDetector_33"></div>
+                </div>
+                <div>
+                    <label>PD 34: </label>
+                    <div class="unknown-dot" id="id_positionDetector_34"></div>
+                </div>
+                <div>
+                    <label>PD 35: </label>
+                    <div class="unknown-dot" id="id_positionDetector_35"></div>
+                </div>
+                <div>
+                    <label>PD 36: </label>
+                    <div class="unknown-dot" id="id_positionDetector_36"></div>
+                </div>
+                <div>
+                    <label>PD 37: </label>
+                    <div class="unknown-dot" id="id_positionDetector_37"></div>
+                </div>
+                <div>
+                    <label>PD 38: </label>
+                    <div class="unknown-dot" id="id_positionDetector_38"></div>
+                </div>
+                <div>
+                    <label>PD 39: </label>
+                    <div class="unknown-dot" id="id_positionDetector_39"></div>
+                </div>
+                
+            </div>
+            <div class="item">
+                <div>
+                    <label>PD 40: </label>
+                    <div class="unknown-dot" id="id_positionDetector_40"></div>
+                </div>
+                <div>
+                    <label>PD 41: </label>
+                    <div class="unknown-dot" id="id_positionDetector_41"></div>
+                </div>
+                <div>
+                    <label>PD 42: </label>
+                    <div class="unknown-dot" id="id_positionDetector_42"></div>
+                </div>
+                <div>
+                    <label>PD 43: </label>
+                    <div class="unknown-dot" id="id_positionDetector_43"></div>
+                </div>
+                <div>
+                    <label>PD 44: </label>
+                    <div class="unknown-dot" id="id_positionDetector_44"></div>
+                </div>
+                <div>
+                    <label>PD 45: </label>
+                    <div class="unknown-dot" id="id_positionDetector_45"></div>
+                </div>
+                <div>
+                    <label>PD 46: </label>
+                    <div class="unknown-dot" id="id_positionDetector_46"></div>
+                </div>
+                <div>
+                    <label>PD 47: </label>
+                    <div class="unknown-dot" id="id_positionDetector_47"></div>
+                </div>
+                <div>
+                    <label>PD 48: </label>
+                    <div class="unknown-dot" id="id_positionDetector_48"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <h1>BDC Control</h1>
+        <div class="container">
+            <div class="item">
+                <h2>BDC 0 </h2>
+                <div>
+                    <label>Power:</label>
+                    <div class="unknown-dot" id="id_bdcPowerOutput_state_0"></div>
+                </div>
+                <div>
+                    <label for="id_bdc_coast_0">Coast</label>
+                    <input type="radio" id="id_bdc_coast_0" name="bdc_0">
+                </div>
+                <div>
+                    <label for="id_bdc_reverse_0">Reverse</label>
+                    <input type="radio" id="id_bdc_reverse_0" name="bdc_0">
+                </div>
+                <div>
+                    <label for="id_bdc_forward_0">Forward</label>
+                    <input type="radio" id="id_bdc_forward_0" name="bdc_0">
+                </div>
+                <div>
+                    <label for="id_bdc_brake_0">Brake</label>
+                    <input type="radio" id="id_bdc_brake_0" name="bdc_0">
+                </div>
+            </div>
+            <div class="item">
+                <h2>BDC 1 </h2>
+                <div>
+                    <label>Power:</label>
+                    <div class="unknown-dot" id="id_bdcPowerOutput_state_1"></div>
+                </div>
+                <div>
+                    <label for="id_bdc_coast_1">Coast</label>
+                    <input type="radio" id="id_bdc_coast_1" name="bdc_1">
+                </div>
+                <div>
+                    <label for="id_bdc_reverse_1">Reverse</label>
+                    <input type="radio" id="id_bdc_reverse_1" name="bdc_1">
+                </div>
+                <div>
+                    <label for="id_bdc_forward_1">Forward</label>
+                    <input type="radio" id="id_bdc_forward_1" name="bdc_1">
+                </div>
+                <div>
+                    <label for="id_bdc_brake_1">Brake</label>
+                    <input type="radio" id="id_bdc_brake_1" name="bdc_1">
+                </div>
+            </div>
+            <div class="item">
+                <h2>BDC 2 </h2>
+                <div>
+                    <label>Power:</label>
+                    <div class="unknown-dot" id="id_bdcPowerOutput_state_2"></div>
+                </div>
+                <div>
+                    <label for="id_bdc_coast_2">Coast</label>
+                    <input type="radio" id="id_bdc_coast_2" name="bdc_2">
+                </div>
+                <div>
+                    <label for="id_bdc_reverse_2">Reverse</label>
+                    <input type="radio" id="id_bdc_reverse_2" name="bdc_2">
+                </div>
+                <div>
+                    <label for="id_bdc_forward_2">Forward</label>
+                    <input type="radio" id="id_bdc_forward_2" name="bdc_2">
+                </div>
+                <div>
+                    <label for="id_bdc_brake_2">Brake</label>
+                    <input type="radio" id="id_bdc_brake_2" name="bdc_2">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <h1>Stepper Control</h1>
+        <div>
+            <h2>Stepper 0</h2>
+            <div>
+                <div>
+                    <div>
+                        <label>Alarm:</label>
+                        <div class="unknown-dot" id="id_stepperAlarm_state_0"></div>
+                    </div>
+                    <label>
+                        Enable
+                        <input type="checkbox" id="id_stepper_enable_0">
+                    </label>
+                    <label>
+                        Forward
+                        <input type="checkbox" id="id_stepper_forward_0">
+                    </label>
+                </div>
+                <div>
+                    <button id="id_stepper_go_1_0">1</button>
+                    <button id="id_stepper_go_2_0">2</button>
+                    <button id="id_stepper_go_4_0">4</button>
+                    <button id="id_stepper_go_8_0">8</button>
+                    <button id="id_stepper_go_16_0">16</button>
+                    <button id="id_stepper_go_32_0">32</button>
+                    <button id="id_stepper_go_64_0">64</button>
+                    <input type="number" id="id_stepper_steps_0" min="1" step="1" max="1024">
+                    <button id="id_stepper_go_steps_0">go</button>
+                </div>
+            </div>
+        </div>
+        <div>
+            <h2>Stepper 1</h2>
+            <div>
+                <div>
+                    <div>
+                        <label>Alarm:</label>
+                        <div class="unknown-dot" id="id_stepperAlarm_state_1"></div>
+                    </div>
+                    <label>
+                        Enable
+                        <input type="checkbox" id="id_stepper_enable_1">
+                    </label>
+                    <label>
+                        Forward
+                        <input type="checkbox" id="id_stepper_forward_1">
+                    </label>
+                </div>
+                <div>
+                    <button id="id_stepper_go_1_1">1</button>
+                    <button id="id_stepper_go_2_1">2</button>
+                    <button id="id_stepper_go_4_1">4</button>
+                    <button id="id_stepper_go_8_1">8</button>
+                    <button id="id_stepper_go_16_1">16</button>
+                    <button id="id_stepper_go_32_1">32</button>
+                    <button id="id_stepper_go_64_1">64</button>
+                    <input type="number" id="id_stepper_steps_1" min="1" step="1" max="1024">
+                    <button id="id_stepper_go_steps_1">go</button>
+                </div>
+            </div>
+        </div>
+        <div>
+            <h2>Stepper 2</h2>
+            <div>
+                <div>
+                    <div>
+                        <label>Alarm:</label>
+                        <div class="unknown-dot" id="id_stepperAlarm_state_2"></div>
+                    </div>
+                    <label>
+                        Enable
+                        <input type="checkbox" id="id_stepper_enable_2">
+                    </label>
+                    <label>
+                        Forward
+                        <input type="checkbox" id="id_stepper_forward_2">
+                    </label>
+                </div>
+                <div>
+                    <button id="id_stepper_go_1_2">1</button>
+                    <button id="id_stepper_go_2_2">2</button>
+                    <button id="id_stepper_go_4_2">4</button>
+                    <button id="id_stepper_go_8_2">8</button>
+                    <button id="id_stepper_go_16_2">16</button>
+                    <button id="id_stepper_go_32_2">32</button>
+                    <button id="id_stepper_go_64_2">64</button>
+                    <input type="number" id="id_stepper_steps_2" min="1" step="1" max="1024">
+                    <button id="id_stepper_go_steps_2">go</button>
+                </div>
+            </div>
+        </div>
+        <div>
+            <h2>Stepper 3</h2>
+            <div>
+                <div>
+                    <div>
+                        <label>Alarm:</label>
+                        <div class="unknown-dot" id="id_stepperAlarm_state_3"></div>
+                    </div>
+                    <label>
+                        Enable
+                        <input type="checkbox" id="id_stepper_enable_3">
+                    </label>
+                    <label>
+                        Forward
+                        <input type="checkbox" id="id_stepper_forward_3">
+                    </label>
+                </div>
+                <div>
+                    <button id="id_stepper_go_1_3">1</button>
+                    <button id="id_stepper_go_2_3">2</button>
+                    <button id="id_stepper_go_4_3">4</button>
+                    <button id="id_stepper_go_8_3">8</button>
+                    <button id="id_stepper_go_16_3">16</button>
+                    <button id="id_stepper_go_32_3">32</button>
+                    <button id="id_stepper_go_64_3">64</button>
+                    <input type="number" id="id_stepper_steps_3" min="1" step="1" max="1024">
+                    <button id="id_stepper_go_steps_3">go</button>
+                </div>
+            </div>
+        </div>
+        <div>
+            <h2>Stepper 4</h2>
+            <div>
+                <div>
+                    <div>
+                        <label>Alarm:</label>
+                        <div class="unknown-dot" id="id_stepperAlarm_state_4"></div>
+                    </div>
+                    <label>
+                        Enable
+                        <input type="checkbox" id="id_stepper_enable_4">
+                    </label>
+                    <label>
+                        Forward
+                        <input type="checkbox" id="id_stepper_forward_4">
+                    </label>
+                </div>
+                <div>
+                    <button id="id_stepper_go_1_4">1</button>
+                    <button id="id_stepper_go_2_4">2</button>
+                    <button id="id_stepper_go_4_4">4</button>
+                    <button id="id_stepper_go_8_4">8</button>
+                    <button id="id_stepper_go_16_4">16</button>
+                    <button id="id_stepper_go_32_4">32</button>
+                    <button id="id_stepper_go_64_4">64</button>
+                    <input type="number" id="id_stepper_steps_4" min="1" step="1" max="1024">
+                    <button id="id_stepper_go_steps_4">go</button>
+                </div>
+            </div>
+        </div>
+        <div>
+            <h2>Stepper 5</h2>
+            <div>
+                <div>
+                    <div>
+                        <label>Alarm:</label>
+                        <div class="unknown-dot" id="id_stepperAlarm_state_5"></div>
+                    </div>
+                    <label>
+                        Enable
+                        <input type="checkbox" id="id_stepper_enable_5">
+                    </label>
+                    <label>
+                        Forward
+                        <input type="checkbox" id="id_stepper_forward_5">
+                    </label>
+                </div>
+                <div>
+                    <button id="id_stepper_go_1_5">1</button>
+                    <button id="id_stepper_go_2_5">2</button>
+                    <button id="id_stepper_go_4_5">4</button>
+                    <button id="id_stepper_go_8_5">8</button>
+                    <button id="id_stepper_go_16_5">16</button>
+                    <button id="id_stepper_go_32_5">32</button>
+                    <button id="id_stepper_go_64_5">64</button>
+                    <input type="number" id="id_stepper_steps_5" min="1" step="1" max="1024">
+                    <button id="id_stepper_go_steps_5">go</button>
+                </div>
+            </div>
+        </div>
+        <div>
+            <h2>Stepper 6</h2>
+            <div>
+                <div>
+                    <div>
+                        <label>Alarm:</label>
+                        <div class="unknown-dot" id="id_stepperAlarm_state_6"></div>
+                    </div>
+                    <label>
+                        Enable
+                        <input type="checkbox" id="id_stepper_enable_6">
+                    </label>
+                    <label>
+                        Forward
+                        <input type="checkbox" id="id_stepper_forward_6">
+                    </label>
+                </div>
+                <div>
+                    <button id="id_stepper_go_1_6">1</button>
+                    <button id="id_stepper_go_2_6">2</button>
+                    <button id="id_stepper_go_4_6">4</button>
+                    <button id="id_stepper_go_8_6">8</button>
+                    <button id="id_stepper_go_16_6">16</button>
+                    <button id="id_stepper_go_32_6">32</button>
+                    <button id="id_stepper_go_64_6">64</button>
+                    <input type="number" id="id_stepper_steps_6" min="1" step="1" max="1024">
+                    <button id="id_stepper_go_steps_6">go</button>
+                </div>
+            </div>
+        </div>
+        <div>
+            <h2>Stepper 7</h2>
+            <div>
+                <div>
+                    <div>
+                        <label>Alarm:</label>
+                        <div class="unknown-dot" id="id_stepperAlarm_state_7"></div>
+                    </div>
+                    <label>
+                        Enable
+                        <input type="checkbox" id="id_stepper_enable_7">
+                    </label>
+                    <label>
+                        Forward
+                        <input type="checkbox" id="id_stepper_forward_7">
+                    </label>
+                </div>
+                <div>
+                    <button id="id_stepper_go_1_7">1</button>
+                    <button id="id_stepper_go_2_7">2</button>
+                    <button id="id_stepper_go_4_7">4</button>
+                    <button id="id_stepper_go_8_7">8</button>
+                    <button id="id_stepper_go_16_7">16</button>
+                    <button id="id_stepper_go_32_7">32</button>
+                    <button id="id_stepper_go_64_7">64</button>
+                    <input type="number" id="id_stepper_steps_7" min="1" step="1" max="1024">
+                    <button id="id_stepper_go_steps_7">go</button>
+                </div>
+            </div>
+        </div>
+        <div>
+            <h2>Stepper 8</h2>
+            <div>
+                <div>
+                    <div>
+                        <label>Alarm:</label>
+                        <div class="unknown-dot" id="id_stepperAlarm_state_8"></div>
+                    </div>
+                    <label>
+                        Enable
+                        <input type="checkbox" id="id_stepper_enable_8">
+                    </label>
+                    <label>
+                        Forward
+                        <input type="checkbox" id="id_stepper_forward_8">
+                    </label>
+                </div>
+                <div>
+                    <button id="id_stepper_go_1_8">1</button>
+                    <button id="id_stepper_go_2_8">2</button>
+                    <button id="id_stepper_go_4_8">4</button>
+                    <button id="id_stepper_go_8_8">8</button>
+                    <button id="id_stepper_go_16_8">16</button>
+                    <button id="id_stepper_go_32_8">32</button>
+                    <button id="id_stepper_go_64_8">64</button>
+                    <input type="number" id="id_stepper_steps_8" min="1" step="1" max="1024">
+                    <button id="id_stepper_go_steps_8">go</button>
+                </div>
+            </div>
+        </div>
+        <div>
+            <h2>Stepper 9</h2>
+            <div>
+                <div>
+                    <div>
+                        <label>Alarm:</label>
+                        <div class="unknown-dot" id="id_stepperAlarm_state_9"></div>
+                    </div>
+                    <label>
+                        Enable
+                        <input type="checkbox" id="id_stepper_enable_9">
+                    </label>
+                    <label>
+                        Forward
+                        <input type="checkbox" id="id_stepper_forward_9">
+                    </label>
+                </div>
+                <div>
+                    <button id="id_stepper_go_1_9">1</button>
+                    <button id="id_stepper_go_2_9">2</button>
+                    <button id="id_stepper_go_4_9">4</button>
+                    <button id="id_stepper_go_8_9">8</button>
+                    <button id="id_stepper_go_16_9">16</button>
+                    <button id="id_stepper_go_32_9">32</button>
+                    <button id="id_stepper_go_64_9">64</button>
+                    <input type="number" id="id_stepper_steps_9" min="1" step="1" max="1024">
+                    <button id="id_stepper_go_steps_9">go</button>
+                </div>
+            </div>
         </div>
     </div>
 </body>

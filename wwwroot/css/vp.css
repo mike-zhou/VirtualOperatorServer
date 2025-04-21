@@ -1,0 +1,53 @@
+
+.active-red-dot {
+  width: 12px;
+  height: 12px;
+  background-color: rgb(255, 0, 0);
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.inactive-red-dot {
+    width: 12px;
+    height: 12px;
+    background-color: rgb(112, 3, 3);
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.active-green-dot {
+    width: 12px;
+    height: 12px;
+    background-color: #00ff00;
+    border-radius: 50%;
+    display: inline-block;
+}  
+
+.inactive-green-dot {
+    width: 12px;
+    height: 12px;
+    background-color: #014401;
+    border-radius: 50%;
+    display: inline-block;
+}  
+
+.unknown-dot {
+    width: 12px;
+    height: 12px;
+    background-color: #000000;
+    border-radius: 50%;
+    display: inline-block;
+}  
+
+
+.container {
+    display: flex;
+}
+
+.item {
+    padding: 10px;
+    border: 1px solid #ccc;
+    margin-right: 10px;
+}
+
+

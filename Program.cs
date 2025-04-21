@@ -28,6 +28,10 @@ static CommandAndReply buildGetCommand(string command)
     {
         cmd = new CmdReadGPIO();
     }
+    else if(cmdSegments[0] == "PeripharalStatus")
+    {
+        cmd = new CmdPeripheralStatus();
+    }
     else
     {
         Console.WriteLine($"Error: unknown GET command: {command}");
