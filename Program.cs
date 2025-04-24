@@ -53,6 +53,10 @@ static CommandAndReply buildPostCommand(string command, JsonElement jsonRoot)
     {
         cmd = new CmdSetGPIO(jsonRoot);
     }
+    else if (cmdSegments[0] == "setPowerOutput")
+    {
+        cmd = new CmdSetPowerOutput(jsonRoot);
+    }
     else
     {
         Console.WriteLine($"Error: unknown POST command: {command}");

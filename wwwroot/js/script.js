@@ -105,16 +105,38 @@ async function setGpio(id)
     if(checkbox.checked)
         newValue = 1;
 
-    payload = {
-        portName : segments[2],
-        bitIndex : parseInt(segments[3], 10),
-        level: newValue
-    }
+    payload = [
+        {
+            portName : segments[2],
+            bitIndex : parseInt(segments[3], 10),
+            level: newValue
+        }
+    ];
 
     data = await post('setGpio', payload);
     if(data != "success")
     {
         console.error(`Error: failed to toggle GPIO ${id}, info: ${data}`);
+    }
+}
+
+async function setPowerOutput(id) 
+{
+    segments = id.split('_');
+
+    powerNumber = segments[segments.length - 1];
+    enablePower = document.getElementById(id).checked;
+
+    payload = 
+        { 
+            powerOutput: parseInt(powerNumber, 10),
+            enable: enablePower
+        };
+        
+    data = await post('setPowerOutput', payload);
+    if(data != "success")
+    {
+        console.error(`Error: failed to set PO ${powerNumber}, info: ${data}`);
     }
 }
 
@@ -134,6 +156,8 @@ async function onDocumentClick(event)
         await readGPIO();
     else if (elementId.startsWith("id_setGpio_"))
         await setGpio(elementId);
+    else if (elementId.startsWith("id_powerOutput_set_"))
+        await setPowerOutput(elementId);
     else
         console.error(`Error: unknown element id: '${elementId}' in onDocumentClick()`);
 }

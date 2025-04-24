@@ -177,58 +177,113 @@ class CmdReadGPIO: CommandAndReply
 
 class CmdSetGPIO: CommandAndReply
 {
+    public class GPIO
+    {
+        public string portName {get; set;}
+        public byte bitIndex {get; set;}
+        public byte level {get; set;}
+    }
+
     static private byte[] createCommand(JsonElement jsonRoot)
     {
-        var portName = jsonRoot.GetProperty("portName").GetString();
-        var bitIndex = jsonRoot.GetProperty("bitIndex").GetUInt16();
-        var level = jsonRoot.GetProperty("level").GetUInt16();
+        /*
+            jsonRoot:
+            [
+                {
+                    "portName":"PA",
+                    "bitIndex":0,
+                    "level":0
+                },
+                {
+                    "portName":"PE",
+                    "bitIndex":15,
+                    "level":1
+                },
+                ...
+            ]
+        */
 
-        byte[] cmd = new byte[4];
-        
+        var rawText = "";
+        GPIO[]? gpioArray;
+        try
+        {
+            rawText = jsonRoot.GetRawText();
+            gpioArray = JsonSerializer.Deserialize<GPIO[]>(rawText);
+        }
+        catch (Exception)
+        {
+            throw new InvalidRequestBodyException($"Exception in deserializing: '{rawText}'");
+        }
+
+        if(gpioArray == null)
+        {
+            throw new InvalidRequestBodyException($"Not an JSON array in SetGPIO command");
+        }
+
+        return createCommand(gpioArray);
+    }
+
+    static private byte[] createCommand(GPIO[] gpioArray)
+    {
+        var portCount = gpioArray.Length;
+        if(portCount > 32)
+        {
+            throw new InvalidRequestBodyException($"Too many GPIOs ({portCount}) in SetGPIO command");
+        }
+
+        byte[] cmd = new byte[1 + portCount * 3];
         cmd[0] = (byte)CommandEnum.SET_GPIO;
 
-        if (portName == "PA")
-            cmd[1] = 0;
-        else if (portName == "PB")
-            cmd[1] = 1;
-        else if (portName == "PC")
-            cmd[1] = 2;
-        else if (portName == "PD")
-            cmd[1] = 3;
-        else if (portName == "PE")
-            cmd[1] = 4;
-        else if (portName == "PF")
-            cmd[1] = 5;
-        else if (portName == "PG")
-            cmd[1] = 6;
-        else if (portName == "PH")
-            cmd[1] = 7;
-        else if (portName == "PI")
-            cmd[1] = 8;
-        else if (portName == "PJ")
-            cmd[1] = 9;
-        else if (portName == "PK")
-            cmd[1] = 10;
-        else 
-            throw new InvalidRequestBodyException($"Invalid portName '{portName}' in SetGPIO command");
-        
-        if(bitIndex > 15)
+        for(int i = 0; i < portCount; i++)
         {
-            throw new InvalidRequestBodyException($"Invalid bitIndex '{bitIndex}' in SetGPIO command");
-        }
-        cmd[2] = (byte)bitIndex;
+            var portName = gpioArray[i].portName;
+            var bitIndex = gpioArray[i].bitIndex;
+            var level = gpioArray[i].level;
 
-        if ((level != 0) && (level != 1))
-        {
-            throw new InvalidRequestBodyException($"Invalid level '{level}' in SetGPIO command");
+
+            if (portName == "PA")
+                cmd[1 + i * 3] = 0;
+            else if (portName == "PB")
+                cmd[1 + i * 3] = 1;
+            else if (portName == "PC")
+                cmd[1 + i * 3] = 2;
+            else if (portName == "PD")
+                cmd[1 + i * 3] = 3;
+            else if (portName == "PE")
+                cmd[1 + i * 3] = 4;
+            else if (portName == "PF")
+                cmd[1 + i * 3] = 5;
+            else if (portName == "PG")
+                cmd[1 + i * 3] = 6;
+            else if (portName == "PH")
+                cmd[1 + i * 3] = 7;
+            else if (portName == "PI")
+                cmd[1 + i * 3] = 8;
+            else if (portName == "PJ")
+                cmd[1 + i * 3] = 9;
+            else if (portName == "PK")
+                cmd[1 + i * 3] = 10;
+            else 
+                throw new InvalidRequestBodyException($"Invalid portName '{portName}' in SetGPIO command");
+            
+            if(bitIndex > 15)
+            {
+                throw new InvalidRequestBodyException($"Invalid bitIndex '{bitIndex}' in SetGPIO command");
+            }
+            cmd[2 + i * 3] = (byte)bitIndex;
+
+            if ((level != 0) && (level != 1))
+            {
+                throw new InvalidRequestBodyException($"Invalid level '{level}' in SetGPIO command");
+            }
+            cmd[3 + i * 3] = (byte)level;            
         }
-        cmd[3] = (byte)level;
 
         return cmd;
     }
 
     public CmdSetGPIO(JsonElement jsonRoot) : base(createCommand(jsonRoot)) { }
-
+    public CmdSetGPIO(GPIO[] gpioArray) : base(createCommand(gpioArray)) { }
     
     public override string ParseReply()
     {
@@ -250,13 +305,27 @@ class CmdSetGPIO: CommandAndReply
         {
             return $"Failed to run SetGPIO";
         }
-        if(reply.Length != 4)
+        if(reply.Length != cmd.Length)
         {
-            return $"Wrong SetGPIO reply length: {reply.Length}";
-        }        
-        if(reply[3] != cmd[3])
+            return $"Wrong SetGPIO reply length: {reply.Length}, expected: {cmd.Length}";
+        } 
+
+        var portCount = (cmd.Length - 1) / 3;
+
+        for(var i=0; i<portCount; i++)
         {
-            return $"Failed to set GPIO to {cmd[3]}";
+            if(cmd[1 + i * 3] != reply[1 + i * 3])
+            {
+                return $"Error in the {i}th port name in reply: ${reply[1 + i * 3]}, expected: {cmd[1 + i * 3]}";
+            }
+            if(cmd[2 + i * 3] != reply[2 + i * 3])
+            {
+                return $"Error in the {i}th port bitIndex in reply: ${reply[1 + i * 3]}, expected: {cmd[1 + i * 3]}";
+            }
+            if(cmd[3 + i * 3] != reply[3 + i * 3])
+            {
+                return $"Error in the {i}th port value in reply: ${reply[1 + i * 3]}, expected: {cmd[1 + i * 3]}";
+            }
         }
 
         return "success";
