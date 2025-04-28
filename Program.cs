@@ -57,6 +57,17 @@ static CommandAndReply buildPostCommand(string command, JsonElement jsonRoot)
     {
         cmd = new CmdSetPowerOutput(jsonRoot);
     }
+    else if (cmdSegments[0] == "setBDCPowerOutput")
+    {
+        CmdSetGPIO.GPIO[] gpioArray = new CmdSetGPIO.GPIO[1];
+        gpioArray[0] = new CmdSetGPIO.GPIO();
+        
+        gpioArray[0].portName = "PC";
+        gpioArray[0].bitIndex = 15;
+        gpioArray[0].level = jsonRoot.GetProperty("enable").GetBoolean()? (byte)1 : (byte)0;
+
+        cmd = new CmdSetGPIO(gpioArray);
+    }
     else
     {
         Console.WriteLine($"Error: unknown POST command: {command}");

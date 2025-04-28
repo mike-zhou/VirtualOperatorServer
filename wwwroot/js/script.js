@@ -140,6 +140,23 @@ async function setPowerOutput(id)
     }
 }
 
+async function setBDCPowerOutput(id) 
+{
+    enablePower = document.getElementById(id).checked;
+
+    payload = 
+        { 
+            enable: enablePower
+        };
+        
+    data = await post('setBDCPowerOutput', payload);
+    if(data != "success")
+    {
+        console.error(`Error: failed to set PO ${powerNumber}, info: ${data}`);
+    }
+}
+
+
 async function onDocumentClick(event)
 {
     const element = event.target;
@@ -158,6 +175,8 @@ async function onDocumentClick(event)
         await setGpio(elementId);
     else if (elementId.startsWith("id_powerOutput_set_"))
         await setPowerOutput(elementId);
+    else if (elementId == "id_bdcPowerMain_set")
+        await setBDCPowerOutput(elementId);
     else
         console.error(`Error: unknown element id: '${elementId}' in onDocumentClick()`);
 }
