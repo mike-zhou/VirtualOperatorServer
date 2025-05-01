@@ -156,6 +156,25 @@ async function setBDCPowerOutput(id)
     }
 }
 
+async function setBDCControl(id) 
+{
+    segments = id.split("_");
+    actionStr = segments[2];
+    indexStr = segments[3];
+
+    payload = 
+        { 
+            action: actionStr,
+            index: parseInt(indexStr, 10)
+        };
+        
+    data = await post('setBDCControl', payload);
+    if(data != "success")
+    {
+        console.error(`Error: failed to set PO ${powerNumber}, info: ${data}`);
+    }
+}
+
 
 async function onDocumentClick(event)
 {
@@ -177,6 +196,8 @@ async function onDocumentClick(event)
         await setPowerOutput(elementId);
     else if (elementId == "id_bdcPowerMain_set")
         await setBDCPowerOutput(elementId);
+    else if (elementId.startsWith("id_bdcControl_"))
+        await setBDCControl(elementId);
     else
         console.error(`Error: unknown element id: '${elementId}' in onDocumentClick()`);
 }
@@ -267,13 +288,13 @@ async function checkPeripharalStatus()
                 document.getElementById(`id_bdcPowerOutput_state_${i}`).className = "inactive-green-dot";
 
             if(control == "Coast")
-                document.getElementById(`id_bdc_coast_${i}`).checked = true;
+                document.getElementById(`id_bdcControl_coast_${i}`).checked = true;
             else if(control == "Forward")
-                document.getElementById(`id_bdc_forward_${i}`).checked = true;
+                document.getElementById(`id_bdcControl_forward_${i}`).checked = true;
             else if(control == "Reverse")
-                document.getElementById(`id_bdc_reverse_${i}`).checked = true;
+                document.getElementById(`id_bdcControl_reverse_${i}`).checked = true;
             else if(control == "Brake")
-                document.getElementById(`id_bdc_brake_${i}`).checked = true;
+                document.getElementById(`id_bdcControl_brake_${i}`).checked = true;
             else
                 console.error(`Error: unknown BDC motor control '${control}'`);
         }

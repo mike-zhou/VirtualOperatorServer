@@ -13,7 +13,7 @@ app.UseStaticFiles();
 
 static CommandAndReply buildGetCommand(string command)
 {
-    CommandAndReply cmd = new(Array.Empty<byte>());
+    CommandAndReply cmd = new([]);
 
     string[] cmdSegments = command.Split('/');
     if(cmdSegments[0] == "Version")
@@ -40,6 +40,86 @@ static CommandAndReply buildGetCommand(string command)
     return cmd;
 }
 
+static CommandAndReply buildSetBdcPowerOutput(JsonElement jsonRoot)
+{
+    CmdSetGPIO.GPIO[] gpioArray = [new CmdSetGPIO.GPIO()];
+    gpioArray[0].portName = "PC";
+    gpioArray[0].bitIndex = 15;
+    gpioArray[0].level = jsonRoot.GetProperty("enable").GetBoolean()? (byte)1 : (byte)0;
+
+    return new CmdSetGPIO(gpioArray);
+}
+
+static CommandAndReply buildSetBdcControl(JsonElement jsonRoot)
+{
+    // payload = 
+    // { 
+    //     action: actionStr,
+    //     index: parseInt(indexStr, 10)
+    // };
+
+    string? action = jsonRoot.GetProperty("action").GetString();
+    int index = jsonRoot.GetProperty("index").GetInt32();
+
+    if(action == null)
+        throw new InvalidRequestBodyException($"No valid action in {jsonRoot.GetRawText()}");
+
+    CmdSetGPIO.GPIO[] gpioArray = [new CmdSetGPIO.GPIO(), new CmdSetGPIO.GPIO()];
+    switch (index)
+    {
+        case 0:
+            // GP115, GP112
+            gpioArray[0].portName = "PI";
+            gpioArray[0].bitIndex = 4;
+            gpioArray[1].portName = "PB";
+            gpioArray[1].bitIndex = 9;
+            break;
+        case 1:
+            // GP2, GP118
+            gpioArray[0].portName = "PE";
+            gpioArray[0].bitIndex = 4;
+            gpioArray[1].portName = "PI";
+            gpioArray[1].bitIndex = 7;
+            break;
+        case 2:
+            // GP8, GP5
+            gpioArray[0].portName = "PI";
+            gpioArray[0].bitIndex = 9;
+            gpioArray[1].portName = "PC";
+            gpioArray[1].bitIndex = 13;
+            break;
+        default:
+            throw new InvalidRequestBodyException($"Invalid index in {jsonRoot.GetRawText()}");
+    }
+
+    if(action == "coast")
+    {
+        gpioArray[0].level = 0;
+        gpioArray[1].level = 0;
+    }
+    else if(action == "reverse")
+    {
+        gpioArray[0].level = 0;
+        gpioArray[1].level = 1;
+    }
+    else if(action == "forward")
+    {
+        gpioArray[0].level = 1;
+        gpioArray[1].level = 0;
+    }
+    else if(action == "brake")
+    {
+        gpioArray[0].level = 1;
+        gpioArray[1].level = 1;
+    }
+    else
+    {
+        throw new InvalidRequestBodyException($"Unknown action in {jsonRoot.GetRawText()}");
+    }
+    
+    return new CmdSetGPIO(gpioArray);
+}
+
 static CommandAndReply buildPostCommand(string command, JsonElement jsonRoot)
 {
     CommandAndReply cmd = new([]);
@@ -59,14 +139,11 @@ static CommandAndReply buildPostCommand(string command, JsonElement jsonRoot)
     }
     else if (cmdSegments[0] == "setBDCPowerOutput")
     {
-        CmdSetGPIO.GPIO[] gpioArray = new CmdSetGPIO.GPIO[1];
-        gpioArray[0] = new CmdSetGPIO.GPIO();
-        
-        gpioArray[0].portName = "PC";
-        gpioArray[0].bitIndex = 15;
-        gpioArray[0].level = jsonRoot.GetProperty("enable").GetBoolean()? (byte)1 : (byte)0;
-
-        cmd = new CmdSetGPIO(gpioArray);
+        cmd = buildSetBdcPowerOutput(jsonRoot);
+    }
+    else if (cmdSegments[0] == "setBDCControl")
+    {
+        cmd = buildSetBdcControl(jsonRoot);
     }
     else
     {
