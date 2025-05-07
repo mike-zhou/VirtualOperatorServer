@@ -175,6 +175,95 @@ async function setBDCControl(id)
     }
 }
 
+async function setStepper(id) 
+{
+    segments = id.split("_");
+    action = segments[2];
+
+    if(action == "enable")
+    {
+        payload = {
+            index: parseInt(segments[3], 10),
+            enableStepper: document.getElementById(id).checked
+        }
+
+        data = await post('enableStepper', payload);
+        if(data != "success")
+        {
+            alert(`Error: failed to enabl stepper ${segments[3]}, info: ${data}`);
+        }
+    }
+    else if(action == "forward")
+    {
+        payload = {
+            index: parseInt(segments[3], 10),
+            forwardStepper: document.getElementById(id).checked
+        }
+
+        data = await post('forwardStepper', payload);
+        if(data != "success")
+        {
+            alert(`Error: failed to forward stepper ${segments[3]}, info: ${data}`);
+        }
+    }
+    else if(action == "clock")
+    {
+        payload = {
+            index: parseInt(segments[3], 10),
+            highLevel: document.getElementById(id).checked
+        }
+
+        data = await post('clockStepper', payload);
+        if(data != "success")
+        {
+            alert(`Error: failed to clock stepper ${segments[3]}, info: ${data}`);
+        }
+    }
+    else if(action == "go")
+    {
+        stepsNum = NaN;
+
+        steps = segments[3];
+        if(steps == "steps")
+        {
+            stepsNum = document.getElementById(`id_stepper_steps_${segments[4]}`).valueAsNumber;
+            if(Number.isNaN(stepsNum))
+            {
+                alert(`Error: No valid number in id_stepper_steps_${segments[4]}`);
+                return;
+            }
+        }
+        else
+        {
+            stepsNum = parseInt(steps, 10);
+        }
+
+        if((stepsNum < 0) || (stepsNum > 1024))
+        {
+            alert(`Error: Out of range of clocks ${stepsNum}`);
+            return;
+        }
+
+        payload = {
+            index: parseInt(segments[4], 10),
+            clocks: stepsNum
+        }
+
+        data = await post('runStepper', payload);
+        if(data != "success")
+        {
+            alert(`Error: failed to run stepper ${segments[4]}, info: ${data}`);
+        }
+    }
+    else if(action == "steps")
+    {
+        // do nothing when id_stepper_steps_X is clicked
+    }
+    else
+    {
+        alert(`Unsupported action '{action}' in '{id}'`);
+    }
+}
 
 async function onDocumentClick(event)
 {
@@ -198,8 +287,10 @@ async function onDocumentClick(event)
         await setBDCPowerOutput(elementId);
     else if (elementId.startsWith("id_bdcControl_"))
         await setBDCControl(elementId);
+    else if (elementId.startsWith("id_stepper_"))
+        await setStepper(elementId);
     else
-        console.error(`Error: unknown element id: '${elementId}' in onDocumentClick()`);
+        alert(`Error: unknown element id: '${elementId}' in onDocumentClick()`);
 }
 
 async function checkPeripharalStatus()
@@ -307,6 +398,7 @@ async function checkPeripharalStatus()
             let forward = stepper["forward"];
             let enable = stepper["enable"];
             let alarm = stepper["alarm"];
+            let clock = stepper["clock"];
 
             if(alarm)
                 document.getElementById(`id_stepperAlarm_state_${i}`).className = "active-red-dot";
@@ -315,6 +407,7 @@ async function checkPeripharalStatus()
 
             document.getElementById(`id_stepper_enable_${i}`).checked = enable;
             document.getElementById(`id_stepper_forward_${i}`).checked = forward;
+            document.getElementById(`id_stepper_clock_${i}`).checked = clock;
         }
 
         // position detectors

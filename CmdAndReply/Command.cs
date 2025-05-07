@@ -3,7 +3,7 @@
 namespace VirtualOperatorServer.CommandAndReply
 {
 
-public class InvalidRequestBodyException: Exception
+class InvalidRequestBodyException: Exception
 {
     public InvalidRequestBodyException(string message) : base(message) {}
 }

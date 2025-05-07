@@ -179,7 +179,7 @@ class CmdSetGPIO: CommandAndReply
 {
     public class GPIO
     {
-        public string portName {get; set;}
+        public string? portName {get; set;}
         public byte bitIndex {get; set;}
         public byte level {get; set;}
     }

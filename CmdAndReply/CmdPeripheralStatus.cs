@@ -253,79 +253,89 @@ class CmdPeripheralStatus: CmdReadGPIO
 
     private string GetStepperMotorStatus()
     {
-        bool stp0Forward, stp0Enable, stp0Alarm;
-        bool stp1Forward, stp1Enable, stp1Alarm;
-        bool stp2Forward, stp2Enable, stp2Alarm;
-        bool stp3Forward, stp3Enable, stp3Alarm;
-        bool stp4Forward, stp4Enable, stp4Alarm;
-        bool stp5Forward, stp5Enable, stp5Alarm;
-        bool stp6Forward, stp6Enable, stp6Alarm;
-        bool stp7Forward, stp7Enable, stp7Alarm;
-        bool stp8Forward, stp8Enable, stp8Alarm;
-        bool stp9Forward, stp9Enable, stp9Alarm;
+        bool stp0Forward, stp0Enable, stp0Alarm, stp0Clock;
+        bool stp1Forward, stp1Enable, stp1Alarm, stp1Clock;
+        bool stp2Forward, stp2Enable, stp2Alarm, stp2Clock;
+        bool stp3Forward, stp3Enable, stp3Alarm, stp3Clock;
+        bool stp4Forward, stp4Enable, stp4Alarm, stp4Clock;
+        bool stp5Forward, stp5Enable, stp5Alarm, stp5Clock;
+        bool stp6Forward, stp6Enable, stp6Alarm, stp6Clock;
+        bool stp7Forward, stp7Enable, stp7Alarm, stp7Clock;
+        bool stp8Forward, stp8Enable, stp8Alarm, stp8Clock;
+        bool stp9Forward, stp9Enable, stp9Alarm, stp9Clock;
 
-        // stepper 0: GP52, GP53, GP44
+        // stepper 0: GP52, GP53, GP44, CLK_STP0
         stp0Forward =   IsGpioHigh('J', 5);
         stp0Enable =    IsGpioHigh('H', 7);
         stp0Alarm =     IsGpioHigh('G', 1);
+        stp0Clock =     IsGpioHigh('E', 5);
 
-        // stepper 1: GP54, GP55, GP46
+        // stepper 1: GP54, GP55, GP46, CLK_STP1
         stp1Forward =   IsGpioHigh('H', 8);
         stp1Enable =    IsGpioHigh('H', 9);
         stp1Alarm =     IsGpioHigh('E', 8);
+        stp1Clock =     IsGpioHigh('F', 6);
 
-        // stepper 2: GP56, USB_DEC_1, GP47
+        // stepper 2: GP56, USB_DEC_1, GP47, CLK_STP2
         stp2Forward =   IsGpioHigh('H', 12);
         stp2Enable =    IsGpioHigh('D', 8);
         stp2Alarm =     IsGpioHigh('E', 10);
+        stp2Clock =     IsGpioHigh('F', 7);
 
-        // stepper 3: GP57, GP58, GP48
+        // stepper 3: GP57, GP58, GP48, CLK_STP3, CLK_STP3
         stp3Forward =   IsGpioHigh('D', 9);
         stp3Enable =    IsGpioHigh('D', 10);
         stp3Alarm =     IsGpioHigh('E', 12);
+        stp3Clock =     IsGpioHigh('A', 6);
 
-        // stepper 4: GP59, GP60, GP49
+        // stepper 4: GP59, GP60, GP49, CLK_STP4
         stp4Forward =   IsGpioHigh('D', 14);
         stp4Enable =    IsGpioHigh('D', 15);
         stp4Alarm =     IsGpioHigh('E', 13);
+        stp4Clock = IsGpioHigh('A', 7);
 
-        // stepper 5: GP61, GP62, GP50
+        // stepper 5: GP61, GP62, GP50, CLK_STP5
         stp5Forward =   IsGpioHigh('J', 7);
         stp5Enable =    IsGpioHigh('J', 9);
         stp5Alarm =     IsGpioHigh('E', 14);
+        stp5Clock =     IsGpioHigh('H', 6);
 
-        // stepper 6: GP64, GP65, GP51
+        // stepper 6: GP64, GP65, GP51, GP63
         stp6Forward =   IsGpioHigh('J', 11);
         stp6Enable =    IsGpioHigh('K', 0);
         stp6Alarm =     IsGpioHigh('E', 15);
+        stp6Clock =     IsGpioHigh('J', 10);
 
-        // stepper 7: GP67, GP68, GP86
+        // stepper 7: GP67, GP68, GP86, GP66
         stp7Forward =   IsGpioHigh('K', 2);
         stp7Enable =    IsGpioHigh('G', 2);
         stp7Alarm =     IsGpioHigh('D', 0);
+        stp7Clock =     IsGpioHigh('K', 1);
 
-        // stepper 8: GP70, GP71, GP83
+        // stepper 8: GP70, GP71, GP83, GP69
         stp8Forward =   IsGpioHigh('G', 4);
         stp8Enable =    IsGpioHigh('G', 5);
         stp8Alarm =     IsGpioHigh('C', 10);
+        stp8Clock =     IsGpioHigh('G', 3);
 
-        // stepper 9: GP73, GP74, GP85
+        // stepper 9: GP73, GP74, GP85, GP72
         stp9Forward =   IsGpioHigh('G', 7);
         stp9Enable =    IsGpioHigh('G', 8);
         stp9Alarm =     IsGpioHigh('C', 12);
+        stp9Clock =     IsGpioHigh('G', 6);
 
         StringBuilder jsonBuilder = new StringBuilder();
         jsonBuilder.Append('{');
-        jsonBuilder.Append("\"stepper0\":{\"forward\":" + JsonStr(stp0Forward) + ",\"enable\":" + JsonStr(stp0Enable) + ",\"alarm\":" + JsonStr(stp0Alarm) + "},");
-        jsonBuilder.Append("\"stepper1\":{\"forward\":" + JsonStr(stp1Forward) + ",\"enable\":" + JsonStr(stp1Enable) + ",\"alarm\":" + JsonStr(stp1Alarm) + "},");
-        jsonBuilder.Append("\"stepper2\":{\"forward\":" + JsonStr(stp2Forward) + ",\"enable\":" + JsonStr(stp2Enable) + ",\"alarm\":" + JsonStr(stp2Alarm) + "},");
-        jsonBuilder.Append("\"stepper3\":{\"forward\":" + JsonStr(stp3Forward) + ",\"enable\":" + JsonStr(stp3Enable) + ",\"alarm\":" + JsonStr(stp3Alarm) + "},");
-        jsonBuilder.Append("\"stepper4\":{\"forward\":" + JsonStr(stp4Forward) + ",\"enable\":" + JsonStr(stp4Enable) + ",\"alarm\":" + JsonStr(stp4Alarm) + "},");
-        jsonBuilder.Append("\"stepper5\":{\"forward\":" + JsonStr(stp5Forward) + ",\"enable\":" + JsonStr(stp5Enable) + ",\"alarm\":" + JsonStr(stp5Alarm) + "},");
-        jsonBuilder.Append("\"stepper6\":{\"forward\":" + JsonStr(stp6Forward) + ",\"enable\":" + JsonStr(stp6Enable) + ",\"alarm\":" + JsonStr(stp6Alarm) + "},");
-        jsonBuilder.Append("\"stepper7\":{\"forward\":" + JsonStr(stp7Forward) + ",\"enable\":" + JsonStr(stp7Enable) + ",\"alarm\":" + JsonStr(stp7Alarm) + "},");
-        jsonBuilder.Append("\"stepper8\":{\"forward\":" + JsonStr(stp8Forward) + ",\"enable\":" + JsonStr(stp8Enable) + ",\"alarm\":" + JsonStr(stp8Alarm) + "},");
-        jsonBuilder.Append("\"stepper9\":{\"forward\":" + JsonStr(stp9Forward) + ",\"enable\":" + JsonStr(stp9Enable) + ",\"alarm\":" + JsonStr(stp9Alarm) + "}");
+        jsonBuilder.Append("\"stepper0\":{\"forward\":" + JsonStr(stp0Forward) + ",\"enable\":" + JsonStr(stp0Enable) + ",\"alarm\":" + JsonStr(stp0Alarm) + ",\"clock\":" + JsonStr(stp0Clock) + "},");
+        jsonBuilder.Append("\"stepper1\":{\"forward\":" + JsonStr(stp1Forward) + ",\"enable\":" + JsonStr(stp1Enable) + ",\"alarm\":" + JsonStr(stp1Alarm) + ",\"clock\":" + JsonStr(stp1Clock) + "},");
+        jsonBuilder.Append("\"stepper2\":{\"forward\":" + JsonStr(stp2Forward) + ",\"enable\":" + JsonStr(stp2Enable) + ",\"alarm\":" + JsonStr(stp2Alarm) + ",\"clock\":" + JsonStr(stp2Clock) + "},");
+        jsonBuilder.Append("\"stepper3\":{\"forward\":" + JsonStr(stp3Forward) + ",\"enable\":" + JsonStr(stp3Enable) + ",\"alarm\":" + JsonStr(stp3Alarm) + ",\"clock\":" + JsonStr(stp3Clock) + "},");
+        jsonBuilder.Append("\"stepper4\":{\"forward\":" + JsonStr(stp4Forward) + ",\"enable\":" + JsonStr(stp4Enable) + ",\"alarm\":" + JsonStr(stp4Alarm) + ",\"clock\":" + JsonStr(stp4Clock) + "},");
+        jsonBuilder.Append("\"stepper5\":{\"forward\":" + JsonStr(stp5Forward) + ",\"enable\":" + JsonStr(stp5Enable) + ",\"alarm\":" + JsonStr(stp5Alarm) + ",\"clock\":" + JsonStr(stp5Clock) + "},");
+        jsonBuilder.Append("\"stepper6\":{\"forward\":" + JsonStr(stp6Forward) + ",\"enable\":" + JsonStr(stp6Enable) + ",\"alarm\":" + JsonStr(stp6Alarm) + ",\"clock\":" + JsonStr(stp6Clock) + "},");
+        jsonBuilder.Append("\"stepper7\":{\"forward\":" + JsonStr(stp7Forward) + ",\"enable\":" + JsonStr(stp7Enable) + ",\"alarm\":" + JsonStr(stp7Alarm) + ",\"clock\":" + JsonStr(stp7Clock) + "},");
+        jsonBuilder.Append("\"stepper8\":{\"forward\":" + JsonStr(stp8Forward) + ",\"enable\":" + JsonStr(stp8Enable) + ",\"alarm\":" + JsonStr(stp8Alarm) + ",\"clock\":" + JsonStr(stp8Clock) + "},");
+        jsonBuilder.Append("\"stepper9\":{\"forward\":" + JsonStr(stp9Forward) + ",\"enable\":" + JsonStr(stp9Enable) + ",\"alarm\":" + JsonStr(stp9Alarm) + ",\"clock\":" + JsonStr(stp9Clock) + "}");
         jsonBuilder.Append('}');
 
         return jsonBuilder.ToString();
