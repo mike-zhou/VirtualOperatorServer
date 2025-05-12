@@ -271,53 +271,53 @@ internal static class CommandFactory
         return new CmdSetGPIO(gpioArray);
     }
 
-    static CommandAndReply BuildEnableStepper(JsonElement jsonRoot)
+    static CommandAndReply BuildDisableStepper(JsonElement jsonRoot)
     {
         var index = jsonRoot.GetProperty("index").GetByte();
-        var enableStepper = jsonRoot.GetProperty("enableStepper").GetBoolean();
+        var disableStepper = jsonRoot.GetProperty("disableStepper").GetBoolean();
         CmdSetGPIO.GPIO gpio;
 
         switch(index)
         {
             case 0:
                 // GP53
-                gpio = CreateGPIO("PH7", enableStepper);
+                gpio = CreateGPIO("PH7", disableStepper);
                 break;
             case 1:
                 // GP55
-                gpio = CreateGPIO("PH9", enableStepper);
+                gpio = CreateGPIO("PH9", disableStepper);
                 break;
             case 2: 
                 // USB_DEC_1
-                gpio = CreateGPIO("PD8", enableStepper);
+                gpio = CreateGPIO("PD8", disableStepper);
                 break;
             case 3:
                 // GP58
-                gpio = CreateGPIO("PD10", enableStepper);
+                gpio = CreateGPIO("PD10", disableStepper);
                 break;
             case 4:
                 // GP60
-                gpio = CreateGPIO("PD15", enableStepper);
+                gpio = CreateGPIO("PD15", disableStepper);
                 break;
             case 5:
                 // GP62
-                gpio = CreateGPIO("PJ9", enableStepper);
+                gpio = CreateGPIO("PJ9", disableStepper);
                 break;
             case 6:
                 // GP65
-                gpio = CreateGPIO("PK0", enableStepper);
+                gpio = CreateGPIO("PK0", disableStepper);
                 break;
             case 7: 
                 // GP68
-                gpio = CreateGPIO("PG2", enableStepper);
+                gpio = CreateGPIO("PG2", disableStepper);
                 break;
             case 8:
                 // GP71
-                gpio = CreateGPIO("PG5", enableStepper);
+                gpio = CreateGPIO("PG5", disableStepper);
                 break;
             case 9:
                 // GP74
-                gpio = CreateGPIO("PG8", enableStepper);
+                gpio = CreateGPIO("PG8", disableStepper);
                 break;
             default:
                 throw new InvalidRequestBodyException($"Wrong stepper index in {jsonRoot.GetRawText()}");
@@ -355,9 +355,9 @@ internal static class CommandFactory
         {
             cmd = BuildSetBdcControl(jsonRoot);
         }
-        else if(restApi == "enableStepper")
+        else if(restApi == "disableStepper")
         {
-            cmd = BuildEnableStepper(jsonRoot);
+            cmd = BuildDisableStepper(jsonRoot);
         }
         else if (restApi == "forwardStepper")
         {

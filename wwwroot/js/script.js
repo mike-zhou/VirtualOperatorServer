@@ -180,14 +180,14 @@ async function setStepper(id)
     segments = id.split("_");
     action = segments[2];
 
-    if(action == "enable")
+    if(action == "disable")
     {
         payload = {
             index: parseInt(segments[3], 10),
-            enableStepper: document.getElementById(id).checked
+            disableStepper: document.getElementById(id).checked
         }
 
-        data = await post('enableStepper', payload);
+        data = await post('disableStepper', payload);
         if(data != "success")
         {
             alert(`Error: failed to enabl stepper ${segments[3]}, info: ${data}`);
@@ -396,7 +396,7 @@ async function checkPeripharalStatus()
         {
             let stepper = motorStatus[`stepper${i}`];
             let forward = stepper["forward"];
-            let enable = stepper["enable"];
+            let disable = stepper["disable"];
             let alarm = stepper["alarm"];
             let clock = stepper["clock"];
 
@@ -405,7 +405,7 @@ async function checkPeripharalStatus()
             else
                 document.getElementById(`id_stepperAlarm_state_${i}`).className = "inactive-red-dot";
 
-            document.getElementById(`id_stepper_enable_${i}`).checked = enable;
+            document.getElementById(`id_stepper_disable_${i}`).checked = disable;
             document.getElementById(`id_stepper_forward_${i}`).checked = forward;
             document.getElementById(`id_stepper_clock_${i}`).checked = clock;
         }
