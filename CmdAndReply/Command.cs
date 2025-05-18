@@ -14,7 +14,8 @@ enum CommandEnum
     ECHO,
     GET_GPIO_MODE,
     READ_GPIO,
-    SET_GPIO
+    SET_GPIO,
+    READ_ENCODERS
 }
 
 class CommandAndReply

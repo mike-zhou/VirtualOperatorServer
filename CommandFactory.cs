@@ -9,21 +9,25 @@ internal static class CommandFactory
         CommandAndReply cmd = new([]);
 
         string[] cmdSegments = command.Split('/');
-        if(cmdSegments[0] == "Version")
+        if (cmdSegments[0] == "Version")
         {
             cmd = new CmdGetVersion();
         }
-        else if(cmdSegments[0] == "GPIOMode")
+        else if (cmdSegments[0] == "GPIOMode")
         {
             cmd = new CmdGetGPIOMode();
         }
-        else if(cmdSegments[0] == "GPIO")
+        else if (cmdSegments[0] == "GPIO")
         {
             cmd = new CmdReadGPIO();
         }
-        else if(cmdSegments[0] == "PeripharalStatus")
+        else if (cmdSegments[0] == "PeripharalStatus")
         {
             cmd = new CmdPeripheralStatus();
+        }
+        else if (cmdSegments[0] == "Encoders")
+        {
+            cmd = new CmdReadEncoders();
         }
         else
         {

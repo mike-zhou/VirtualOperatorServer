@@ -296,8 +296,9 @@ async function onDocumentClick(event)
 async function checkPeripharalStatus()
 {
     try {
-        data = await get('PeripharalStatus')
-        const status = JSON.parse(data)
+        const data = await get('PeripharalStatus');
+        const status = JSON.parse(data);
+
         // Power
         let powerStatus = status.Power;
         for(let i=0; i<6; i++)
@@ -430,15 +431,45 @@ async function checkPeripharalStatus()
         }
         
     } catch (error) {
-        console.error("Error:", error);
+        console.error("Error in checkPeripharalStatus():", error);
     }
 
     setTimeout(() => { checkPeripharalStatus(); }, 1000);
 }
 
-document.addEventListener('click', async function(event) {
-    onDocumentClick(event);
-} );
+async function checkEncoders()
+{
+    try 
+    {
+        const data = await get('Encoders');
+        const status = JSON.parse(data);
 
+        const lptim1Counter = status.lptim1Counter;
+        const lptim2Counter = status.lptim2Counter;
+        const htim1Counter = status.htim1Counter;
+        const htim2Counter = status.htim2Counter;
+        const htim3Counter = status.htim3Counter;
+        const htim4Counter = status.htim4Counter;
+        const htim5Counter = status.htim5Counter;
+        const htim8Counter = status.htim8Counter;
+
+        document.getElementById("id_encoder_0").textContent = lptim1Counter.toString();
+        document.getElementById("id_encoder_1").textContent = lptim2Counter.toString();
+        document.getElementById("id_encoder_2").textContent = htim1Counter.toString();
+        document.getElementById("id_encoder_3").textContent = htim2Counter.toString();
+        document.getElementById("id_encoder_4").textContent = htim3Counter.toString();
+        document.getElementById("id_encoder_5").textContent = htim4Counter.toString();
+        document.getElementById("id_encoder_6").textContent = htim5Counter.toString();
+        document.getElementById("id_encoder_7").textContent = htim8Counter.toString();
+    } 
+    catch (error) {
+        console.error("Error in checkEncoders():", error);
+    }
+
+    setTimeout(() => { checkEncoders(); }, 1000);
+}
+
+document.addEventListener('click', async function(event) { onDocumentClick(event); } );
 setTimeout(() => { checkPeripharalStatus(); }, 1000);
+setTimeout(() => { checkEncoders(); }, 1000);
 
