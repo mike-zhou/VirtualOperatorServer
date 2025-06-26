@@ -6,174 +6,226 @@ using System.Text.Json;
 namespace VirtualOperatorServer.CommandAndReply
 {
 
-class CmdGetGPIOMode: CommandAndReply
-{
-    static private byte[] createCommand()
+    class CmdGetGPIOMode : CommandAndReply
     {
-        byte[] cmd = new byte[1];
-        cmd[0] = (byte)CommandEnum.GET_GPIO_MODE;
-
-        return cmd;
-    }
-    public CmdGetGPIOMode(): base(createCommand()) {}
-
-    public override string ParseReply()
-    {
-        if(reply == null)
+        public static ushort[]? GpioModes { get; private set; } = null;
+        
+        static private byte[] createCommand()
         {
-            return "No reply was received";
+            byte[] cmd = new byte[1];
+            cmd[0] = (byte)CommandEnum.GET_GPIO_MODE;
+
+            return cmd;
         }
-        if(reply.Length != 23)
+        public CmdGetGPIOMode() : base(createCommand()) { }
+
+        public override (bool result, string reason) ParseReply()
         {
-            return "Invalid rely";
-        }
-        if(reply.Length == 0)
-        {
-            return "Invalid reply";
-        }
-        var cmd = Command;
-        if(cmd[0] != reply[0])
-        {
-            return "Wrong reply";
-        }
-
-        GpioMode = reply;
-        return "Succeed";
-    }
-
-    static public byte[]? GpioMode { get; private set; }
-}
-
-class CmdReadGPIO: CommandAndReply
-{
-    static private byte[] createCommand()
-    {
-        byte[] cmd = new byte[1];
-        cmd[0] = (byte)CommandEnum.READ_GPIO;
-
-        return cmd;
-    }
-
-    public CmdReadGPIO(): base(createCommand()) {}
-
-    public override string ParseReply()
-    {
-        if(reply == null)
-        {
-            return "No reply was received";
-        }
-        else
-        {
-            if(reply.Length != 23)
+            if (reply == null)
             {
-                return "Invalid rely";
+                return (false, "No reply was received");
             }
-            if(reply.Length == 0)
+            if (reply.Length != 23)
             {
-                return "Invalid reply";
+                return (false, "Invalid rely");
+            }
+            if (reply.Length == 0)
+            {
+                return (false, "Invalid reply)");
             }
             var cmd = Command;
-            if(cmd[0] != reply[0])
+            if (cmd[0] != reply[0])
             {
-                return "Wrong reply";
+                return (false, "Wrong reply");
             }
 
-            return ParseGpioRead();
-        }
-    }
+            ushort value;
+            int i;
 
-    private string ParseGpioRead()
-    {
-        var gpioMode = CmdGetGPIOMode.GpioMode;
-        if(gpioMode == null)
-        {
-            return "No GPIO mode data";
-        }
-        if(reply == null)
-        {
-            return "No reply";
-        }
+            var modes = new ushort[11];
 
-        StringBuilder htmlBuilder = new StringBuilder();
-        List<string> portNameList = new List<string>{
-            "PA",
-            "PB",
-            "PC",
-            "PD",
-            "PE",
-            "PF",
-            "PG",
-            "PH",
-            "PI",
-            "PJ",
-            "PK"
-        };
-        Debug.Assert(portNameList.Count == 11);
-
-        htmlBuilder.Append("<table>");
-        for(int portIndex = 0; portIndex < portNameList.Count; portIndex++)
-        {
-            var portName = portNameList[portIndex];
-            ushort value = reply[1 + portIndex * 2 + 1];
+            i = 1;
+            value = reply[i + 1];
             value <<= 8;
-            value += reply[1 + portIndex * 2];
-            
-            ushort mode = gpioMode[1 + portIndex * 2 + 1];
-            mode <<=8;
-            mode += gpioMode[1 + portIndex * 2];
+            value += reply[i];
+            modes[0] = value;
 
-            htmlBuilder.Append("<tr>");
-            for(int bitIndex = 0; bitIndex < 16; bitIndex++)
-            {
-                string gpioId = $"id_setGpio_{portName}_{bitIndex}";
-                bool isInput = ((mode & 0x1) == 0);
+            i += 2;
+            value = reply[i + 1];
+            value <<= 8;
+            value += reply[i];
+            modes[1] = value;
 
-                htmlBuilder.Append("<td>");
-                if(isInput)
-                {
-                    htmlBuilder.Append($"<label style=\"color: gray; cursor: not-allowed;\" for=\"{gpioId}\">  {portName}{bitIndex}: </lable>");
-                }
-                else
-                {
-                    htmlBuilder.Append($"<label for=\"{gpioId}\">  {portName}{bitIndex}: </lable>");
-                }
+            i += 2;
+            value = reply[i + 1];
+            value <<= 8;
+            value += reply[i];
+            modes[2] = value;
 
-                if((value & 0x1) == 1)
-                {
-                    // high level
-                    if(isInput)
-                    {
-                        htmlBuilder.Append($"<input type=\"checkbox\" id=\"{gpioId}\" checked disabled>");
-                    }
-                    else
-                    {
-                        htmlBuilder.Append($"<input type=\"checkbox\" id=\"{gpioId}\" checked>");
-                    }
-                }
-                else
-                {
-                    // low level
-                    if(isInput)
-                    {
-                        htmlBuilder.Append($"<input type=\"checkbox\" id=\"{gpioId}\" disabled>");
-                    }
-                    else
-                    {
-                        htmlBuilder.Append($"<input type=\"checkbox\" id=\"{gpioId}\">");
-                    }
-                }
-                htmlBuilder.Append("</td>");
+            i += 2;
+            value = reply[i + 1];
+            value <<= 8;
+            value += reply[i];
+            modes[3] = value;
 
-                value >>= 1;
-                mode >>= 1;
-            }
-            htmlBuilder.Append("</tr>");
+            i += 2;
+            value = reply[i + 1];
+            value <<= 8;
+            value += reply[i];
+            modes[4] = value;
+
+            i += 2;
+            value = reply[i + 1];
+            value <<= 8;
+            value += reply[i];
+            modes[5] = value;
+
+            i += 2;
+            value = reply[i + 1];
+            value <<= 8;
+            value += reply[i];
+            modes[6] = value;
+
+            i += 2;
+            value = reply[i + 1];
+            value <<= 8;
+            value += reply[i];
+            modes[7] = value;
+
+            i += 2;
+            value = reply[i + 1];
+            value <<= 8;
+            value += reply[i];
+            modes[8] = value;
+
+            i += 2;
+            value = reply[i + 1];
+            value <<= 8;
+            value += reply[i];
+            modes[9] = value;
+
+            i += 2;
+            value = reply[i + 1];
+            value <<= 8;
+            value += reply[i];
+            modes[10] = value;
+
+            GpioModes = modes;
+
+            return (true, "");
         }
-        htmlBuilder.Append("</table>");
-
-        return htmlBuilder.ToString();
     }
-}
+
+    class CmdReadGPIO: CommandAndReply
+    {
+        static private byte[] createCommand()
+        {
+            byte[] cmd = new byte[1];
+            cmd[0] = (byte)CommandEnum.READ_GPIO;
+
+            return cmd;
+        }
+
+        public CmdReadGPIO(): base(createCommand()) {}
+
+        public ushort[]? GpioValues { get; private set; } = null;
+
+        public override (bool result, string reason) ParseReply()
+        {
+            if (reply == null)
+            {
+                return (false, "No reply was received");
+            }
+            if (reply.Length != 23)
+            {
+                return (false, "Invalid rely");
+            }
+            if (reply.Length == 0)
+            {
+                return (false, "Invalid reply");
+            }
+            var cmd = Command;
+            if (cmd[0] != reply[0])
+            {
+                return (false, "Wrong reply");
+            }
+
+            ushort value;
+            int i;
+
+            var values = new ushort[11];
+
+            i = 1;
+            value = reply[i + 1];
+            value <<= 8;
+            value += reply[i];
+            values[0] = value;
+
+            i += 2;
+            value = reply[i + 1];
+            value <<= 8;
+            value += reply[i];
+            values[1] = value;
+
+            i += 2;
+            value = reply[i + 1];
+            value <<= 8;
+            value += reply[i];
+            values[2] = value;
+
+            i += 2;
+            value = reply[i + 1];
+            value <<= 8;
+            value += reply[i];
+            values[3] = value;
+
+            i += 2;
+            value = reply[i + 1];
+            value <<= 8;
+            value += reply[i];
+            values[4] = value;
+
+            i += 2;
+            value = reply[i + 1];
+            value <<= 8;
+            value += reply[i];
+            values[5] = value;
+
+            i += 2;
+            value = reply[i + 1];
+            value <<= 8;
+            value += reply[i];
+            values[6] = value;
+
+            i += 2;
+            value = reply[i + 1];
+            value <<= 8;
+            value += reply[i];
+            values[7] = value;
+
+            i += 2;
+            value = reply[i + 1];
+            value <<= 8;
+            value += reply[i];
+            values[8] = value;
+
+            i += 2;
+            value = reply[i + 1];
+            value <<= 8;
+            value += reply[i];
+            values[9] = value;
+
+            i += 2;
+            value = reply[i + 1];
+            value <<= 8;
+            value += reply[i];
+            values[10] = value;
+
+            GpioValues = values;
+
+            return (true, "");
+        }
+    }
 
 class CmdSetGPIO: CommandAndReply
 {
