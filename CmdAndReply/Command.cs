@@ -18,7 +18,7 @@ namespace VirtualOperatorServer.CommandAndReply
         GET_STATUS
     }
 
-    class CommandAndReply
+    public class CommandAndReply
     {
         private byte[] command;
         protected byte[]? reply;

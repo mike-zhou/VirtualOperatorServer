@@ -18,17 +18,17 @@ internal static class PartsView
 
         StringBuilder htmlBuilder = new StringBuilder();
         List<string> portNameList = new List<string>{
-            "PortA",
-            "PortB",
-            "PortC",
-            "PortD",
-            "PortE",
-            "PortF",
-            "PortG",
-            "PortH",
-            "PortI",
-            "PortJ",
-            "PortK"
+            "PA",
+            "PB",
+            "PC",
+            "PD",
+            "PE",
+            "PF",
+            "PG",
+            "PH",
+            "PI",
+            "PJ",
+            "PK"
         };
         Debug.Assert(portNameList.Count == 11);
 

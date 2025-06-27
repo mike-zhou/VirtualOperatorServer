@@ -35,63 +35,63 @@ class CmdSetPowerOutput: CmdSetGPIO
         {
             case 0: 
                 // GP98
-                gpioArray[0].portName = "PG";
-                gpioArray[0].bitIndex = 9;
+                gpioArray[0].PortName = "PG";
+                gpioArray[0].BitIndex = 9;
                 break;
             case 1: 
                 // GP96
-                gpioArray[0].portName = "PJ";
-                gpioArray[0].bitIndex = 14;
+                gpioArray[0].PortName = "PJ";
+                gpioArray[0].BitIndex = 14;
                 break;
             case 2: 
                 // GP84
-                gpioArray[0].portName = "PC";
-                gpioArray[0].bitIndex = 11;
+                gpioArray[0].PortName = "PC";
+                gpioArray[0].BitIndex = 11;
                 break;
             case 3: 
                 // GP82
-                gpioArray[0].portName = "PI";
-                gpioArray[0].bitIndex = 3;
+                gpioArray[0].PortName = "PI";
+                gpioArray[0].BitIndex = 3;
                 break;
             case 4: 
                 // GP79
-                gpioArray[0].portName = "PI";
-                gpioArray[0].bitIndex = 0;
+                gpioArray[0].PortName = "PI";
+                gpioArray[0].BitIndex = 0;
                 break;
             case 5:
                 // GP78
-                gpioArray[0].portName = "PH";
-                gpioArray[0].bitIndex = 15;
+                gpioArray[0].PortName = "PH";
+                gpioArray[0].BitIndex = 15;
                 break;
             case 6: 
                 // GP104
-                gpioArray[0].portName = "PK";
-                gpioArray[0].bitIndex = 4;
+                gpioArray[0].PortName = "PK";
+                gpioArray[0].BitIndex = 4;
                 break;
             case 7: 
                 // GP107
-                gpioArray[0].portName = "PK";
-                gpioArray[0].bitIndex = 7;
+                gpioArray[0].PortName = "PK";
+                gpioArray[0].BitIndex = 7;
                 break;
             case 8: 
                 // GP113
-                gpioArray[0].portName = "PE";
-                gpioArray[0].bitIndex = 0;
+                gpioArray[0].PortName = "PE";
+                gpioArray[0].BitIndex = 0;
                 break;
             case 9: 
                 // GP114
-                gpioArray[0].portName = "PE";
-                gpioArray[0].bitIndex = 1;
+                gpioArray[0].PortName = "PE";
+                gpioArray[0].BitIndex = 1;
                 break;
             case 10: 
                 // GP1
-                gpioArray[0].portName = "PE";
-                gpioArray[0].bitIndex = 3;
+                gpioArray[0].PortName = "PE";
+                gpioArray[0].BitIndex = 3;
                 break;
             case 11: 
                 // GP3
-                gpioArray[0].portName = "PE";
-                gpioArray[0].bitIndex = 6;
+                gpioArray[0].PortName = "PE";
+                gpioArray[0].BitIndex = 6;
                 break;
             default:
                 throw new InvalidRequestBodyException($"Invalid power output index: '{powerIndex}'");
@@ -99,11 +99,11 @@ class CmdSetPowerOutput: CmdSetGPIO
 
         if(enable)
         {
-            gpioArray[0].level = 1;
+            gpioArray[0].Level = 1;
         }
         else
         {
-            gpioArray[0].level = 0;
+            gpioArray[0].Level = 0;
         }
 
         return gpioArray;

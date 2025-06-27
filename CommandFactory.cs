@@ -48,8 +48,8 @@ internal static class CommandFactory
             throw new InvalidRequestBodyException($"Invalid GPIO in {gpioStr}");
         }
 
-        gpio.portName = gpioStr.Substring(0, 2);
-        if(!portNameList.Contains(gpio.portName))
+        gpio.PortName = gpioStr.Substring(0, 2);
+        if(!portNameList.Contains(gpio.PortName))
         {
             throw new InvalidRequestBodyException($"Invalid port name in {gpioStr}");
         }
@@ -64,9 +64,9 @@ internal static class CommandFactory
         {
             throw new InvalidRequestBodyException($"Invalid bit index in {gpioStr}");
         }
-        gpio.bitIndex = bitIndex;
+        gpio.BitIndex = bitIndex;
 
-        gpio.level = (byte)(highLevel ? 1 : 0);
+        gpio.Level = (byte)(highLevel ? 1 : 0);
 
         return gpio;
     }
@@ -74,9 +74,9 @@ internal static class CommandFactory
     static CommandAndReply BuildSetBdcPowerOutput(JsonElement jsonRoot)
     {
         CmdSetGPIO.GPIO[] gpioArray = [new CmdSetGPIO.GPIO()];
-        gpioArray[0].portName = "PC";
-        gpioArray[0].bitIndex = 15;
-        gpioArray[0].level = jsonRoot.GetProperty("enable").GetBoolean()? (byte)1 : (byte)0;
+        gpioArray[0].PortName = "PC";
+        gpioArray[0].BitIndex = 15;
+        gpioArray[0].Level = jsonRoot.GetProperty("enable").GetBoolean()? (byte)1 : (byte)0;
 
         return new CmdSetGPIO(gpioArray);
     }
@@ -100,24 +100,24 @@ internal static class CommandFactory
         {
             case 0:
                 // GP115, GP112
-                gpioArray[0].portName = "PI";
-                gpioArray[0].bitIndex = 4;
-                gpioArray[1].portName = "PB";
-                gpioArray[1].bitIndex = 9;
+                gpioArray[0].PortName = "PI";
+                gpioArray[0].BitIndex = 4;
+                gpioArray[1].PortName = "PB";
+                gpioArray[1].BitIndex = 9;
                 break;
             case 1:
                 // GP2, GP118
-                gpioArray[0].portName = "PE";
-                gpioArray[0].bitIndex = 4;
-                gpioArray[1].portName = "PI";
-                gpioArray[1].bitIndex = 7;
+                gpioArray[0].PortName = "PE";
+                gpioArray[0].BitIndex = 4;
+                gpioArray[1].PortName = "PI";
+                gpioArray[1].BitIndex = 7;
                 break;
             case 2:
                 // GP8, GP5
-                gpioArray[0].portName = "PI";
-                gpioArray[0].bitIndex = 9;
-                gpioArray[1].portName = "PC";
-                gpioArray[1].bitIndex = 13;
+                gpioArray[0].PortName = "PI";
+                gpioArray[0].BitIndex = 9;
+                gpioArray[1].PortName = "PC";
+                gpioArray[1].BitIndex = 13;
                 break;
             default:
                 throw new InvalidRequestBodyException($"Invalid index in {jsonRoot.GetRawText()}");
@@ -125,23 +125,23 @@ internal static class CommandFactory
 
         if(action == "coast")
         {
-            gpioArray[0].level = 0;
-            gpioArray[1].level = 0;
+            gpioArray[0].Level = 0;
+            gpioArray[1].Level = 0;
         }
         else if(action == "reverse")
         {
-            gpioArray[0].level = 0;
-            gpioArray[1].level = 1;
+            gpioArray[0].Level = 0;
+            gpioArray[1].Level = 1;
         }
         else if(action == "forward")
         {
-            gpioArray[0].level = 1;
-            gpioArray[1].level = 0;
+            gpioArray[0].Level = 1;
+            gpioArray[1].Level = 0;
         }
         else if(action == "brake")
         {
-            gpioArray[0].level = 1;
-            gpioArray[1].level = 1;
+            gpioArray[0].Level = 1;
+            gpioArray[1].Level = 1;
         }
         else
         {
@@ -161,59 +161,59 @@ internal static class CommandFactory
         {
             case 0:
                 // PE5
-                gpioArray[0].portName = "PE";
-                gpioArray[0].bitIndex = 5;
+                gpioArray[0].PortName = "PE";
+                gpioArray[0].BitIndex = 5;
                 break;
             case 1:
                 // PF6
-                gpioArray[0].portName = "PF";
-                gpioArray[0].bitIndex = 6;
+                gpioArray[0].PortName = "PF";
+                gpioArray[0].BitIndex = 6;
                 break;
             case 2: 
                 // PF7
-                gpioArray[0].portName = "PF";
-                gpioArray[0].bitIndex = 7;
+                gpioArray[0].PortName = "PF";
+                gpioArray[0].BitIndex = 7;
                 break;
             case 3:
                 // PA6
-                gpioArray[0].portName = "PA";
-                gpioArray[0].bitIndex = 6;
+                gpioArray[0].PortName = "PA";
+                gpioArray[0].BitIndex = 6;
                 break;
             case 4:
                 // PA7
-                gpioArray[0].portName = "PA";
-                gpioArray[0].bitIndex = 7;
+                gpioArray[0].PortName = "PA";
+                gpioArray[0].BitIndex = 7;
                 break;
             case 5:
                 // PH6
-                gpioArray[0].portName = "PH";
-                gpioArray[0].bitIndex = 6;
+                gpioArray[0].PortName = "PH";
+                gpioArray[0].BitIndex = 6;
                 break;
             case 6:
                 // PJ10
-                gpioArray[0].portName = "PJ";
-                gpioArray[0].bitIndex = 11;
+                gpioArray[0].PortName = "PJ";
+                gpioArray[0].BitIndex = 11;
                 break;
             case 7: 
                 // PK1
-                gpioArray[0].portName = "PK";
-                gpioArray[0].bitIndex = 1;
+                gpioArray[0].PortName = "PK";
+                gpioArray[0].BitIndex = 1;
                 break;
             case 8:
                 // PG3
-                gpioArray[0].portName = "PG";
-                gpioArray[0].bitIndex = 3;
+                gpioArray[0].PortName = "PG";
+                gpioArray[0].BitIndex = 3;
                 break;
             case 9:
                 // PG6
-                gpioArray[0].portName = "PG";
-                gpioArray[0].bitIndex = 6;
+                gpioArray[0].PortName = "PG";
+                gpioArray[0].BitIndex = 6;
                 break;
             default:
                 throw new InvalidRequestBodyException($"Wrong stepper index in {jsonRoot.GetRawText()}");
         }
 
-        gpioArray[0].level = highLevel? (byte)1 : (byte)0;
+        gpioArray[0].Level = highLevel? (byte)1 : (byte)0;
 
         return new CmdSetGPIO(gpioArray);
     }

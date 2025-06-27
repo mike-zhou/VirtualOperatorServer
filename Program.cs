@@ -5,6 +5,7 @@ using VirtualOperatorServer.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<BackSocket>();
+builder.Services.AddHostedService<BackService>();
 
 var app = builder.Build();
 
@@ -22,7 +23,7 @@ app.MapGet("/get/{*command}", async(string command, BackSocket backSocket) =>
     CommandAndReply cmd = CommandFactory.BuildGetCommand(command);
     if(cmd.Command.Length > 0)
     {
-        cmd.Reply = await backSocket.SendAndReceive(cmd.Command);
+        cmd.Reply = await backSocket.SendAndReceiveAsync(cmd.Command);
         return Results.Text(cmd.ParseReply(), "text/html");
     }
 
@@ -45,7 +46,7 @@ app.MapPost("/post/{*command}", async(HttpRequest request, string command, BackS
         CommandAndReply cmd = CommandFactory.BuildPostCommand(command, jsonRoot);
         if(cmd.Command.Length > 0)
         {
-            cmd.Reply = await backSocket.SendAndReceive(cmd.Command);
+            cmd.Reply = await backSocket.SendAndReceiveAsync(cmd.Command);
             return Results.Text(cmd.ParseReply(), "text/html");
         }
     }

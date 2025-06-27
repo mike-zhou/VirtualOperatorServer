@@ -5,7 +5,7 @@ namespace VirtualOperatorServer.CommandAndReply
 
 class CmdEcho: CommandAndReply
 {
-    static private byte[] createCommand(JsonElement jsonRoot)
+    static private byte[] CreateCommand(JsonElement jsonRoot)
     {
         var data = jsonRoot.GetProperty("data");
         var bytes = data.EnumerateArray()
@@ -27,39 +27,39 @@ class CmdEcho: CommandAndReply
         return cmd;
     }
 
-    public CmdEcho(JsonElement jsonRoot) : base(createCommand(jsonRoot)) { }
+    public CmdEcho(JsonElement jsonRoot) : base(CreateCommand(jsonRoot)) { }
 
-    public override string ParseReply()
+    public override (bool result, string reason) ParseReply()
     {
         if(reply == null)
         {
-            return "No echo is received";
+            return (false, "No echo is received");
         }
         if(reply.Length < 1)
         {
-            return "Invalid reply";
+            return (false, "Invalid reply");
         }
 
         var cmd = Command;
         if(cmd[0] != reply[0])
         {
-            return $"Not ECHO reply: {reply[0]}";
+            return (false, $"Not ECHO reply: {reply[0]}");
         }
 
         if(cmd.Length != reply.Length)
         {
-            return $"Echo cmd length({cmd.Length}) != reply length({reply.Length})";
+            return (false, $"Echo cmd length({cmd.Length}) != reply length({reply.Length})");
         }
 
         for(int i = 0; i < reply.Length; i++)
         {
             if(cmd[i] != reply[i])
             {
-                return $"Wrong data at {i}";
+                return (false, $"Wrong data at {i}");
             }
         }
 
-        return "success";
+        return (true, "");
     }
 }
 

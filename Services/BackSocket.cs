@@ -59,7 +59,7 @@ namespace VirtualOperatorServer.Services
             }
         }
 
-        public async Task<byte[]> SendAndReceive(byte[] command)
+        public async Task<byte[]> SendAndReceiveAsync(byte[] command)
         {
             if(command.Length > MAX_COMMAND_LENGTH)
             {
