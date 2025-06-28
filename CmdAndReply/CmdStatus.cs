@@ -5,28 +5,14 @@ namespace VirtualOperatorServer.CommandAndReply
     {
         public class CStatus
         {
+            public const int PortCount = 11;
+            public const int EncoderCount = 8;
+
             // gpio ports
-            public ushort portA;
-            public ushort portB;
-            public ushort portC;
-            public ushort portD;
-            public ushort portE;
-            public ushort portF;
-            public ushort portG;
-            public ushort portH;
-            public ushort portI;
-            public ushort portJ;
-            public ushort portK;
+            public ushort[] ports = new ushort[PortCount];
 
             // encoders
-            public ushort encoder0;
-            public ushort encoder1;
-            public ushort encoder2;
-            public ushort encoder3;
-            public ushort encoder4;
-            public ushort encoder5;
-            public ushort encoder6;
-            public ushort encoder7;
+            public ushort[] encoders = new ushort[EncoderCount];
 
             // main loop count
             public uint mainLoopCount;
@@ -74,120 +60,24 @@ namespace VirtualOperatorServer.CommandAndReply
             ushort value;
 
             // gpio ports, 1 - 22
-            b0 = reply[1];
-            b1 = reply[2];
-            value = b1;
-            value = (ushort)((value << 8) + b0);
-            status.portA = value;
-
-            b0 = reply[3];
-            b1 = reply[4];
-            value = b1;
-            value = (ushort)((value << 8) + b0);
-            status.portB = value;
-
-            b0 = reply[5];
-            b1 = reply[6];
-            value = b1;
-            value = (ushort)((value << 8) + b0);
-            status.portC = value;
-
-            b0 = reply[7];
-            b1 = reply[8];
-            value = b1;
-            value = (ushort)((value << 8) + b0);
-            status.portD = value;
-
-            b0 = reply[9];
-            b1 = reply[10];
-            value = b1;
-            value = (ushort)((value << 8) + b0);
-            status.portE = value;
-
-            b0 = reply[11];
-            b1 = reply[12];
-            value = b1;
-            value = (ushort)((value << 8) + b0);
-            status.portF = value;
-
-            b0 = reply[13];
-            b1 = reply[14];
-            value = b1;
-            value = (ushort)((value << 8) + b0);
-            status.portG = value;
-
-            b0 = reply[15];
-            b1 = reply[16];
-            value = b1;
-            value = (ushort)((value << 8) + b0);
-            status.portH = value;
-
-            b0 = reply[17];
-            b1 = reply[18];
-            value = b1;
-            value = (ushort)((value << 8) + b0);
-            status.portI = value;
-
-            b0 = reply[19];
-            b1 = reply[20];
-            value = b1;
-            value = (ushort)((value << 8) + b0);
-            status.portJ = value;
-
-            b0 = reply[21];
-            b1 = reply[22];
-            value = b1;
-            value = (ushort)((value << 8) + b0);
-            status.portK = value;
+            for (int i = 0; i < CStatus.PortCount; i++)
+            {
+                b0 = (byte)reply[i * 2 + 1];
+                b1 = (byte)reply[i * 2 + 2];
+                value = b1;
+                value = (ushort)((value << 8) + b0);
+                status.ports[i] = value;
+            }
 
             // encoders, 23 - 38
-            b0 = reply[23];
-            b1 = reply[24];
-            value = b1;
-            value = (ushort)((value << 8) + b0);
-            status.encoder0 = value;
-
-            b0 = reply[25];
-            b1 = reply[26];
-            value = b1;
-            value = (ushort)((value << 8) + b0);
-            status.encoder1 = value;
-
-            b0 = reply[27];
-            b1 = reply[28];
-            value = b1;
-            value = (ushort)((value << 8) + b0);
-            status.encoder2 = value;
-
-            b0 = reply[29];
-            b1 = reply[30];
-            value = b1;
-            value = (ushort)((value << 8) + b0);
-            status.encoder3 = value;
-
-            b0 = reply[31];
-            b1 = reply[32];
-            value = b1;
-            value = (ushort)((value << 8) + b0);
-            status.encoder4 = value;
-
-            b0 = reply[33];
-            b1 = reply[34];
-            value = b1;
-            value = (ushort)((value << 8) + b0);
-            status.encoder5 = value;
-
-            b0 = reply[35];
-            b1 = reply[36];
-            value = b1;
-            value = (ushort)((value << 8) + b0);
-            status.encoder6 = value;
-
-            b0 = reply[37];
-            b1 = reply[38];
-            value = b1;
-            value = (ushort)((value << 8) + b0);
-            status.encoder7 = value;
+            for (int i = 0; i < CStatus.EncoderCount; i++)
+            {
+                b0 = (byte)reply[i * 2 + 23];
+                b1 = (byte)reply[i * 2 + 24];
+                value = b1;
+                value = (ushort)((value << 8) + b0);
+                status.encoders[i] = value;
+            }
 
             // main loop count, 39 - 42
             b0 = reply[39];
