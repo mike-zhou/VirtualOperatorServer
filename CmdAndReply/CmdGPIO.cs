@@ -283,6 +283,11 @@ namespace VirtualOperatorServer.CommandAndReply
                 throw new InvalidRequestBodyException($"Too many GPIOs ({portCount}) in SetGPIO command");
             }
 
+            if (CmdGetGPIOMode.GpioModes == null)
+            {
+                throw new InvalidRequestBodyException($"GPIO modes are not ready in SetGPIO command");
+            }
+
             byte[] cmd = new byte[1 + portCount * 3];
             cmd[0] = (byte)CommandEnum.SET_GPIO;
 
@@ -291,38 +296,45 @@ namespace VirtualOperatorServer.CommandAndReply
                 var portName = gpioArray[i].PortName;
                 var bitIndex = gpioArray[i].BitIndex;
                 var level = gpioArray[i].Level;
-
+                byte portIndex;
 
                 if (portName == "PA")
-                    cmd[1 + i * 3] = 0;
+                    portIndex = 0;
                 else if (portName == "PB")
-                    cmd[1 + i * 3] = 1;
+                    portIndex = 1;
                 else if (portName == "PC")
-                    cmd[1 + i * 3] = 2;
+                    portIndex = 2;
                 else if (portName == "PD")
-                    cmd[1 + i * 3] = 3;
+                    portIndex = 3;
                 else if (portName == "PE")
-                    cmd[1 + i * 3] = 4;
+                    portIndex = 4;
                 else if (portName == "PF")
-                    cmd[1 + i * 3] = 5;
+                    portIndex = 5;
                 else if (portName == "PG")
-                    cmd[1 + i * 3] = 6;
+                    portIndex = 6;
                 else if (portName == "PH")
-                    cmd[1 + i * 3] = 7;
+                    portIndex = 7;
                 else if (portName == "PI")
-                    cmd[1 + i * 3] = 8;
+                    portIndex = 8;
                 else if (portName == "PJ")
-                    cmd[1 + i * 3] = 9;
+                    portIndex = 9;
                 else if (portName == "PK")
-                    cmd[1 + i * 3] = 10;
-                else 
+                    portIndex = 10;
+                else
                     throw new InvalidRequestBodyException($"Invalid portName '{portName}' in SetGPIO command");
+
+                cmd[1 + i * 3] = portIndex;
                 
-                if(bitIndex > 15)
+                if (bitIndex > 15)
                 {
                     throw new InvalidRequestBodyException($"Invalid bitIndex '{bitIndex}' in SetGPIO command");
                 }
                 cmd[2 + i * 3] = (byte)bitIndex;
+
+                if ((CmdGetGPIOMode.GpioModes[portIndex] & (1 << bitIndex)) == 0)
+                {
+                    throw new InvalidRequestBodyException($"'{portName}': {bitIndex} is read-only in SetGPIO command");
+                }
 
                 if ((level != 0) && (level != 1))
                 {
