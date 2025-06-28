@@ -132,7 +132,7 @@ internal static class ViewFactory
             Debug.Assert(portIndex <= 10);
 
             ushort portValue = status.ports[portIndex];
-            
+
             if ((portValue & (1 << (int)bitIndex)) == 0)
                 return false;
             else
@@ -143,14 +143,14 @@ internal static class ViewFactory
         {
             if (input1)
             {
-                if(input2)
+                if (input2)
                     return "Brake";
                 else
                     return "Forward";
             }
             else
             {
-                if(input2)
+                if (input2)
                     return "Reverse";
                 else
                     return "Coast";
@@ -159,7 +159,7 @@ internal static class ViewFactory
 
         string JsonStr(bool value)
         {
-            if(value)
+            if (value)
                 return "true";
             else
                 return "false";
@@ -181,61 +181,61 @@ internal static class ViewFactory
             string Po5Available;
 
             // PO 0: GP98, GP101
-            if(IsGpioHigh('G', 9)) 
+            if (IsGpioHigh('G', 9))
                 Po0Enabled = "true";
             else
                 Po0Enabled = "false";
-            if(IsGpioHigh('G', 13)) 
+            if (IsGpioHigh('G', 13))
                 Po0Available = "true";
             else
                 Po0Available = "false";
 
             // PO 1: GP96, GP95
-            if(IsGpioHigh('J', 14)) 
+            if (IsGpioHigh('J', 14))
                 Po1Enabled = "true";
             else
                 Po1Enabled = "false";
-            if(IsGpioHigh('J', 13)) 
+            if (IsGpioHigh('J', 13))
                 Po1Available = "true";
             else
                 Po1Available = "false";
 
             // PO 2: GP84, GP92
-            if(IsGpioHigh('C', 11)) 
+            if (IsGpioHigh('C', 11))
                 Po2Enabled = "true";
             else
                 Po2Enabled = "false";
-            if(IsGpioHigh('D', 6)) 
+            if (IsGpioHigh('D', 6))
                 Po2Available = "true";
             else
                 Po2Available = "false";
 
             // PO 3: GP82, GP81
-            if(IsGpioHigh('I', 3)) 
+            if (IsGpioHigh('I', 3))
                 Po3Enabled = "true";
             else
                 Po3Enabled = "false";
-            if(IsGpioHigh('I', 2)) 
+            if (IsGpioHigh('I', 2))
                 Po3Available = "true";
             else
                 Po3Available = "false";
 
             // PO 4: GP79, GP80
-            if(IsGpioHigh('I', 0)) 
+            if (IsGpioHigh('I', 0))
                 Po4Enabled = "true";
             else
                 Po4Enabled = "false";
-            if(IsGpioHigh('I', 1)) 
+            if (IsGpioHigh('I', 1))
                 Po4Available = "true";
             else
                 Po4Available = "false";
 
             // PO 5: GP78, GP77
-            if(IsGpioHigh('H', 15)) 
+            if (IsGpioHigh('H', 15))
                 Po5Enabled = "true";
             else
                 Po5Enabled = "false";
-            if(IsGpioHigh('H', 14)) 
+            if (IsGpioHigh('H', 14))
                 Po5Available = "true";
             else
                 Po5Available = "false";
@@ -269,61 +269,61 @@ internal static class ViewFactory
             string Po11Available;
 
             // PO 6: GP104, GP102
-            if(IsGpioHigh('K', 4)) 
+            if (IsGpioHigh('K', 4))
                 Po6Enabled = "true";
             else
                 Po6Enabled = "false";
-            if(IsGpioHigh('G', 14)) 
+            if (IsGpioHigh('G', 14))
                 Po6Available = "true";
             else
                 Po6Available = "false";
 
             // PO 7: GP107, GP108
-            if(IsGpioHigh('K', 7)) 
+            if (IsGpioHigh('K', 7))
                 Po7Enabled = "true";
             else
                 Po7Enabled = "false";
-            if(IsGpioHigh('G', 15)) 
+            if (IsGpioHigh('G', 15))
                 Po7Available = "true";
             else
                 Po7Available = "false";
 
             // PO 8: GP113, GP110
-            if(IsGpioHigh('E', 0)) 
+            if (IsGpioHigh('E', 0))
                 Po8Enabled = "true";
             else
                 Po8Enabled = "false";
-            if(IsGpioHigh('B', 7)) 
+            if (IsGpioHigh('B', 7))
                 Po8Available = "true";
             else
                 Po8Available = "false";
 
             // PO 9: GP114, GP116
-            if(IsGpioHigh('E', 1)) 
+            if (IsGpioHigh('E', 1))
                 Po9Enabled = "true";
             else
                 Po9Enabled = "false";
-            if(IsGpioHigh('I', 5)) 
+            if (IsGpioHigh('I', 5))
                 Po9Available = "true";
             else
                 Po9Available = "false";
 
             // PO 10: GP1, GP0
-            if(IsGpioHigh('E', 3)) 
+            if (IsGpioHigh('E', 3))
                 Po10Enabled = "true";
             else
                 Po10Enabled = "false";
-            if(IsGpioHigh('E', 2)) 
+            if (IsGpioHigh('E', 2))
                 Po10Available = "true";
             else
                 Po10Available = "false";
 
             // PO 11: GP3, GP6
-            if(IsGpioHigh('E', 6)) 
+            if (IsGpioHigh('E', 6))
                 Po11Enabled = "true";
             else
                 Po11Enabled = "false";
-            if(IsGpioHigh('C', 14)) 
+            if (IsGpioHigh('C', 14))
                 Po11Available = "true";
             else
                 Po11Available = "false";
@@ -347,39 +347,39 @@ internal static class ViewFactory
             string Available;
 
             // GP, GP9
-            if(IsGpioHigh('C', 15)) 
+            if (IsGpioHigh('C', 15))
                 Enabled = "true";
             else
                 Enabled = "false";
-            if(IsGpioHigh('I', 10)) 
+            if (IsGpioHigh('I', 10))
                 Available = "true";
             else
                 Available = "false";
 
             string json = "{\"Enabled\":" + Enabled + ",\"Available\":" + Available + "}";
             return json;
-    }
+        }
 
         string GetBDCMotorStatus()
         {
-            bool bdc0Input1, bdc0Input2, bdc0PowerAvailable; 
+            bool bdc0Input1, bdc0Input2, bdc0PowerAvailable;
             bool bdc1Input1, bdc1Input2, bdc1PowerAvailable;
             bool bdc2Input1, bdc2Input2, bdc2PowerAvailable;
 
             // BDC 0: GP115, GP112, GP117
             bdc0Input1 = IsGpioHigh('I', 4);
             bdc0Input2 = IsGpioHigh('B', 9);
-            bdc0PowerAvailable = IsGpioHigh('I', 6);        
+            bdc0PowerAvailable = IsGpioHigh('I', 6);
 
             // BDC 1: GP2, GP118, GP4
             bdc1Input1 = IsGpioHigh('E', 4);
             bdc1Input2 = IsGpioHigh('I', 7);
-            bdc1PowerAvailable = IsGpioHigh('I', 8);        
+            bdc1PowerAvailable = IsGpioHigh('I', 8);
 
             // BDC 2: GP8, GP5, GP10
             bdc2Input1 = IsGpioHigh('I', 9);
             bdc2Input2 = IsGpioHigh('C', 13);
-            bdc2PowerAvailable = IsGpioHigh('F', 0);        
+            bdc2PowerAvailable = IsGpioHigh('F', 0);
 
             StringBuilder jsonBuilder = new StringBuilder();
             jsonBuilder.Append('{');
@@ -405,64 +405,64 @@ internal static class ViewFactory
             bool stp9Forward, stp9Disable, stp9Alarm, stp9Clock;
 
             // stepper 0: GP52, GP53, GP44, CLK_STP0
-            stp0Forward =   IsGpioHigh('J', 5);
-            stp0Disable =    IsGpioHigh('H', 7);
-            stp0Alarm =     IsGpioHigh('G', 1);
-            stp0Clock =     IsGpioHigh('E', 5);
+            stp0Forward = IsGpioHigh('J', 5);
+            stp0Disable = IsGpioHigh('H', 7);
+            stp0Alarm = IsGpioHigh('G', 1);
+            stp0Clock = IsGpioHigh('E', 5);
 
             // stepper 1: GP54, GP55, GP46, CLK_STP1
-            stp1Forward =   IsGpioHigh('H', 8);
-            stp1Disable =    IsGpioHigh('H', 9);
-            stp1Alarm =     IsGpioHigh('E', 8);
-            stp1Clock =     IsGpioHigh('F', 6);
+            stp1Forward = IsGpioHigh('H', 8);
+            stp1Disable = IsGpioHigh('H', 9);
+            stp1Alarm = IsGpioHigh('E', 8);
+            stp1Clock = IsGpioHigh('F', 6);
 
             // stepper 2: GP56, USB_DEC_1, GP47, CLK_STP2
-            stp2Forward =   IsGpioHigh('H', 12);
-            stp2Disable =    IsGpioHigh('D', 8);
-            stp2Alarm =     IsGpioHigh('E', 10);
-            stp2Clock =     IsGpioHigh('F', 7);
+            stp2Forward = IsGpioHigh('H', 12);
+            stp2Disable = IsGpioHigh('D', 8);
+            stp2Alarm = IsGpioHigh('E', 10);
+            stp2Clock = IsGpioHigh('F', 7);
 
             // stepper 3: GP57, GP58, GP48, CLK_STP3, CLK_STP3
-            stp3Forward =   IsGpioHigh('D', 9);
-            stp3Disable =    IsGpioHigh('D', 10);
-            stp3Alarm =     IsGpioHigh('E', 12);
-            stp3Clock =     IsGpioHigh('A', 6);
+            stp3Forward = IsGpioHigh('D', 9);
+            stp3Disable = IsGpioHigh('D', 10);
+            stp3Alarm = IsGpioHigh('E', 12);
+            stp3Clock = IsGpioHigh('A', 6);
 
             // stepper 4: GP59, GP60, GP49, CLK_STP4
-            stp4Forward =   IsGpioHigh('D', 14);
-            stp4Disable =    IsGpioHigh('D', 15);
-            stp4Alarm =     IsGpioHigh('E', 13);
+            stp4Forward = IsGpioHigh('D', 14);
+            stp4Disable = IsGpioHigh('D', 15);
+            stp4Alarm = IsGpioHigh('E', 13);
             stp4Clock = IsGpioHigh('A', 7);
 
             // stepper 5: GP61, GP62, GP50, CLK_STP5
-            stp5Forward =   IsGpioHigh('J', 7);
-            stp5Disable =    IsGpioHigh('J', 9);
-            stp5Alarm =     IsGpioHigh('E', 14);
-            stp5Clock =     IsGpioHigh('H', 6);
+            stp5Forward = IsGpioHigh('J', 7);
+            stp5Disable = IsGpioHigh('J', 9);
+            stp5Alarm = IsGpioHigh('E', 14);
+            stp5Clock = IsGpioHigh('H', 6);
 
             // stepper 6: GP64, GP65, GP51, GP63
-            stp6Forward =   IsGpioHigh('J', 11);
-            stp6Disable =    IsGpioHigh('K', 0);
-            stp6Alarm =     IsGpioHigh('E', 15);
-            stp6Clock =     IsGpioHigh('J', 10);
+            stp6Forward = IsGpioHigh('J', 11);
+            stp6Disable = IsGpioHigh('K', 0);
+            stp6Alarm = IsGpioHigh('E', 15);
+            stp6Clock = IsGpioHigh('J', 10);
 
             // stepper 7: GP67, GP68, GP86, GP66
-            stp7Forward =   IsGpioHigh('K', 2);
-            stp7Disable =    IsGpioHigh('G', 2);
-            stp7Alarm =     IsGpioHigh('D', 0);
-            stp7Clock =     IsGpioHigh('K', 1);
+            stp7Forward = IsGpioHigh('K', 2);
+            stp7Disable = IsGpioHigh('G', 2);
+            stp7Alarm = IsGpioHigh('D', 0);
+            stp7Clock = IsGpioHigh('K', 1);
 
             // stepper 8: GP70, GP71, GP83, GP69
-            stp8Forward =   IsGpioHigh('G', 4);
-            stp8Disable =    IsGpioHigh('G', 5);
-            stp8Alarm =     IsGpioHigh('C', 10);
-            stp8Clock =     IsGpioHigh('G', 3);
+            stp8Forward = IsGpioHigh('G', 4);
+            stp8Disable = IsGpioHigh('G', 5);
+            stp8Alarm = IsGpioHigh('C', 10);
+            stp8Clock = IsGpioHigh('G', 3);
 
             // stepper 9: GP73, GP74, GP85, GP72
-            stp9Forward =   IsGpioHigh('G', 7);
-            stp9Disable =    IsGpioHigh('G', 8);
-            stp9Alarm =     IsGpioHigh('C', 12);
-            stp9Clock =     IsGpioHigh('G', 6);
+            stp9Forward = IsGpioHigh('G', 7);
+            stp9Disable = IsGpioHigh('G', 8);
+            stp9Alarm = IsGpioHigh('C', 12);
+            stp9Clock = IsGpioHigh('G', 6);
 
             StringBuilder jsonBuilder = new StringBuilder();
             jsonBuilder.Append('{');
@@ -568,6 +568,35 @@ internal static class ViewFactory
 
         var jsonStr = jsonBuilder.ToString();
         return jsonStr;
+    }
+
+    public static string CreateEncoders()
+    {
+        if (!BackService.Connected)
+        {
+            return "";
+        }
+        if (CmdGetStatus.Status == null)
+        {
+            return "";
+        }
+
+        var status = CmdGetStatus.Status;
+
+        StringBuilder jsonBuilder = new StringBuilder();
+        
+        jsonBuilder.Append('{');
+        jsonBuilder.Append($"\"lptim1Counter\":{status.encoders[0]},");
+        jsonBuilder.Append($"\"lptim2Counter\":{status.encoders[1]},");
+        jsonBuilder.Append($"\"htim1Counter\":{status.encoders[2]},");
+        jsonBuilder.Append($"\"htim2Counter\":{status.encoders[3]},");
+        jsonBuilder.Append($"\"htim3Counter\":{status.encoders[4]},");
+        jsonBuilder.Append($"\"htim4Counter\":{status.encoders[5]},");
+        jsonBuilder.Append($"\"htim5Counter\":{status.encoders[6]},");
+        jsonBuilder.Append($"\"htim8Counter\":{status.encoders[7]}");
+        jsonBuilder.Append('}');
+
+        return jsonBuilder.ToString();
     }
 
 }
