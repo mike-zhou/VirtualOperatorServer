@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 using VirtualOperatorServer.CommandAndReply;
 using VirtualOperatorServer.Services;
@@ -9,10 +10,39 @@ builder.Services.AddHostedService<BackService>();
 
 var app = builder.Build();
 
-app.UseDefaultFiles(); 
+app.UseDefaultFiles();
 app.UseStaticFiles();
 
-app.MapGet("/get/{*command}", async(string command, BackSocket backSocket) =>
+string ProcessGetCommand(string command)
+{
+    CommandAndReply cmd = new([]);
+
+    string[] cmdSegments = command.Split('/');
+    if (cmdSegments[0] == "Version")
+    {
+        return ViewFactory.CreateVersion();
+    }
+    else if (cmdSegments[0] == "GPIO")
+    {
+        return ViewFactory.CreateGpioTable();
+    }
+    else if (cmdSegments[0] == "PeripharalStatus")
+    {
+        return ViewFactory.CreatePeripheralStatus();
+    }
+    else if (cmdSegments[0] == "Encoders")
+    {
+        return ViewFactory.CreateEncoders();
+    }
+    else
+    {
+        Console.WriteLine($"Error: unknown GET command: {command}");
+    }
+
+    return "";
+}
+
+app.MapGet("/get/{*command}", (string command) =>
 {
     Console.WriteLine($"/get/{command}");
     if(command.Length == 0)
@@ -20,14 +50,9 @@ app.MapGet("/get/{*command}", async(string command, BackSocket backSocket) =>
         return Results.Text("Empty command", "text/html");
     }
 
-    CommandAndReply cmd = CommandFactory.BuildGetCommand(command);
-    if(cmd.Command.Length > 0)
-    {
-        cmd.Reply = await backSocket.SendAndReceiveAsync(cmd.Command);
-        return Results.Text(cmd.ParseReply(), "text/html");
-    }
+    var reply = ProcessGetCommand(command);
 
-    return Results.Text("", "text/html");
+    return Results.Text(reply, "text/html");
 });
 
 app.MapPost("/post/{*command}", async(HttpRequest request, string command, BackSocket backSocket) =>
@@ -44,10 +69,22 @@ app.MapPost("/post/{*command}", async(HttpRequest request, string command, BackS
     try
     {
         CommandAndReply cmd = CommandFactory.BuildPostCommand(command, jsonRoot);
-        if(cmd.Command.Length > 0)
+        if (cmd.Command.Length > 0)
         {
             cmd.Reply = await backSocket.SendAndReceiveAsync(cmd.Command);
-            return Results.Text(cmd.ParseReply(), "text/html");
+
+            bool success;
+            string reason;
+
+            (success, reason) = cmd.ParseReply();
+            if (success)
+            {
+                return Results.Text("success", "text/html");
+            }
+            else
+            {
+                return Results.Text($"failure: {reason}", "text/html");
+            }
         }
     }
     catch(InvalidRequestBodyException e)

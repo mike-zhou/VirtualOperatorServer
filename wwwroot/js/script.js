@@ -80,7 +80,6 @@ async function getGPIOMode()
 
 async function readGPIO() {
     try {
-        document.getElementById("id_readGpioResult").innerHTML = "";
         data = await get('GPIO');
         document.getElementById("id_readGpioResult").innerHTML = data;
     } catch (error) {
@@ -275,10 +274,6 @@ async function onDocumentClick(event)
         await getVersion();
     else if (elementId == "id_testEcho")
         await testEcho();
-    else if (elementId == 'id_getGpioMode')
-        await getGPIOMode();
-    else if (elementId == 'id_readGpio')
-        await readGPIO();
     else if (elementId.startsWith("id_setGpio_"))
         await setGpio(elementId);
     else if (elementId.startsWith("id_powerOutput_set_"))
@@ -291,6 +286,10 @@ async function onDocumentClick(event)
         await setStepper(elementId);
     else
         alert(`Error: unknown element id: '${elementId}' in onDocumentClick()`);
+
+    // refresh webpage
+    await post('refreshStatus', {});
+    await refreshData();
 }
 
 async function checkPeripharalStatus()
@@ -433,8 +432,6 @@ async function checkPeripharalStatus()
     } catch (error) {
         console.error("Error in checkPeripharalStatus():", error);
     }
-
-    setTimeout(() => { checkPeripharalStatus(); }, 1000);
 }
 
 async function checkEncoders()
@@ -465,11 +462,15 @@ async function checkEncoders()
     catch (error) {
         console.error("Error in checkEncoders():", error);
     }
+}
 
-    setTimeout(() => { checkEncoders(); }, 1000);
+async function refreshData()
+{
+    await readGPIO();
+    await checkPeripharalStatus();
+    await checkEncoders();
 }
 
 document.addEventListener('click', async function(event) { onDocumentClick(event); } );
-setTimeout(() => { checkPeripharalStatus(); }, 1000);
-setTimeout(() => { checkEncoders(); }, 1000);
 
+let intervalId = setInterval(refreshData, 1000);

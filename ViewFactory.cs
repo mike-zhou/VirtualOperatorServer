@@ -6,6 +6,20 @@ using VirtualOperatorServer.Services;
 
 internal static class ViewFactory
 {
+    public static string CreateVersion()
+    {
+        if (!BackService.Connected)
+        {
+            return "";
+        }
+        if (CmdGetVersion.Version == null)
+        {
+            return "";
+        }
+
+        return CmdGetVersion.Version;
+    }
+
     public static string CreateGpioTable(ushort[]? modes, ushort[]? values)
     {
         if (modes == null)

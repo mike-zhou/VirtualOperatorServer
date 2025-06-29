@@ -4,39 +4,6 @@ using VirtualOperatorServer.CommandAndReply;
 internal static class CommandFactory
 {
 
-    public static CommandAndReply BuildGetCommand(string command)
-    {
-        CommandAndReply cmd = new([]);
-
-        string[] cmdSegments = command.Split('/');
-        if (cmdSegments[0] == "Version")
-        {
-            cmd = new CmdGetVersion();
-        }
-        else if (cmdSegments[0] == "GPIOMode")
-        {
-            cmd = new CmdGetGPIOMode();
-        }
-        else if (cmdSegments[0] == "GPIO")
-        {
-            cmd = new CmdReadGPIO();
-        }
-        else if (cmdSegments[0] == "PeripharalStatus")
-        {
-            cmd = new CmdPeripheralStatus();
-        }
-        else if (cmdSegments[0] == "Encoders")
-        {
-            cmd = new CmdReadEncoders();
-        }
-        else
-        {
-            Console.WriteLine($"Error: unknown GET command: {command}");
-        }
-
-        return cmd;
-    }
-    
     static List<string> portNameList = new List<string> { "PA", "PB", "PC", "PD", "PE", "PF", "PG", "PH", "PI", "PJ", "PK" };
 
     static CmdSetGPIO.GPIO CreateGPIO(string gpioStr, bool highLevel)
@@ -339,7 +306,7 @@ internal static class CommandFactory
         string[] cmdSegments = command.Split('/');
         var restApi = cmdSegments[0];
 
-        if(restApi == "Echo")
+        if (restApi == "Echo")
         {
             cmd = new CmdEcho(jsonRoot);
         }
@@ -359,7 +326,7 @@ internal static class CommandFactory
         {
             cmd = BuildSetBdcControl(jsonRoot);
         }
-        else if(restApi == "disableStepper")
+        else if (restApi == "disableStepper")
         {
             cmd = BuildDisableStepper(jsonRoot);
         }
@@ -367,13 +334,17 @@ internal static class CommandFactory
         {
             cmd = BuildForwardStepper(jsonRoot);
         }
-        else if(restApi == "clockStepper")
+        else if (restApi == "clockStepper")
         {
             cmd = BuildClockStepper(jsonRoot);
         }
-        else if(restApi == "runStepper")
+        else if (restApi == "runStepper")
         {
 
+        }
+        else if (restApi == "refreshStatus")
+        {
+            cmd = new CmdGetStatus();
         }
         else
         {
