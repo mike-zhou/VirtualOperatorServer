@@ -34,6 +34,10 @@ string ProcessGetCommand(string command)
     {
         return ViewFactory.CreateEncoders();
     }
+    else if (cmdSegments[0] == "DynamicStatus")
+    {
+        return ViewFactory.CreateDynamicStatus();
+    }
     else
     {
         Console.WriteLine($"Error: unknown GET command: {command}");

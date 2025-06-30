@@ -106,9 +106,9 @@ async function setGpio(id)
 
     payload = [
         {
-            portName : segments[2],
-            bitIndex : parseInt(segments[3], 10),
-            level: newValue
+            PortName : segments[2],
+            BitIndex : parseInt(segments[3], 10),
+            Level: newValue
         }
     ];
 
@@ -267,8 +267,17 @@ async function setStepper(id)
 async function onDocumentClick(event)
 {
     const element = event.target;
-    const targetWithId = element.closest('[id]');
-    const elementId = targetWithId.id;
+    elementId = element.id;
+    if(elementId == "")
+    {
+        if(element.htmlFor)
+        {
+            elementId = element.htmlFor;
+        }
+    }
+
+    if(elementId == "")
+        return;
 
     if (elementId == "id_getVersion")
         await getVersion();
@@ -464,9 +473,21 @@ async function checkEncoders()
     }
 }
 
+async function updateStatus() 
+{
+    try {
+        data = await get('DynamicStatus');
+        document.getElementById("id_dynamic_status").innerHTML = data;
+    } catch (error) {
+        console.error("Error:", error);
+    }
+    
+}
+
 async function refreshData()
 {
     await readGPIO();
+    await updateStatus();
     await checkPeripharalStatus();
     await checkEncoders();
 }

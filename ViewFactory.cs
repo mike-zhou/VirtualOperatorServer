@@ -598,7 +598,7 @@ internal static class ViewFactory
         var status = CmdGetStatus.Status;
 
         StringBuilder jsonBuilder = new StringBuilder();
-        
+
         jsonBuilder.Append('{');
         jsonBuilder.Append($"\"lptim1Counter\":{status.encoders[0]},");
         jsonBuilder.Append($"\"lptim2Counter\":{status.encoders[1]},");
@@ -609,6 +609,48 @@ internal static class ViewFactory
         jsonBuilder.Append($"\"htim5Counter\":{status.encoders[6]},");
         jsonBuilder.Append($"\"htim8Counter\":{status.encoders[7]}");
         jsonBuilder.Append('}');
+
+        return jsonBuilder.ToString();
+    }
+
+    private static uint previousMainLoop = 0;
+
+    public static string CreateDynamicStatus()
+    {
+        if (!BackService.Connected)
+        {
+            return "";
+        }
+        if (CmdGetStatus.Status == null)
+        {
+            return "";
+        }
+
+        var status = CmdGetStatus.Status;
+
+        if (previousMainLoop == 0)
+        {
+            previousMainLoop = status.mainLoopCount;
+            return "";
+        }
+
+        uint loopPerSecond;
+        if (status.mainLoopCount > previousMainLoop)
+        {
+            loopPerSecond = status.mainLoopCount - previousMainLoop;
+        }
+        else
+        {
+            loopPerSecond = (uint.MaxValue - previousMainLoop) + status.mainLoopCount;
+        }
+        previousMainLoop = status.mainLoopCount;
+
+        StringBuilder jsonBuilder = new StringBuilder();
+        jsonBuilder.Append("<table>");
+        jsonBuilder.Append($"<tr><td>Main loop/s: </td><td>{loopPerSecond}</td></tr>");
+        jsonBuilder.Append($"<tr><td>Max flex timer ISR period: </td><td>{status.maxFlexTimerIsrPeriod}</td></tr>");
+        jsonBuilder.Append($"<tr><td>Max fix timer ISR period: </td><td>{status.maxFixTimerIsrPeriod}</td></tr>");
+        jsonBuilder.Append("</table>");
 
         return jsonBuilder.ToString();
     }
