@@ -293,8 +293,6 @@ async function onDocumentClick(event)
         await setBDCControl(elementId);
     else if (elementId.startsWith("id_stepper_"))
         await setStepper(elementId);
-    else
-        alert(`Error: unknown element id: '${elementId}' in onDocumentClick()`);
 
     // refresh webpage
     await post('refreshStatus', {});
@@ -491,6 +489,14 @@ async function refreshData()
     await checkPeripharalStatus();
     await checkEncoders();
 }
+
+async function loadSteppers()
+{
+    let htmlSteppers = await get('HtmlSteppers');
+    document.getElementById("id_steppers").innerHTML = htmlSteppers;
+}
+
+loadSteppers();
 
 document.addEventListener('click', async function(event) { onDocumentClick(event); } );
 

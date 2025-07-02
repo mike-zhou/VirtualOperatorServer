@@ -597,20 +597,20 @@ internal static class ViewFactory
 
         var status = CmdGetStatus.Status;
 
-        StringBuilder jsonBuilder = new StringBuilder();
+        StringBuilder builder = new StringBuilder();
 
-        jsonBuilder.Append('{');
-        jsonBuilder.Append($"\"lptim1Counter\":{status.encoders[0]},");
-        jsonBuilder.Append($"\"lptim2Counter\":{status.encoders[1]},");
-        jsonBuilder.Append($"\"htim1Counter\":{status.encoders[2]},");
-        jsonBuilder.Append($"\"htim2Counter\":{status.encoders[3]},");
-        jsonBuilder.Append($"\"htim3Counter\":{status.encoders[4]},");
-        jsonBuilder.Append($"\"htim4Counter\":{status.encoders[5]},");
-        jsonBuilder.Append($"\"htim5Counter\":{status.encoders[6]},");
-        jsonBuilder.Append($"\"htim8Counter\":{status.encoders[7]}");
-        jsonBuilder.Append('}');
+        builder.Append('{');
+        builder.Append($"\"lptim1Counter\":{status.encoders[0]},");
+        builder.Append($"\"lptim2Counter\":{status.encoders[1]},");
+        builder.Append($"\"htim1Counter\":{status.encoders[2]},");
+        builder.Append($"\"htim2Counter\":{status.encoders[3]},");
+        builder.Append($"\"htim3Counter\":{status.encoders[4]},");
+        builder.Append($"\"htim4Counter\":{status.encoders[5]},");
+        builder.Append($"\"htim5Counter\":{status.encoders[6]},");
+        builder.Append($"\"htim8Counter\":{status.encoders[7]}");
+        builder.Append('}');
 
-        return jsonBuilder.ToString();
+        return builder.ToString();
     }
 
     private static uint previousMainLoop = 0;
@@ -645,14 +645,115 @@ internal static class ViewFactory
         }
         previousMainLoop = status.mainLoopCount;
 
-        StringBuilder jsonBuilder = new StringBuilder();
-        jsonBuilder.Append("<table>");
-        jsonBuilder.Append($"<tr><td>Main loop/s: </td><td>{loopPerSecond}</td></tr>");
-        jsonBuilder.Append($"<tr><td>Max flex timer ISR period: </td><td>{status.maxFlexTimerIsrPeriod}</td></tr>");
-        jsonBuilder.Append($"<tr><td>Max fix timer ISR period: </td><td>{status.maxFixTimerIsrPeriod}</td></tr>");
-        jsonBuilder.Append("</table>");
+        StringBuilder builder = new StringBuilder();
+        builder.Append("<table>");
+        builder.Append($"<tr><td>Main loop/s: </td><td>{loopPerSecond}</td></tr>");
+        builder.Append($"<tr><td>Max flex timer ISR period: </td><td>{status.maxFlexTimerIsrPeriod}</td></tr>");
+        builder.Append($"<tr><td>Max fix timer ISR period: </td><td>{status.maxFixTimerIsrPeriod}</td></tr>");
+        builder.Append("</table>");
 
-        return jsonBuilder.ToString();
+        return builder.ToString();
+    }
+
+    private static string CreateStepperMode(int stepperId)
+    {
+        StringBuilder builder = new StringBuilder();
+
+        builder.Append("<table>");
+        builder.Append("<tr>");
+        {
+            builder.Append("<td>");
+            builder.Append($"<input type=\"radio\" id=\"id_stepper_mode_forced_{stepperId}\" name=\"stepper_mode_{stepperId}\">");
+            builder.Append($"<label for=\"id_stepper_mode_forced_{stepperId}\">Forced</label>");
+            builder.Append("</td>");
+
+            builder.Append("<td>");
+            builder.Append($"Pulse period: <input type=\"number\" id=\"id_stepper_period_force_{stepperId}\" min=\"1\" step=\"1\" max=\"65536\">");
+            builder.Append("</td>");
+        }
+        builder.Append("</tr>");
+        builder.Append("<tr>");
+        {
+            builder.Append("<td>");
+            builder.Append($"<input type=\"radio\" id=\"id_stepper_mode_active_{stepperId}\" name=\"stepper_mode_{stepperId}\">");
+            builder.Append($"<label for=\"id_stepper_mode_active_{stepperId}\">Active</label>");
+            builder.Append("</td>");
+
+            builder.Append("<td>");
+            builder.Append($"Starting pulse period: <input type=\"number\" id=\"id_stepper_period_active_starting_{stepperId}\" min=\"1\" step=\"1\" max=\"65536\">");
+            builder.Append($"Acceleration steps: <input type=\"number\" id=\"id_stepper_period_active_accelerationSteps_{stepperId}\" min=\"1\" step=\"1\" max=\"65536\">");
+            builder.Append("<br>");
+            builder.Append($"Cruising period: <input type=\"number\" id=\"id_stepper_period_active_cruising_{stepperId}\" min=\"1\" step=\"1\" max=\"65536\">");
+            builder.Append("<br>");
+            builder.Append($"Ending pulse period: <input type=\"number\" id=\"id_stepper_period_active_ending_{stepperId}\" min=\"1\" step=\"1\" max=\"65536\">");
+            builder.Append($"Deacceleration steps: <input type=\"number\" id=\"id_stepper_period_active_deaccelerationSteps_{stepperId}\" min=\"1\" step=\"1\" max=\"65536\">");
+            builder.Append("</td>");
+        }
+        builder.Append("</tr>");
+        builder.Append("<tr>");
+        {
+            builder.Append("<td>");
+            builder.Append($"<input type=\"radio\" id=\"id_stepper_mode_passive_{stepperId}\" name=\"stepper_mode_{stepperId}\">");
+            builder.Append($"<label for=\"id_stepper_mode_passive_{stepperId}\">Passive</label>");
+            builder.Append("</td>");
+
+            builder.Append("<td>");
+            builder.Append($"Steps: <input type=\"number\" id=\"id_stepper_period_passive_steps_{stepperId}\" min=\"1\" step=\"1\" max=\"65536\">");
+            builder.Append($"ActiveStepper: <select id=\"id_stepper_period_passive_stepper_{stepperId}\">");
+            for (int i = 0; i < 10; i++)
+            {
+                if (i == stepperId)
+                {
+                    continue;
+                }
+                builder.Append($"<option value=\"{i}\">Stepper {i}</option>");
+            }
+            builder.Append($"<option value=\"255\" selected>Not selected</option>");
+            builder.Append("</select>");
+            builder.Append("</td>");
+        }
+        builder.Append("</tr>");
+        builder.Append("</table>");
+
+        return builder.ToString();
+    }
+
+    public static string CreateSteppers()
+    {
+        StringBuilder builder = new StringBuilder();
+
+        builder.Append("<h1>Stepper Control</h1>");
+        for (int i = 0; i < 10; i++)
+        {
+            builder.Append("<div>");
+            builder.Append($"<h2>Stepper {i}</h2>");
+            builder.Append("<div>");
+            builder.Append("<div>");
+            builder.Append("<div>");
+            builder.Append("<label>Alarm:</label>");
+            builder.Append($"<div class=\"unknown - dot\" id=\"id_stepperAlarm_state_{i}\"></div>");
+            builder.Append("</div>");
+            builder.Append($"<label>Disable<input type=\"checkbox\" id=\"id_stepper_disable_{i}\"></label>");
+            builder.Append($"<label>Forward<input type=\"checkbox\" id=\"id_stepper_forward_{i}\"></label>");
+            builder.Append($"<label>Clock<input type=\"checkbox\" id=\"id_stepper_clock_{i}\"></label>");
+            builder.Append("</div>");
+            builder.Append($"<div>{CreateStepperMode(i)}</div>");
+            builder.Append("<div>");
+            builder.Append($"<button id=\"id_stepper_go_1_{i}\">1</button>");
+            builder.Append($"<button id=\"id_stepper_go_2_{i}\">2</button>");
+            builder.Append($"<button id=\"id_stepper_go_4_{i}\">4</button>");
+            builder.Append($"<button id=\"id_stepper_go_8_{i}\">8</button>");
+            builder.Append($"<button id=\"id_stepper_go_16_{i}\">16</button>");
+            builder.Append($"<button id=\"id_stepper_go_32_{i}\">32</button>");
+            builder.Append($"<button id=\"id_stepper_go_64_{i}\">64</button>");
+            builder.Append($"<input type=\"number\" id=\"id_stepper_steps_{i}\" min=\"1\" step=\"1\" max=\"1024\">");
+            builder.Append($"<button id=\"id_stepper_go_steps_{i}\">go</button>");
+            builder.Append("</div>");
+            builder.Append("</div>");
+            builder.Append("</div>");
+        }
+
+        return builder.ToString();
     }
 
 }

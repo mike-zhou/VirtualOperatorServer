@@ -38,6 +38,10 @@ string ProcessGetCommand(string command)
     {
         return ViewFactory.CreateDynamicStatus();
     }
+    else if (cmdSegments[0] == "HtmlSteppers")
+    {
+        return ViewFactory.CreateSteppers();
+    }
     else
     {
         Console.WriteLine($"Error: unknown GET command: {command}");
