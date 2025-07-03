@@ -258,9 +258,30 @@ async function setStepper(id)
     {
         // do nothing when id_stepper_steps_X is clicked
     }
+    else if(action == "mode")
+    {
+        let mode = segments[3];
+        let stepperId = segments[4];
+
+        let group = document.getElementById(`id_stepper_mode_forced_${stepperId}_group`);
+        let elements = group.querySelectorAll("input, select, label");
+        elements.forEach(el => el.disabled = true);
+
+        group = document.getElementById(`id_stepper_mode_active_${stepperId}_group`);
+        elements = group.querySelectorAll("input, select, label");
+        elements.forEach(el => el.disabled = true);
+
+        group = document.getElementById(`id_stepper_mode_passive_${stepperId}_group`);
+        elements = group.querySelectorAll("input, select, label");
+        elements.forEach(el => el.disabled = true);
+
+        group = document.getElementById(`${id}_group`);
+        elements = group.querySelectorAll("input, select, label");
+        elements.forEach(el => el.disabled = false);
+    }
     else
     {
-        alert(`Unsupported action '{action}' in '{id}'`);
+        alert(`Unsupported action '${action}' in '${id}'`);
     }
 }
 
