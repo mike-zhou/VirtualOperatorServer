@@ -635,7 +635,7 @@ internal static class ViewFactory
         }
 
         uint loopPerSecond;
-        if (status.mainLoopCount > previousMainLoop)
+        if (status.mainLoopCount >= previousMainLoop)
         {
             loopPerSecond = status.mainLoopCount - previousMainLoop;
         }
@@ -668,7 +668,7 @@ internal static class ViewFactory
             builder.Append("</td>");
 
             builder.Append("<td>");
-            builder.Append($"<div id='id_stepper_mode_forced_{stepperId}_group'>");
+            builder.Append($"<div id='id_stepper_group_mode_forced_{stepperId}'>");
             builder.Append($"<label>Pulse period: </label><input type=\"number\" id=\"id_stepper_period_force_{stepperId}\" min=\"1\" step=\"1\" max=\"65536\">");
             builder.Append("</div>");
             builder.Append("</td>");
@@ -682,7 +682,7 @@ internal static class ViewFactory
             builder.Append("</td>");
 
             builder.Append("<td>");
-            builder.Append($"<div id='id_stepper_mode_active_{stepperId}_group'>");
+            builder.Append($"<div id='id_stepper_group_mode_active_{stepperId}'>");
             builder.Append($"<label>Starting pulse period: </label><input type=\"number\" id=\"id_stepper_period_active_starting_{stepperId}\" min=\"1\" step=\"1\" max=\"65536\">");
             builder.Append($"<label>Acceleration steps: </label><input type=\"number\" id=\"id_stepper_period_active_accelerationSteps_{stepperId}\" min=\"1\" step=\"1\" max=\"1024\">");
             builder.Append("<br>");
@@ -702,8 +702,7 @@ internal static class ViewFactory
             builder.Append("</td>");
 
             builder.Append("<td>");
-            builder.Append($"<div id='id_stepper_mode_passive_{stepperId}_group'>");
-            builder.Append($"<label>Steps: </label><input type=\"number\" id=\"id_stepper_period_passive_steps_{stepperId}\" min=\"1\" step=\"1\" max=\"2048\">");
+            builder.Append($"<div id='id_stepper_group_mode_passive_{stepperId}'>");
             builder.Append($"<label>ActiveStepper: </label><select id=\"id_stepper_period_passive_stepper_{stepperId}\">");
             for (int i = 0; i < 10; i++)
             {

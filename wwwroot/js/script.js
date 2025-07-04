@@ -174,10 +174,104 @@ async function setBDCControl(id)
     }
 }
 
+function getStepperMode(stepperId)
+{
+    if(stepperId < 0 || stepperId > 9)
+    {
+        return;
+    }
+
+    if(document.getElementById(`id_stepper_mode_forced_${stepperId}`).checked)
+    {
+        let e = document.getElementById(`id_stepper_period_force_${stepperId}`);
+        if(!e.checkValidity())
+        {
+            return;
+        }
+        let period = Number(e.value);
+
+        let mode = {
+            mode: "forced",
+            period: period
+        }
+
+        return mode;
+    }
+    else if (document.getElementById(`id_stepper_mode_active_${stepperId}`).checked)
+    {
+        let e = document.getElementById(`id_stepper_period_active_starting_${stepperId}`);
+        if(!e.checkValidity())
+        {
+            return;
+        }
+        let startingPeriod = Number(e.value);
+
+        e = document.getElementById(`id_stepper_period_active_accelerationSteps_${stepperId}`);
+        if(!e.checkValidity())
+        {
+            return;
+        }
+        let accelerationSteps = Number(e.value);
+
+        e = document.getElementById(`id_stepper_period_active_cruising_${stepperId}`);
+        if(!e.checkValidity())
+        {
+            return;
+        }
+        let cruisingPeriod = Number(e.value);
+
+        e = document.getElementById(`id_stepper_period_active_ending_${stepperId}`);
+        if(!e.checkValidity())
+        {
+            return;
+        }
+        let endingPeriod = Number(e.value);
+
+        e = document.getElementById(`id_stepper_period_active_deaccelerationSteps_${stepperId}`);
+        if(!e.checkValidity())
+        {
+            return;
+        }
+        let deaccelerationSteps = Number(e.value);
+
+        let mode = {
+            mode: "active",
+            startingPeriod: startingPeriod,
+            accelerationSteps: accelerationSteps,
+            cruisingPeriod: cruisingPeriod,
+            deaccelerationSteps: deaccelerationSteps,
+            endingPeriod: endingPeriod
+        }
+
+        return mode;
+    }
+    else if (document.getElementById(`id_stepper_mode_passive_${stepperId}`).checked)
+    {
+        let e = document.getElementById(`id_stepper_period_passive_stepper_${stepperId}`);
+        let selection = e.value;
+        let index = Number(selection);
+        if(index == NaN)
+        {
+            return;
+        }
+        if(index < 0 || index > 9 || index == stepperId)
+        {
+            return;
+        }
+
+        let mode = {
+            mode: "passive",
+            activeStepperIndex: index
+        }
+
+        return mode;
+    }
+}
+
 async function setStepper(id) 
 {
-    segments = id.split("_");
-    action = segments[2];
+    let segments = id.split("_");
+    let action = segments[2];
 
     if(action == "disable")
     {
@@ -220,7 +314,8 @@ async function setStepper(id)
     }
     else if(action == "go")
     {
-        stepsNum = NaN;
+        let stepperId = parseInt(segments[4], 10);
+        let stepsNum = NaN;
 
         steps = segments[3];
         if(steps == "steps")
@@ -243,9 +338,17 @@ async function setStepper(id)
             return;
         }
 
+        mode = getStepperMode(stepperId);
+        if(!mode)
+        {
+            alert(`Error: invalid mode`);
+            return;
+        }
+
         payload = {
-            index: parseInt(segments[4], 10),
-            clocks: stepsNum
+            index: stepperId,
+            clocks: stepsNum,
+            mode: mode
         }
 
         data = await post('runStepper', payload);
@@ -260,24 +363,32 @@ async function setStepper(id)
     }
     else if(action == "mode")
     {
-        let mode = segments[3];
+        let modeValue = segments[3];
         let stepperId = segments[4];
 
-        let group = document.getElementById(`id_stepper_mode_forced_${stepperId}_group`);
+        let group = document.getElementById(`id_stepper_group_mode_forced_${stepperId}`);
         let elements = group.querySelectorAll("input, select, label");
         elements.forEach(el => el.disabled = true);
 
-        group = document.getElementById(`id_stepper_mode_active_${stepperId}_group`);
+        group = document.getElementById(`id_stepper_group_mode_active_${stepperId}`);
         elements = group.querySelectorAll("input, select, label");
         elements.forEach(el => el.disabled = true);
 
-        group = document.getElementById(`id_stepper_mode_passive_${stepperId}_group`);
+        group = document.getElementById(`id_stepper_group_mode_passive_${stepperId}`);
         elements = group.querySelectorAll("input, select, label");
         elements.forEach(el => el.disabled = true);
 
-        group = document.getElementById(`${id}_group`);
+        group = document.getElementById(`id_stepper_group_mode_${modeValue}_${stepperId}`);
         elements = group.querySelectorAll("input, select, label");
         elements.forEach(el => el.disabled = false);
+    }
+    else if(action == "period")
+    {
+        // do nothing
+    }
+    else if(action == "group")
+    {
+        // do nothing
     }
     else
     {
