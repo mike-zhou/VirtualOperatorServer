@@ -1,4 +1,500 @@
 
+function createGpioTable()
+{
+    let portNameList = [
+        "PA",
+        "PB",
+        "PC",
+        "PD",
+        "PE",
+        "PF",
+        "PG",
+        "PH",
+        "PI",
+        "PJ",
+        "PK"
+    ];
+
+    let html = [];
+
+    html.push("<div>");
+    html.push("<h1>GPIO</h1>")
+    html.push("<table>");
+    for(let portIndex = 0; portIndex < portNameList.length; portIndex++)
+    {
+        let portName = portNameList[portIndex];
+        html.push("<tr>");
+        for(let bitIndex = 0; bitIndex < 16; bitIndex++)
+        {
+            let labelId = `id_setGpio_${portName}_${bitIndex}_label`;
+            let inputId = `id_setGpio_${portName}_${bitIndex}`;
+            
+            html.push("<td>");
+            html.push(`<label id="${labelId}" for="${inputId}"> ${portName}${bitIndex}: </label>`);
+            html.push(`<input type="checkbox" id="${inputId}">`)
+            html.push("</td>");
+        }
+        html.push("</tr>");
+    }
+    html.push("</table>");
+    html.push("</div>");
+
+    return html.join("");
+}
+
+function createPowerTable()
+{
+    let html = [];
+
+    html.push("<div>");
+    html.push("<h1>Power Switch</h1>");
+    html.push("<table>");
+    html.push("<tr>");
+    
+    html.push("<td>");
+    html.push("<div>");
+    html.push("<h2>OPT</h2>");
+    for(let i=0; i<6; i++)
+    {
+        html.push("<div>");
+        html.push(`<label>PO ${i}: </label>`);
+        html.push(`<div class="unknown-dot" id="id_powerOutput_state_${i}"></div>`);
+        html.push(`<label id="id_powerOutput_set_${i}_label" for="id_powerOutput_set_${i}"> Enable </label>`);
+        html.push(`<input type="checkbox" id="id_powerOutput_set_${i}">`);
+        html.push("</div>");
+    }
+    html.push("</div>");
+    html.push("</td>");
+
+    html.push("<td>");
+    html.push("<div>");
+    html.push("<h2>Motor</h2>");
+    for(let i=6; i<12; i++)
+    {
+        html.push("<div>");
+        html.push(`<label>PO ${i}: </label>`);
+        html.push(`<div class="unknown-dot" id="id_powerOutput_state_${i}"></div>`);
+        html.push(`<label id="id_powerOutput_set_${i}_label" for="id_powerOutput_set_${i}"> Enable </label>`);
+        html.push(`<input type="checkbox" id="id_powerOutput_set_${i}">`);
+        html.push("</div>");
+    }
+    html.push("</div>");
+    html.push("</td>");
+
+    html.push("<td>");
+    html.push("<div>");
+    html.push("<h2>BDC</h2>");
+    {
+        html.push("<div>");
+        html.push(`<label>BDC Power: </label>`);
+        html.push(`<div class="unknown-dot" id="id_bdcPowerMain_state"></div>`);
+        html.push(`<label id="id_bdcPowerMain_set_label" for="id_bdcPowerMain_set"> Enable </label>`);
+        html.push(`<input type="checkbox" id="id_bdcPowerMain_set">`);
+        html.push("</div>");
+    }
+    html.push("</div>");
+    html.push("</td>");
+
+    html.push("</tr>");
+    html.push("</table>");
+    html.push("</div>");
+
+    return html.join("");
+}
+
+function createPositionDetectorTable()
+{
+    let html = [];
+
+    html.push("<div>");
+    html.push("<h1>Position Detector</h1>");
+    html.push("<table>");
+    html.push("<tr>");
+
+    // column 0
+    html.push("<td>");
+    html.push("<div>");
+    for(let i=0; i<10; i++)
+    {
+        html.push("<div>");
+        html.push(`<label>PD ${i}: </label>`);
+        html.push(`<div class="unknown-dot" id="id_positionDetector_${i}"></div>`);
+        html.push("</div>");
+    }
+    html.push("</div>");
+    html.push("</td>");
+
+    // column 1
+    html.push("<td>");
+    html.push("<div>");
+    for(let i=10; i<20; i++)
+    {
+        html.push("<div>");
+        html.push(`<label>PD ${i}: </label>`);
+        html.push(`<div class="unknown-dot" id="id_positionDetector_${i}"></div>`);
+        html.push("</div>");
+    }
+    html.push("</div>");
+    html.push("</td>");
+
+    // column 2
+    html.push("<td>");
+    html.push("<div>");
+    for(let i=20; i<30; i++)
+    {
+        html.push("<div>");
+        html.push(`<label>PD ${i}: </label>`);
+        html.push(`<div class="unknown-dot" id="id_positionDetector_${i}"></div>`);
+        html.push("</div>");
+    }
+    html.push("</div>");
+    html.push("</td>");
+
+    // column 3
+    html.push("<td>");
+    html.push("<div>");
+    for(let i=30; i<40; i++)
+    {
+        html.push("<div>");
+        html.push(`<label>PD ${i}: </label>`);
+        html.push(`<div class="unknown-dot" id="id_positionDetector_${i}"></div>`);
+        html.push("</div>");
+    }
+    html.push("</div>");
+    html.push("</td>");
+
+    // column 4
+    html.push("<td>");
+    html.push("<div>");
+    for(let i=40; i<49; i++)
+    {
+        html.push("<div>");
+        html.push(`<label>PD ${i}: </label>`);
+        html.push(`<div class="unknown-dot" id="id_positionDetector_${i}"></div>`);
+        html.push("</div>");
+    }
+    html.push("</div>");
+    html.push("</td>");
+
+    html.push("</tr>");
+    html.push("</table>");
+    html.push("</div>");
+
+    return html.join("");
+}
+
+function createBdcControlTable()
+{
+    let html = [];
+
+    html.push("<div>");
+    html.push("<h1>BDC Control</h1>");
+    html.push("<table>");
+    html.push("<tr>");
+
+    for(let i=0; i<3; i++)
+    {
+        html.push("<td>");
+        html.push("<div>");
+        
+        html.push(`<h2>PO${12 + i} BDC ${i}</h2>`);
+
+        html.push("<div>");
+        html.push(`<label>Power:</label>`);
+        html.push(`<div class="unknown-dot" id="id_bdcPowerOutput_state_${i}"></div>`);
+        html.push("</div>");
+
+        html.push("<div>");
+        html.push(`<label id="id_bdcControl_coast_${i}_label" for="id_bdcControl_coast_${i}">Coast</label>`);
+        html.push(`<input type="radio" id="id_bdcControl_coast_${i}" name="bdc_${i}">`);
+        html.push("</div>");
+
+        html.push("<div>");
+        html.push(`<label id="id_bdcControl_reverse_${i}_label" for="id_bdcControl_reverse_${i}">Reverse</label>`);
+        html.push(`<input type="radio" id="id_bdcControl_reverse_${i}" name="bdc_${i}">`);
+        html.push("</div>");
+
+        html.push("<div>");
+        html.push(`<label id="id_bdcControl_forward_${i}_label" for="id_bdcControl_forward_${i}">Forward</label>`);
+        html.push(`<input type="radio" id="id_bdcControl_forward_${i}" name="bdc_${i}">`);
+        html.push("</div>");
+
+        html.push("<div>");
+        html.push(`<label id="id_bdcControl_brake_${i}_label" for="id_bdcControl_brake_${i}">Brake</label>`);
+        html.push(`<input type="radio" id="id_bdcControl_brake_${i}" name="bdc_${i}">`);
+        html.push("</div>");
+
+        html.push("</div>");
+        html.push("</td>");
+    }
+
+    html.push("</tr>");
+    html.push("</table>");
+    html.push("</div>");
+
+    return html.join("");
+}
+
+function createDynamicStatus()
+{
+    let html = [];
+
+    html.push("<div>");
+    html.push("<h1>Dynamic Status</h1>");
+    html.push("<table>");
+    html.push(`<tr><td>Main loop/s: </td><td><label id="id_dynamicStatus_mainLoop" /></td></tr>`);
+    html.push(`<tr><td>Max flex timer ISR period: </td><td><label id="id_dynamicStatus_flexTimerIsrPeriod" /></td></tr>`);
+    html.push(`<tr><td>Max fix timer ISR period: </td><td><label id="id_dynamicStatus_fixTimerIsrPeriod" /></td></tr>`);
+    html.push("</table>");
+    html.push("</div>");
+
+    return html.join("");
+}
+
+function createEncoderTable()
+{
+    let html = [];
+
+    let encoderAttributesList = [
+        ["ENC0", "TIM2",    "id_encoder_0"],
+        ["ENC1", "LPTIM1",  "id_encoder_1"],
+        ["ENC2", "TIM1",    "id_encoder_2"],
+        ["ENC3", "TIM5",    "id_encoder_3"],
+        ["ENC4", "LPTIM2",  "id_encoder_4"],
+        ["ENC5", "TIM4",    "id_encoder_5"],
+        ["ENC6", "TIM8",    "id_encoder_6"],
+        ["ENC7", "TIM3",    "id_encoder_7"]
+    ];
+
+    html.push("<div>");
+    html.push("<h1>Encoders</h1>");
+    html.push("<div>");
+    html.push("<table>");
+
+    for(let i=0; i<encoderAttributesList.length; i++)
+    {
+        attributes = encoderAttributesList[i];
+
+        html.push(`<tr>`);
+        html.push(`<td>${attributes[0]}</td>`);
+        html.push(`<td>(${attributes[1]}):</td>`);
+        html.push(`<td><label id="${attributes[2]}"></label></td>`);
+        html.push(`</tr>`);
+    }
+
+    html.push("</table>");
+    html.push("</div>");
+    html.push("</div>");
+
+    return html.join("");
+}
+
+function createTimerTable()
+{
+    let html = [];
+    
+    html.push("<div>");
+    html.push("<h1>Timer</h1>");
+
+    for(let i=0; i<6; i++)
+    {
+        html.push("<div>");
+        html.push(`Flex Timer ${i}: prescaler:`);
+        html.push(`<input type="number" id="id_flexTimer_prescaler_${i}" min="1" step="1" max="65536">`);
+        html.push("</div>");
+    }
+
+    html.push("<div>");
+    html.push(`Fixed Timer: prescaler:`);
+    html.push(`<input type="number" id="id_fixTimer_prescaler" min="1" step="1" max="65536">`);
+    html.push("</div>");
+    
+    html.push("</div>");
+
+    return html.join("");   
+}
+
+function createStepperMode(stepperId)
+{
+    let html = [];
+
+    html.push("<div><table>");
+
+    // forced
+    html.push("<tr>");
+    {
+        html.push("<td>");
+        html.push(`<input type="radio" id="id_stepper_mode_forced_${stepperId}" name="stepper_mode_${stepperId}">`);
+        html.push(`<label for="id_stepper_mode_forced_${stepperId}">Forced</label>`)
+        html.push("</td>");
+    }
+    {
+        html.push("<td>");
+        html.push(`<div id='id_stepper_group_mode_forced_${stepperId}'>`);
+        html.push(`<label>Pulse period: </label><input type="number" id="id_stepper_period_force_${stepperId}" min="1" step="1" max="65536">`);
+        html.push("</div>");
+        html.push("</td>");
+    }
+
+    // active
+    html.push("<tr>");
+    {
+        html.push("<td>");
+        html.push(`<input type="radio" id="id_stepper_active_forced_${stepperId}" name="stepper_active_${stepperId}">`);
+        html.push(`<label for="id_stepper_mode_active_${stepperId}">Active</label>`)
+        html.push("</td>");
+    }
+    {
+        html.push("<td>");
+        html.push(`<div id='id_stepper_group_mode_active_${stepperId}'>`);
+        html.push(`<label>Starting pulse period: </label><input type="number" id="id_stepper_period_active_starting_${stepperId}" min="1" step="1" max="65536">`);
+        html.push(`<label>Acceleration steps: </label><input type="numbe\" id="id_stepper_period_active_accelerationSteps_${stepperId}" min="1" step="1" max="1024">`);
+        html.push("<br>");
+        html.push(`<label>Cruising period: </label><input type="number" id="id_stepper_period_active_cruising_${stepperId}" min="1" step="1" max="65536">`);
+        html.push("<br>");
+        html.push(`<label>Ending pulse period: </label><input type="number" id="id_stepper_period_active_ending_${stepperId}" min="1" step="1" max="65536">`);
+        html.push(`<label>Deacceleration steps: </label><input type="number" id="id_stepper_period_active_deaccelerationSteps_${stepperId}" min="1" step="1" max="1024">`);
+        html.push("</div>")
+        html.push("</td>");
+    }
+
+    // passive
+    html.push("<tr>");
+    {
+        html.push("<td>");
+        html.push(`<input type="radio" id="id_stepper_passive_forced_${stepperId}" name="stepper_passive_${stepperId}">`);
+        html.push(`<label for="id_stepper_mode_passive_${stepperId}">Passive</label>`)
+        html.push("</td>");
+    }
+    {
+        html.push("<td>");
+        html.push(`<div id='id_stepper_group_mode_passive_${stepperId}'>`);
+        html.push(`<label>ActiveStepper: </label><select id="id_stepper_period_passive_stepper_${stepperId}">`);
+        for(let i=0; i<10; i++)
+        {
+            if(i == stepperId)
+            {
+                continue;
+            }
+            html.push(`<option value="${i}">Stepper ${i}</option>`);
+        }
+        html.push(`<option value="255" selected>Not selected</option>`);
+        html.push("</div>")
+        html.push("</td>");
+    }
+
+    html.push("</table></div>");
+
+    return html.join("");   
+}
+
+function createStepperTable()
+{
+    let timerOptionList = [
+        "Flex Timer 0",
+        "Flex Timer 1",
+        "Flex Timer 2",
+        "Flex Timer 3",
+        "Flex Timer 4",
+        "Flex Timer 5",
+        "Fixed Timer"
+    ];
+
+    let encoderOptionList = [
+        "ENC0",
+        "ENC1",
+        "ENC2",
+        "ENC3",
+        "ENC4",
+        "ENC5",
+        "ENC6",
+        "ENC7"
+    ];
+
+    let html = [];
+
+    html.push("<div>");
+    html.push("<h1>Stepper</h1>");
+    html.push("<div>");
+    
+    for(let stepperIndex=0; stepperIndex<10; stepperIndex++)
+    {
+        html.push("<div>");
+        html.push(`<h2>Stepper ${stepperIndex}</h2>`);
+        html.push("<div>");
+        {
+            // alarm
+            html.push("<div>");
+            html.push("<label>Alarm:</label>");
+            html.push(`<div class="unknown-dot" id="id_stepperAlarm_state_${stepperIndex}"></div>`);
+            html.push("</div>");
+            // disable, forward, clock
+            html.push("<div><table><tr>");
+            html.push(`<td><label>Disable<input type="checkbox" id="id_stepper_disable_${stepperIndex}"></label></td>`);
+            html.push(`<td><label>Forward<input type="checkbox" id="id_stepper_forward_${stepperIndex}"></label></td>`);
+            html.push(`<td><label>Clock<input type="checkbox" id="id_stepper_clock_${stepperIndex}"></label></td>`);
+            html.push("</tr></table></div>");
+            // timer
+            html.push("<div>");
+            html.push(`<label>Timer: </label><select id=\"id_stepper_timer_${stepperIndex}">`);
+            for(let i=0; i<timerOptionList.length; i++)
+            {
+                html.push(`<option value="${timerOptionList[i]}">${timerOptionList[i]}</option>`);
+            }
+            html.push(`<option value="Not selected" selected>Not selected</option>`);
+            html.push("</select>");
+            html.push("</div>");
+            // encoder
+            html.push("<div>");
+            html.push(`<label>Encoder: </label><select id=\"id_stepper_encoder_${stepperIndex}">`);
+            for(let i=0; i<encoderOptionList.length; i++)
+            {
+                html.push(`<option value="${encoderOptionList[i]}">${encoderOptionList[i]}</option>`);
+            }
+            html.push(`<option value="Not selected" selected>Not selected</option>`);
+            html.push("</select>");
+            html.push("</div>");
+            // mode
+            html.push(createStepperMode(stepperIndex));
+            // buttons
+            html.push("<div>");
+            html.push(`<button id="id_stepper_go_1_${stepperIndex}">1</button>`);
+            html.push(`<button id="id_stepper_go_2_${stepperIndex}">2</button>`);
+            html.push(`<button id="id_stepper_go_4_${stepperIndex}">4</button>`);
+            html.push(`<button id="id_stepper_go_8_${stepperIndex}">8</button>`);
+            html.push(`<button id="id_stepper_go_16_${stepperIndex}">16</button>`);
+            html.push(`<button id="id_stepper_go_32_${stepperIndex}">32</button>`);
+            html.push(`<button id="id_stepper_go_64_${stepperIndex}">64</button>`);
+            html.push(`<input type="number" id="id_stepper_steps_${stepperIndex}" min="1" step="1" max="1024">`);
+            html.push(`<button id="id_stepper_go_steps_${stepperIndex}">go</button>`);
+            html.push("</div>");
+        }
+        html.push("</div>");
+        html.push("</div>");
+    }
+
+    html.push("</div>");
+    html.push("</div>");
+
+    return html.join("");   
+}
+
+function createBody()
+{
+    let html = [];
+
+    html.push(createGpioTable());
+    html.push(createPowerTable());
+    html.push(createPositionDetectorTable());
+    html.push(createBdcControlTable());
+    html.push(createDynamicStatus());
+    html.push(createEncoderTable());
+    html.push(createTimerTable());
+    html.push(createStepperTable());
+
+    return html.join("");   
+}
+
 async function get(endpoint)
 {
     response = await fetch(`/get/${endpoint}`);
@@ -628,8 +1124,8 @@ async function loadSteppers()
     document.getElementById("id_steppers").innerHTML = htmlSteppers;
 }
 
-loadSteppers();
+// loadSteppers();
+// document.addEventListener('click', async function(event) { onDocumentClick(event); } );
+// let intervalId = setInterval(refreshData, 1000);
 
-document.addEventListener('click', async function(event) { onDocumentClick(event); } );
-
-let intervalId = setInterval(refreshData, 1000);
+document.body.innerHTML = createBody();
