@@ -9,15 +9,15 @@ namespace VirtualOperatorServer.CommandAndReply
     {
         public static readonly Stopwatch monoClock = Stopwatch.StartNew();
 
-        public class CStatus
+        public class VirtualOperatorStatus
         {
-            public class TimerData
+            public struct TimerData
             {
                 public byte state;
                 public ushort prescaler;
             }
 
-            public class StepperData
+            public struct StepperData
             {
                 public byte state;
                 public bool isForward;
@@ -57,20 +57,8 @@ namespace VirtualOperatorServer.CommandAndReply
             // max fix timer ISR period
             public ushort maxFixTimerIsrPeriod;
 
-            public TimerData[] timersData;
-            public StepperData[] steppersData;
-
-            public CStatus()
-            {
-                timersData = new TimerData[TimerCount];
-                steppersData = new StepperData[StepperCount];
-
-                for (int i = 0; i < TimerCount; i++)
-                    timersData[i] = new TimerData();
-
-                for (int i = 0; i < StepperCount; i++)
-                    steppersData[i] = new StepperData();
-            }
+            public TimerData[] timersData = new TimerData[TimerCount];
+            public StepperData[] steppersData = new StepperData[StepperCount];
         }
 
         static private byte[] CreateCommand()
@@ -84,7 +72,7 @@ namespace VirtualOperatorServer.CommandAndReply
         public CmdGetStatus() : base(CreateCommand()) { }
 
 
-        public static CStatus? Status { get; private set; } = null;
+        public static VirtualOperatorStatus? Status { get; private set; } = null;
 
         public override (bool result, string reason) ParseReply()
         {
@@ -108,14 +96,14 @@ namespace VirtualOperatorServer.CommandAndReply
                 return (false, $"Error code {reply[1]}");
             }
 
-            var status = new CStatus();
+            var status = new VirtualOperatorStatus();
             byte offset;
             byte b0, b1, b2, b3;
             ushort value;
 
             // gpio ports, 2 - 23
             offset = 2;
-            for (int i = 0; i < CStatus.PortCount; i++)
+            for (int i = 0; i < VirtualOperatorStatus.PortCount; i++)
             {
                 b0 = (byte)reply[offset];
                 b1 = (byte)reply[offset + 1];
@@ -127,7 +115,7 @@ namespace VirtualOperatorServer.CommandAndReply
 
             // encoders, 24 - 39
             offset = 24;
-            for (int i = 0; i < CStatus.EncoderCount; i++)
+            for (int i = 0; i < VirtualOperatorStatus.EncoderCount; i++)
             {
                 b0 = (byte)reply[offset];
                 b1 = (byte)reply[offset + 1];
@@ -166,7 +154,7 @@ namespace VirtualOperatorServer.CommandAndReply
 
             // timer data, 48 - 68
             offset = 48;
-            for (int i = 0; i < CStatus.TimerCount; i++)
+            for (int i = 0; i < VirtualOperatorStatus.TimerCount; i++)
             {
                 value = reply[offset + 2];
                 value <<= 8;
@@ -180,7 +168,7 @@ namespace VirtualOperatorServer.CommandAndReply
 
             // stepper data, 69 - 188
             offset = 69;
-            for (int i = 0; i < CStatus.StepperCount; i++)
+            for (int i = 0; i < VirtualOperatorStatus.StepperCount; i++)
             {
                 status.steppersData[i].state = reply[offset];
 
