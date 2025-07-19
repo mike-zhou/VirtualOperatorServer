@@ -5,62 +5,62 @@ using System.Diagnostics;
 
 namespace VirtualOperatorServer.CommandAndReply
 {
-    class CmdGetStatus : CommandAndReply
+    public class VirtualOperatorStatus
     {
-        public static readonly Stopwatch monoClock = Stopwatch.StartNew();
+        static readonly Stopwatch monoClock = Stopwatch.StartNew();
 
-        public class VirtualOperatorStatus
+        public struct TimerData
         {
-            public struct TimerData
-            {
-                public byte state;
-                public ushort prescaler;
-            }
-
-            public struct StepperData
-            {
-                public byte state;
-                public bool isForward;
-                public bool isEnabled;
-                public bool endBoundaryTouched;
-                public bool homeBoundaryTouched;
-                public bool isEnableHigh;
-                public bool isForwardHigh;
-                public bool isRisingEdgeDriven;
-                public bool isPassiveStepsPopulated;
-                public bool isRampdownPopulated;
-                public bool isCruisePopulated;
-                public bool isRampupPopulated;
-                public uint offset;
-                public uint encoderOffset;
-                public byte maxEncoderOffsetError;
-            }
-
-            public TimeSpan timeSpan = monoClock.Elapsed;
-            public const int PortCount = 11;
-            public const int EncoderCount = 8;
-            public const int TimerCount = 7;
-            public const int StepperCount = 10;
-
-            // gpio ports
-            public ushort[] ports = new ushort[PortCount];
-
-            // encoders
-            public ushort[] encoders = new ushort[EncoderCount];
-
-            // main loop count
-            public uint mainLoopCount;
-
-            // max flex timer ISR period
-            public ushort maxFlexTimerIsrPeriod;
-
-            // max fix timer ISR period
-            public ushort maxFixTimerIsrPeriod;
-
-            public TimerData[] timersData = new TimerData[TimerCount];
-            public StepperData[] steppersData = new StepperData[StepperCount];
+            public byte state;
+            public ushort prescaler;
         }
 
+        public struct StepperData
+        {
+            public byte state;
+            public bool isForward;
+            public bool isEnabled;
+            public bool endBoundaryTouched;
+            public bool homeBoundaryTouched;
+            public bool isEnableHigh;
+            public bool isForwardHigh;
+            public bool isRisingEdgeDriven;
+            public bool isPassiveStepsPopulated;
+            public bool isRampdownPopulated;
+            public bool isCruisePopulated;
+            public bool isRampupPopulated;
+            public uint offset;
+            public uint encoderOffset;
+            public byte maxEncoderOffsetError;
+        }
+
+        public TimeSpan timeSpan = monoClock.Elapsed;
+        public const int PortCount = 11;
+        public const int EncoderCount = 8;
+        public const int TimerCount = 7;
+        public const int StepperCount = 10;
+
+        // gpio ports
+        public ushort[] ports = new ushort[PortCount];
+
+        // encoders
+        public ushort[] encoders = new ushort[EncoderCount];
+
+        // main loop count
+        public uint mainLoopCount;
+
+        // max flex timer ISR period
+        public ushort maxFlexTimerIsrPeriod;
+
+        // max fix timer ISR period
+        public ushort maxFixTimerIsrPeriod;
+
+        public TimerData[] timersData = new TimerData[TimerCount];
+        public StepperData[] steppersData = new StepperData[StepperCount];
+    }
+
+    class CmdGetStatus : CommandAndReply
+    {
         static private byte[] CreateCommand()
         {
             byte[] cmd = new byte[1];
@@ -210,7 +210,7 @@ namespace VirtualOperatorServer.CommandAndReply
                 offset += 12;
             }
 
-            Status = status;
+            Status = status; // update status
             return (true, "");
         }
     }
