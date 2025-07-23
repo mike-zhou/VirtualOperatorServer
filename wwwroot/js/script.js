@@ -1102,8 +1102,7 @@ async function checkEncoders()
 async function updateStatus() 
 {
     try {
-        data = await get('DynamicStatus');
-        document.getElementById("id_dynamic_status").innerHTML = data;
+        data = await get('Status');
     } catch (error) {
         console.error("Error:", error);
     }
@@ -1112,10 +1111,7 @@ async function updateStatus()
 
 async function refreshData()
 {
-    await readGPIO();
     await updateStatus();
-    await checkPeripharalStatus();
-    await checkEncoders();
 }
 
 async function loadSteppers()
@@ -1126,6 +1122,6 @@ async function loadSteppers()
 
 // loadSteppers();
 // document.addEventListener('click', async function(event) { onDocumentClick(event); } );
-// let intervalId = setInterval(refreshData, 1000);
+let intervalId = setInterval(refreshData, 1000);
 
 document.body.innerHTML = createBody();

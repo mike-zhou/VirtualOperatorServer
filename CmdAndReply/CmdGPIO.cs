@@ -8,6 +8,7 @@ namespace VirtualOperatorServer.CommandAndReply
 
     class CmdGetGPIOMode : CommandAndReply
     {
+        public const int PORT_COUNT = 11;
         public static ushort[]? GpioModes { get; private set; } = null;
         
         static private byte[] CreateCommand()
@@ -42,7 +43,7 @@ namespace VirtualOperatorServer.CommandAndReply
             ushort value;
             int i;
 
-            var modes = new ushort[11];
+            var modes = new ushort[PORT_COUNT];
 
             i = 1;
             value = reply[i + 1];

@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Text.Json;
 using VirtualOperatorServer.CommandAndReply;
+using VirtualOperatorServer.Facade;
 using VirtualOperatorServer.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -41,6 +42,10 @@ string ProcessGetCommand(string command)
     else if (cmdSegments[0] == "HtmlSteppers")
     {
         return ViewFactory.CreateSteppers();
+    }
+    else if (cmdSegments[0] == "Status")
+    {
+        return StatusFacade.GetStatusJsonString();
     }
     else
     {
