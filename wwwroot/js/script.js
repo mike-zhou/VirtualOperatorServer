@@ -1221,6 +1221,15 @@ function updateDynamicStatus(status)
         String(status.dynamicStatus.maxFixTimerIsrPeriod);
 }
 
+function updateEncoder(status)
+{
+    for(let i=0; i<status.encoders.length; i++)
+    {
+        document.getElementById(`id_encoder_${i}`).textContent = 
+            String(status.encoders[i].count);
+    }
+}
+
 async function updateUI()
 {
     let exception = false;
@@ -1255,6 +1264,7 @@ async function updateUI()
     updatePositionDetector(status);
     updateBdcControl(status);
     updateDynamicStatus(status);
+    updateEncoder(status);
 }
 
 // document.addEventListener('click', async function(event) { onDocumentClick(event); } );
