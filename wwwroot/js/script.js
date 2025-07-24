@@ -1170,6 +1170,45 @@ function updatePositionDetector(status)
     }
 }
 
+function updateBdcControl(status)
+{
+    for(let i=0; i<status.bdcControls.length; i++)
+    {
+        let powerStateId = `id_bdcPowerOutput_state_${i}`;
+        let coastId = `id_bdcControl_coast_${i}`;
+        let reverseId = `id_bdcControl_reverse_${i}`;
+        let forwardId = `id_bdcControl_forward_${i}`;
+        let brakeId = `id_bdcControl_brake_${i}`;
+
+        let powerState = document.getElementById(powerStateId);
+        let coast = document.getElementById(coastId);
+        let reverse = document.getElementById(reverseId);
+        let forward = document.getElementById(forwardId);
+        let brake = document.getElementById(brakeId);
+
+        powerState.className = status.bdcControls[i].isPowerAvailable ? "active-green-dot" : "inactive-green-dot";
+
+        switch(status.bdcControls[i].mode)
+        {
+            case 'COAST':
+                coast.checked = true;
+                break;
+            case 'REVERSE':
+                reverse.checked = true;
+                break;
+            case 'FORWARD':
+                forward.checked = true;
+                break;
+            case 'BRAKE':
+                brake.checked = true;
+                break;
+            default:
+                console.error(`Error: unknown mode of ${i} BDC: `, status.bdcControls[i].mode);
+                break;
+        }
+    }
+}
+
 async function updateUI()
 {
     let exception = false;
@@ -1202,7 +1241,7 @@ async function updateUI()
     updateGpio(status);
     updatePowerOutput(status);
     updatePositionDetector(status);
-
+    updateBdcControl(status);
 }
 
 // document.addEventListener('click', async function(event) { onDocumentClick(event); } );

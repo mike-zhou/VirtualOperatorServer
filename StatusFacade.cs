@@ -1,6 +1,7 @@
 
 using System.Diagnostics;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using VirtualOperatorServer.CommandAndReply;
 
@@ -10,6 +11,11 @@ namespace VirtualOperatorServer.Facade
     public class StatusFacade
     {
         static uint previousMainLoop = 0;
+        static readonly JsonSerializerOptions facadeSerializerOption = new()
+        {
+            Converters = { new JsonStringEnumConverter() },
+            IncludeFields = true
+        };
 
         class Facade
         {
@@ -52,9 +58,16 @@ namespace VirtualOperatorServer.Facade
 
             public struct BdcControl
             {
+                public enum Mode
+                {
+                    COAST = 0,
+                    REVERSE,
+                    FORWARD,
+                    BRAKE
+                }
+
                 public bool isPowerAvailable;
-                public bool isInput0High;
-                public bool isInput1High;
+                public Mode mode;
             }
 
             public struct DynamicStatus
@@ -407,19 +420,69 @@ namespace VirtualOperatorServer.Facade
 
             // BDC Controls
             {
+                bool input0, input1;
+
                 // BDC 0: GP115, GP112, GP117
-                facade.bdcControls[0].isInput0High = IsGpioHigh('I', 4);
-                facade.bdcControls[0].isInput1High = IsGpioHigh('B', 9);
+                input0 = IsGpioHigh('I', 4);
+                input1 = IsGpioHigh('B', 9);
+                if (!input0 && !input1)
+                {
+                    facade.bdcControls[0].mode = Facade.BdcControl.Mode.COAST;
+                }
+                else if (!input0 && input1)
+                {
+                    facade.bdcControls[0].mode = Facade.BdcControl.Mode.REVERSE;
+                }
+                else if (input0 && !input1)
+                {
+                    facade.bdcControls[0].mode = Facade.BdcControl.Mode.FORWARD;
+                }
+                else
+                {
+                    facade.bdcControls[0].mode = Facade.BdcControl.Mode.BRAKE;
+                }
                 facade.bdcControls[0].isPowerAvailable = IsGpioHigh('I', 6);
 
                 // BDC 1: GP2, GP118, GP4
-                facade.bdcControls[1].isInput0High = IsGpioHigh('E', 4);
-                facade.bdcControls[1].isInput1High = IsGpioHigh('I', 7);
+                input0 = IsGpioHigh('E', 4);
+                input1 = IsGpioHigh('I', 7);
+                if (!input0 && !input1)
+                {
+                    facade.bdcControls[1].mode = Facade.BdcControl.Mode.COAST;
+                }
+                else if (!input0 && input1)
+                {
+                    facade.bdcControls[1].mode = Facade.BdcControl.Mode.REVERSE;
+                }
+                else if (input0 && !input1)
+                {
+                    facade.bdcControls[1].mode = Facade.BdcControl.Mode.FORWARD;
+                }
+                else
+                {
+                    facade.bdcControls[1].mode = Facade.BdcControl.Mode.BRAKE;
+                }
                 facade.bdcControls[1].isPowerAvailable = IsGpioHigh('I', 8);
 
                 // BDC 2: GP8, GP5, GP10
-                facade.bdcControls[2].isInput0High = IsGpioHigh('I', 9);
-                facade.bdcControls[2].isInput1High = IsGpioHigh('C', 13);
+                input0 = IsGpioHigh('I', 9);
+                input1 = IsGpioHigh('C', 13);
+                if (!input0 && !input1)
+                {
+                    facade.bdcControls[2].mode = Facade.BdcControl.Mode.COAST;
+                }
+                else if (!input0 && input1)
+                {
+                    facade.bdcControls[2].mode = Facade.BdcControl.Mode.REVERSE;
+                }
+                else if (input0 && !input1)
+                {
+                    facade.bdcControls[2].mode = Facade.BdcControl.Mode.FORWARD;
+                }
+                else
+                {
+                    facade.bdcControls[2].mode = Facade.BdcControl.Mode.BRAKE;
+                }
                 facade.bdcControls[2].isPowerAvailable = IsGpioHigh('F', 0);
             }
 
@@ -557,12 +620,7 @@ namespace VirtualOperatorServer.Facade
                 }
             }
 
-            var options = new JsonSerializerOptions
-            {
-                IncludeFields = true
-            };
-
-            var jsonStr = JsonSerializer.Serialize(facade, options);
+            var jsonStr = JsonSerializer.Serialize(facade, facadeSerializerOption);
             return jsonStr;
         }
 
