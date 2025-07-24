@@ -50,4 +50,18 @@
     margin-right: 10px;
 }
 
+.gpio-ro {
+    color: gray;
+    opacity: 0.6;
+    pointer-events: none;
+    user-select: none;
+}
+
+.gpio-rw {
+    color: initial;
+    opacity: 1;
+    pointer-events: auto;
+    user-select: none;
+    cursor: auto;
+}
 

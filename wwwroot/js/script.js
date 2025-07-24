@@ -483,6 +483,11 @@ function createBody()
 {
     let html = [];
 
+    html.push(`<div>`);
+    html.push("<h1>Version</h1>");
+    html.push(`<label id="id_version"></label>`);
+    html.push(`</div>`)
+
     html.push(createGpioTable());
     html.push(createPowerTable());
     html.push(createPositionDetectorTable());
@@ -924,7 +929,7 @@ async function onDocumentClick(event)
 
     // refresh webpage
     await post('refreshStatus', {});
-    await refreshData();
+    await updateUI();
 }
 
 async function checkPeripharalStatus()
@@ -1099,29 +1104,90 @@ async function checkEncoders()
     }
 }
 
-async function updateStatus() 
+function updateGpio(status)
 {
+    let ports = status.gpioPorts;
+
+    for(let portIndex = 0; portIndex < ports.length; portIndex++)
+    {
+        let port = ports[portIndex];
+        let portName = "P" + String.fromCharCode('A'.charCodeAt(0) + portIndex);
+        
+        for(let bitIndex = 0; bitIndex < port.pins.length; bitIndex++)
+        {
+            let pin = port.pins[bitIndex];
+            let labelId = `id_setGpio_${portName}_${bitIndex}_label`;
+            let inputId = `id_setGpio_${portName}_${bitIndex}`;
+            let label = document.getElementById(labelId);
+            let input = document.getElementById(inputId);
+
+            input.checked = pin.isHigh;
+
+            label.className = pin.isWritable? "gpio-rw" : "gpio-ro";
+            input.disabled = pin.isWritable? false : true;
+        }
+    }
+}
+
+function updatePowerOutput(status)
+{
+    let state;
+    let checkbox;
+
+    for(let i=0; i<status.powerOutputs.length; i++)
+    {
+        let stateId = `id_powerOutput_state_${i}`;
+        let checkboxId = `id_powerOutput_set_${i}`;
+
+        state = document.getElementById(stateId);
+        checkbox = document.getElementById(checkboxId);
+
+        state.className = status.powerOutputs[i].isOutputDetected ? "active-green-dot" : "inactive-green-dot";
+        checkbox.checked = status.powerOutputs[i].isEnabled;
+    }
+
+    state = document.getElementById("id_bdcPowerMain_state");
+    checkbox = document.getElementById("id_bdcPowerMain_set");
+    
+    state.className = status.bdcPowerOutput.isOutputDetected ? "active-green-dot" : "inactive-green-dot";
+    checkbox.checked = status.bdcPowerOutput.isEnabled;
+}
+
+async function updateUI()
+{
+    let exception = false;
+    let data;
+
     try {
         data = await get('Status');
     } catch (error) {
+        exception = true;            
         console.error("Error:", error);
     }
-    
+
+    if(exception) {
+        return;
+    }
+
+    let status;
+    try {
+        status = JSON.parse(data);
+    } catch (e) {
+        exception = true;
+        console.error("Error: failed to parse status: ", e);
+    }    
+    if(exception) {
+        return;
+    }
+
+    document.getElementById("id_version").textContent = status.virtualOperatorVersion;
+
+    updateGpio(status);
+    updatePowerOutput(status);
+
 }
 
-async function refreshData()
-{
-    await updateStatus();
-}
-
-async function loadSteppers()
-{
-    let htmlSteppers = await get('HtmlSteppers');
-    document.getElementById("id_steppers").innerHTML = htmlSteppers;
-}
-
-// loadSteppers();
 // document.addEventListener('click', async function(event) { onDocumentClick(event); } );
-let intervalId = setInterval(refreshData, 1000);
+let intervalId = setInterval(updateUI, 1000);
 
 document.body.innerHTML = createBody();
