@@ -1148,9 +1148,26 @@ function updatePowerOutput(status)
 
     state = document.getElementById("id_bdcPowerMain_state");
     checkbox = document.getElementById("id_bdcPowerMain_set");
-    
+
     state.className = status.bdcPowerOutput.isOutputDetected ? "active-green-dot" : "inactive-green-dot";
     checkbox.checked = status.bdcPowerOutput.isEnabled;
+}
+
+function updatePositionDetector(status)
+{
+    for(let i=0; i<status.positionDetectors.length; i++)
+    {
+        let state = document.getElementById(`id_positionDetector_${i}`);
+        
+        if(i < 20)
+        {
+            state.className = status.positionDetectors[i].isDetected ? "active-red-dot" : "inactive-red-dot";
+        }
+        else
+        {
+            state.className = status.positionDetectors[i].isDetected ? "active-green-dot" : "inactive-green-dot";
+        }
+    }
 }
 
 async function updateUI()
@@ -1184,6 +1201,7 @@ async function updateUI()
 
     updateGpio(status);
     updatePowerOutput(status);
+    updatePositionDetector(status);
 
 }
 
