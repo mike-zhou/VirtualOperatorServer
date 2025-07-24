@@ -1209,6 +1209,18 @@ function updateBdcControl(status)
     }
 }
 
+function updateDynamicStatus(status)
+{
+    document.getElementById("id_dynamicStatus_mainLoop").textContent = 
+        String(status.dynamicStatus.mainLoopPerSecond);
+    
+    document.getElementById("id_dynamicStatus_flexTimerIsrPeriod").textContent = 
+        String(status.dynamicStatus.maxFlexTimerIsrPeriod);
+
+    document.getElementById("id_dynamicStatus_fixTimerIsrPeriod").textContent = 
+        String(status.dynamicStatus.maxFixTimerIsrPeriod);
+}
+
 async function updateUI()
 {
     let exception = false;
@@ -1242,6 +1254,7 @@ async function updateUI()
     updatePowerOutput(status);
     updatePositionDetector(status);
     updateBdcControl(status);
+    updateDynamicStatus(status);
 }
 
 // document.addEventListener('click', async function(event) { onDocumentClick(event); } );
