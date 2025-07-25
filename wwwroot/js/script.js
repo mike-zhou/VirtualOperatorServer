@@ -311,7 +311,7 @@ function createTimerTable()
     for(let i=0; i<6; i++)
     {
         html.push("<tr>");
-        html.push(`<td>Flex Timer ${i}:</td>`);
+        html.push(`<td>FLEX_TIMER_${i}:</td>`);
         html.push(`<td><label id='id_flexTimer_state_${i}'></label></td>`);
         html.push(`<td><label id="id_flexTimer_prescaler_value_${i}"></label></td>`);
         html.push(`<td><input type="number" id="id_flexTimer_prescaler_config_${i}" min="1" step="1" max="65536"></td>`);
@@ -320,7 +320,7 @@ function createTimerTable()
     }
 
     html.push("<tr>");
-    html.push(`<td>Fixed Timer:</td>`);
+    html.push(`<td>FIX_TIMER:</td>`);
     html.push(`<td><label id='id_fixTimer_state'></label></td>`);
     html.push(`<td><label id="id_fixTimer_prescaler_value"></label></td>`);
     html.push(`<td><input type="number" id="id_fixTimer_prescaler_config" min="1" step="1" max="65536"></td>`);
@@ -334,7 +334,7 @@ function createTimerTable()
     return html.join("");   
 }
 
-function createStepperMode(stepperId)
+function createStepperMode(stepperIndex)
 {
     let html = [];
 
@@ -344,14 +344,14 @@ function createStepperMode(stepperId)
     html.push("<tr>");
     {
         html.push("<td>");
-        html.push(`<input type="radio" id="id_stepper_mode_forced_${stepperId}" name="stepper_mode_${stepperId}">`);
-        html.push(`<label for="id_stepper_mode_forced_${stepperId}">Forced</label>`);
+        html.push(`<input type="radio" id="id_stepper_mode_forced_${stepperIndex}" name="stepper_mode_${stepperIndex}">`);
+        html.push(`<label for="id_stepper_mode_forced_${stepperIndex}">Forced</label>`);
         html.push("</td>");
     }
     {
         html.push("<td>");
-        html.push(`<div id='id_stepper_group_mode_forced_${stepperId}'>`);
-        html.push(`<label>Pulse period: </label><input type="number" id="id_stepper_period_force_${stepperId}" min="1" step="1" max="65536">`);
+        html.push(`<div id='id_stepper_group_forced_${stepperIndex}'>`);
+        html.push(`<label>Pulse period: </label><input type="number" id="id_stepper_period_forced_${stepperIndex}" min="1" step="1" max="65536">`);
         html.push("</div>");
         html.push("</td>");
     }
@@ -360,20 +360,20 @@ function createStepperMode(stepperId)
     html.push("<tr>");
     {
         html.push("<td>");
-        html.push(`<input type="radio" id="id_stepper_active_forced_${stepperId}" name="stepper_active_${stepperId}">`);
-        html.push(`<label for="id_stepper_mode_active_${stepperId}">Active</label>`);
+        html.push(`<input type="radio" id="id_stepper_mode_active_${stepperIndex}" name="stepper_mode_${stepperIndex}">`);
+        html.push(`<label for="id_stepper_mode_active_${stepperIndex}">Active</label>`);
         html.push("</td>");
     }
     {
         html.push("<td>");
-        html.push(`<div id='id_stepper_group_mode_active_${stepperId}'>`);
-        html.push(`<label>Starting pulse period: </label><input type="number" id="id_stepper_period_active_starting_${stepperId}" min="1" step="1" max="65536">`);
-        html.push(`<label>Acceleration steps: </label><input type="numbe\" id="id_stepper_period_active_accelerationSteps_${stepperId}" min="1" step="1" max="1024">`);
+        html.push(`<div id='id_stepper_group_active_${stepperIndex}'>`);
+        html.push(`<label>Starting pulse period: </label><input type="number" id="id_stepper_period_active_starting_${stepperIndex}" min="1" step="1" max="65536">`);
+        html.push(`<label>Acceleration steps: </label><input type="numbe\" id="id_stepper_period_active_accelerationSteps_${stepperIndex}" min="1" step="1" max="1024">`);
         html.push("<br>");
-        html.push(`<label>Cruising period: </label><input type="number" id="id_stepper_period_active_cruising_${stepperId}" min="1" step="1" max="65536">`);
+        html.push(`<label>Cruising period: </label><input type="number" id="id_stepper_period_active_cruising_${stepperIndex}" min="1" step="1" max="65536">`);
         html.push("<br>");
-        html.push(`<label>Ending pulse period: </label><input type="number" id="id_stepper_period_active_ending_${stepperId}" min="1" step="1" max="65536">`);
-        html.push(`<label>Deacceleration steps: </label><input type="number" id="id_stepper_period_active_deaccelerationSteps_${stepperId}" min="1" step="1" max="1024">`);
+        html.push(`<label>Ending pulse period: </label><input type="number" id="id_stepper_period_active_ending_${stepperIndex}" min="1" step="1" max="65536">`);
+        html.push(`<label>Deacceleration steps: </label><input type="number" id="id_stepper_period_active_deaccelerationSteps_${stepperIndex}" min="1" step="1" max="1024">`);
         html.push("</div>")
         html.push("</td>");
     }
@@ -382,17 +382,17 @@ function createStepperMode(stepperId)
     html.push("<tr>");
     {
         html.push("<td>");
-        html.push(`<input type="radio" id="id_stepper_passive_forced_${stepperId}" name="stepper_passive_${stepperId}">`);
-        html.push(`<label for="id_stepper_mode_passive_${stepperId}">Passive</label>`);
+        html.push(`<input type="radio" id="id_stepper_mode_passive_${stepperIndex}" name="stepper_mode_${stepperIndex}">`);
+        html.push(`<label for="id_stepper_mode_passive_${stepperIndex}">Passive</label>`);
         html.push("</td>");
     }
     {
         html.push("<td>");
-        html.push(`<div id='id_stepper_group_mode_passive_${stepperId}'>`);
-        html.push(`<label>ActiveStepper: </label><select id="id_stepper_period_passive_stepper_${stepperId}">`);
+        html.push(`<div id='id_stepper_group_passive_${stepperIndex}'>`);
+        html.push(`<label>ActiveStepper: </label><select id="id_stepper_passive_activeStepper_${stepperIndex}">`);
         for(let i=0; i<10; i++)
         {
-            if(i == stepperId)
+            if(i == stepperIndex)
             {
                 continue;
             }
@@ -411,13 +411,14 @@ function createStepperMode(stepperId)
 function createStepperTable()
 {
     let timerOptionList = [
-        "Flex Timer 0",
-        "Flex Timer 1",
-        "Flex Timer 2",
-        "Flex Timer 3",
-        "Flex Timer 4",
-        "Flex Timer 5",
-        "Fixed Timer"
+        "FLEX_TIMER_0",
+        "FLEX_TIMER_1",
+        "FLEX_TIMER_2",
+        "FLEX_TIMER_3",
+        "FLEX_TIMER_4",
+        "FLEX_TIMER_5",
+        "FIX_TIMER",
+        "NOT_SELECTED"
     ];
 
     let encoderOptionList = [
@@ -428,7 +429,8 @@ function createStepperTable()
         "ENC4",
         "ENC5",
         "ENC6",
-        "ENC7"
+        "ENC7",
+        "NOT_SELECTED"
     ];
 
     let html = [];
@@ -456,22 +458,22 @@ function createStepperTable()
             html.push("</tr></table></div>");
             // timer
             html.push("<div>");
-            html.push(`<label>Timer: </label><select id=\"id_stepper_timer_${stepperIndex}">`);
-            for(let i=0; i<timerOptionList.length; i++)
+            html.push(`<label>Timer: </label><select id="id_stepper_timer_${stepperIndex}">`);
+            for(let i=0; i<timerOptionList.length - 1; i++)
             {
                 html.push(`<option value="${timerOptionList[i]}">${timerOptionList[i]}</option>`);
             }
-            html.push(`<option value="Not selected" selected>Not selected</option>`);
+            html.push(`<option value="${timerOptionList.at(-1)}" selected>${timerOptionList.at(-1)}</option>`);
             html.push("</select>");
             html.push("</div>");
             // encoder
             html.push("<div>");
-            html.push(`<label>Encoder: </label><select id=\"id_stepper_encoder_${stepperIndex}">`);
-            for(let i=0; i<encoderOptionList.length; i++)
+            html.push(`<label>Encoder: </label><select id="id_stepper_encoder_${stepperIndex}">`);
+            for(let i=0; i<encoderOptionList.length - 1; i++)
             {
                 html.push(`<option value="${encoderOptionList[i]}">${encoderOptionList[i]}</option>`);
             }
-            html.push(`<option value="Not selected" selected>Not selected</option>`);
+            html.push(`<option value="${encoderOptionList.at(-1)}" selected>${encoderOptionList.at(-1)}</option>`);
             html.push("</select>");
             html.push("</div>");
             // mode
@@ -1268,6 +1270,47 @@ function updateTimer(status)
     document.getElementById("id_fixTimer_prescaler_config").value = status.fixTimer.prescalerConfig;
 }
 
+function updateStepper(status)
+{
+    for(let stepperIndex=0; stepperIndex<status.steppers.length; stepperIndex++)
+    {
+        let alarmId = `id_stepperAlarm_state_${stepperIndex}`;
+        let disableId = `id_stepper_disable_${stepperIndex}`;
+        let forwardId = `id_stepper_forward_${stepperIndex}`;
+        let clockId = `id_stepper_clock_${stepperIndex}`;
+        let timerId = `id_stepper_timer_${stepperIndex}`;
+        let encoderId = `id_stepper_encoder_${stepperIndex}`;
+
+        let forcedModeId = `id_stepper_mode_forced_${stepperIndex}`;
+        let forcedModeGroupId = `id_stepper_group_forced_${stepperIndex}`;
+        let forcedModePeriodId = `id_stepper_period_forced_${stepperIndex}`;
+        
+        let activeModeId = `id_stepper_mode_active_${stepperIndex}`;
+        let activeModeGroupId = `id_stepper_group_active_${stepperIndex}`;
+        let activeModeStartingPeriodId = `id_stepper_period_active_starting_${stepperIndex}`;
+        let activeModeAccelerationStepsId = `id_stepper_period_active_accelerationSteps_${stepperIndex}`;
+        let activeModeCruisePeriodId = `id_stepper_period_active_cruising_${stepperIndex}`;
+        let activeModeEndingPeriodId = `id_stepper_period_active_ending_${stepperIndex}`;
+        let activeModeDeaccelerationStepsId = `id_stepper_period_active_deaccelerationSteps_${stepperIndex}`;
+
+        let passiveModeId = `id_stepper_mode_passive_${stepperIndex}`;
+        let passiveModeGroupId = `id_stepper_group_passive_${stepperIndex}`;
+        let passiveModeActiveStepperId = `id_stepper_passive_activeStepper_${stepperIndex}`;
+
+        let data = status.steppers[stepperIndex];
+
+        document.getElementById(alarmId).className = data.isAlarmTriggered ? "active-red-dot" : "inactive-red-dot";
+        document.getElementById(disableId).checked = data.gpios.isDisableHigh;
+        document.getElementById(forwardId).checked = data.gpios.isForwardHigh;
+        document.getElementById(clockId).checked = data.gpios.isClockHigh;
+        document.getElementById(timerId).value = data.config.timer;
+        document.getElementById(encoderId).value = data.config.encoder;
+
+
+    }
+}
+
+
 async function updateUI()
 {
     let exception = false;
@@ -1304,6 +1347,7 @@ async function updateUI()
     updateDynamicStatus(status);
     updateEncoder(status);
     updateTimer(status);
+    updateStepper(status);
 }
 
 // document.addEventListener('click', async function(event) { onDocumentClick(event); } );

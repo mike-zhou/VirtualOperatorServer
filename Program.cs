@@ -45,7 +45,7 @@ string ProcessGetCommand(string command)
     }
     else if (cmdSegments[0] == "Status")
     {
-        return StatusFacade.GetStatusJsonString();
+        return StatusFacade.CreateStatusJsonString();
     }
     else
     {

@@ -148,7 +148,7 @@ namespace VirtualOperatorServer.Facade
                         FLEX_TIMER_2 = 2,
                         FLEX_TIMER_3 = 3,
                         FLEX_TIMER_4 = 4,
-                        FLIX_TIMER_5 = 5,
+                        FLEX_TIMER_5 = 5,
                         FIX_TIMER = 6,
                         NOT_SELECTED = 255
                     }
@@ -191,21 +191,21 @@ namespace VirtualOperatorServer.Facade
 
                     public struct StepperModeForced
                     {
-                        ushort pulseWidth;
+                        public ushort pulseWidth;
                     }
 
                     public struct StepperModeActive
                     {
-                        ushort startingPulseWidth;
-                        ushort accelerationSteps;
-                        ushort cruisePulseWidth;
-                        ushort deacceleratingSteps;
-                        ushort endingPulseWidth;
+                        public ushort startingPulseWidth;
+                        public ushort accelerationSteps;
+                        public ushort cruisePulseWidth;
+                        public ushort deacceleratingSteps;
+                        public ushort endingPulseWidth;
                     }
 
                     public struct StepperModePassive
                     {
-                        EnumStepper activeStepper;
+                        public EnumStepper activeStepper;
 
                         public StepperModePassive()
                         {
@@ -255,7 +255,7 @@ namespace VirtualOperatorServer.Facade
             }
         }
 
-        public static string GetStatusJsonString()
+        public static string CreateStatusJsonString()
         {
             if (CmdGetVersion.Version == null)
             {
