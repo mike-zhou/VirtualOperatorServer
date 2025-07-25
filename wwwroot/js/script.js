@@ -295,20 +295,40 @@ function createTimerTable()
     
     html.push("<div>");
     html.push("<h1>Timer</h1>");
+    html.push("<table>")
 
+    html.push("<thead>");
+    html.push("<tr>");
+    html.push("<th>Name</th>");
+    html.push("<th>State</th>");
+    html.push("<th>Value</th>");
+    html.push("<th>Config</th>");
+    html.push("<th></th>");
+    html.push("</tr>");
+    html.push("</thead>");
+
+    html.push("<tbody>");
     for(let i=0; i<6; i++)
     {
-        html.push("<div>");
-        html.push(`Flex Timer ${i}: prescaler:`);
-        html.push(`<input type="number" id="id_flexTimer_prescaler_${i}" min="1" step="1" max="65536">`);
-        html.push("</div>");
+        html.push("<tr>");
+        html.push(`<td>Flex Timer ${i}:</td>`);
+        html.push(`<td><label id='id_flexTimer_state_${i}'></label></td>`);
+        html.push(`<td><label id="id_flexTimer_prescaler_value_${i}"></label></td>`);
+        html.push(`<td><input type="number" id="id_flexTimer_prescaler_config_${i}" min="1" step="1" max="65536"></td>`);
+        html.push(`<td><input type="button" id="id_flexTimer_prescaler_set_${i}" value="Set"></td>`);
+        html.push("</tr>");
     }
 
-    html.push("<div>");
-    html.push(`Fixed Timer: prescaler:`);
-    html.push(`<input type="number" id="id_fixTimer_prescaler" min="1" step="1" max="65536">`);
-    html.push("</div>");
+    html.push("<tr>");
+    html.push(`<td>Fixed Timer:</td>`);
+    html.push(`<td><label id='id_fixTimer_state'></label></td>`);
+    html.push(`<td><label id="id_fixTimer_prescaler_value"></label></td>`);
+    html.push(`<td><input type="number" id="id_fixTimer_prescaler_config" min="1" step="1" max="65536"></td>`);
+    html.push(`<td><input type="button" id="id_fixTimer_prescaler_set" value="Set"></td>`);
+    html.push("</tr>");
     
+    html.push("</tbody>");
+    html.push("</table>");
     html.push("</div>");
 
     return html.join("");   
@@ -325,7 +345,7 @@ function createStepperMode(stepperId)
     {
         html.push("<td>");
         html.push(`<input type="radio" id="id_stepper_mode_forced_${stepperId}" name="stepper_mode_${stepperId}">`);
-        html.push(`<label for="id_stepper_mode_forced_${stepperId}">Forced</label>`)
+        html.push(`<label for="id_stepper_mode_forced_${stepperId}">Forced</label>`);
         html.push("</td>");
     }
     {
@@ -341,7 +361,7 @@ function createStepperMode(stepperId)
     {
         html.push("<td>");
         html.push(`<input type="radio" id="id_stepper_active_forced_${stepperId}" name="stepper_active_${stepperId}">`);
-        html.push(`<label for="id_stepper_mode_active_${stepperId}">Active</label>`)
+        html.push(`<label for="id_stepper_mode_active_${stepperId}">Active</label>`);
         html.push("</td>");
     }
     {
@@ -363,7 +383,7 @@ function createStepperMode(stepperId)
     {
         html.push("<td>");
         html.push(`<input type="radio" id="id_stepper_passive_forced_${stepperId}" name="stepper_passive_${stepperId}">`);
-        html.push(`<label for="id_stepper_mode_passive_${stepperId}">Passive</label>`)
+        html.push(`<label for="id_stepper_mode_passive_${stepperId}">Passive</label>`);
         html.push("</td>");
     }
     {
@@ -1230,6 +1250,24 @@ function updateEncoder(status)
     }
 }
 
+function updateTimer(status)
+{
+    for(let i=0; i<status.flexTimers.length; i++)
+    {
+        let stateId = `id_flexTimer_state_${i}`;
+        let valueId = `id_flexTimer_prescaler_value_${i}`;
+        let configId = `id_flexTimer_prescaler_config_${i}`;
+
+        document.getElementById(stateId).textContent = status.flexTimers[i].state;
+        document.getElementById(valueId).textContent = String(status.flexTimers[i].prescaler);
+        document.getElementById(configId).value = status.flexTimers[i].prescalerConfig;
+    }
+
+    document.getElementById("id_fixTimer_state").textContent = status.fixTimer.state;
+    document.getElementById("id_fixTimer_prescaler_value").textContent = String(status.fixTimer.prescaler);
+    document.getElementById("id_fixTimer_prescaler_config").value = status.fixTimer.prescalerConfig;
+}
+
 async function updateUI()
 {
     let exception = false;
@@ -1265,6 +1303,7 @@ async function updateUI()
     updateBdcControl(status);
     updateDynamicStatus(status);
     updateEncoder(status);
+    updateTimer(status);
 }
 
 // document.addEventListener('click', async function(event) { onDocumentClick(event); } );
