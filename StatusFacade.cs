@@ -219,13 +219,6 @@ namespace VirtualOperatorServer.Facade
                     public StepperModeForced forcedModeConfig;
                     public StepperModeActive activeModeConfig;
                     public StepperModePassive passiveModeConfig;
-
-                    public Configuration()
-                    {
-                        timer = EnumTimer.NOT_SELECTED;
-                        encoder = EnumEncoder.NOT_SELECTED;
-                        mode = EnumMode.NOT_SELECTED;
-                    }
                 }
 
                 public bool isAlarmTriggered;
@@ -518,14 +511,19 @@ namespace VirtualOperatorServer.Facade
             // Timers
             Debug.Assert(Facade.FlexTimerCount == (VirtualOperatorStatus.TimerCount - 1), "Different flex timer count between Facade and VirtualOperatorStatus");
             {
+                var configs = VirtualOperatorServer.Configuration.DynamicConfig.TimerConfigs;
+                Debug.Assert(configs.Length == (Facade.FlexTimerCount + 1), "Different timer count between configs and Facade");
+
                 for (int i = 0; i < Facade.FlexTimerCount; i++)
                 {
                     facade.flexTimers[i].state = (Facade.Timer.EnumState)(status.timersData[i].state);
                     facade.flexTimers[i].prescaler = status.timersData[i].prescaler;
+                    facade.flexTimers[i].prescalerConfig = configs[i];
                 }
 
                 facade.fixTimer.state = (Facade.Timer.EnumState)(status.timersData[VirtualOperatorStatus.TimerCount - 1].state);
                 facade.fixTimer.prescaler = status.timersData[VirtualOperatorStatus.TimerCount - 1].prescaler;
+                facade.fixTimer.prescalerConfig = configs[^1];
             }
 
             // Steppers
@@ -617,6 +615,14 @@ namespace VirtualOperatorServer.Facade
                     stepperStatus.maxEncoderOffsetError = data.maxEncoderOffsetError;
 
                     facade.steppers[i].status = stepperStatus;
+                }
+
+                // config
+                var configs = VirtualOperatorServer.Configuration.DynamicConfig.StepperConfigs;
+                Debug.Assert(configs.Length == Facade.StepperCount, "Stepper count difference between configs and facade");
+                for (int i = 0; i < Facade.StepperCount; i++)
+                {
+                    facade.steppers[i].config = configs[i];
                 }
             }
 

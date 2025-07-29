@@ -4,12 +4,12 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using VirtualOperatorServer.Facade;
 
-namespace VirtualOperatorServer.Config
+namespace VirtualOperatorServer.Configuration
 {
 
-    public class Config
+    public class StaticConfig
     {
-        private static readonly Config _instance = new();
+        private static readonly StaticConfig _instance = new();
         private readonly string _stepperConfigFile;
         private readonly string _timerConfigFile;
         static readonly JsonSerializerOptions _serializerOption = new()
@@ -65,7 +65,7 @@ namespace VirtualOperatorServer.Config
                 if (tmpConfigs == null)
                     throw new Exception($"Failed to deserialize '{_timerConfigFile}'");
                 else
-                    TimerPrescalers = tmpConfigs;
+                    TimerConfigs = tmpConfigs;
             }
             catch (FileNotFoundException ex)
             {
@@ -85,7 +85,7 @@ namespace VirtualOperatorServer.Config
         {
             try
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(pathName)!); 
+                Directory.CreateDirectory(Path.GetDirectoryName(pathName)!);
                 File.WriteAllText(pathName, content);
             }
             catch (IOException ex)
@@ -95,10 +95,10 @@ namespace VirtualOperatorServer.Config
             catch (UnauthorizedAccessException ex)
             {
                 Console.WriteLine("Access denied: " + ex.Message);
-            }        
+            }
         }
 
-        private Config()
+        private StaticConfig()
         {
             _stepperConfigFile = Path.Join(Directory.GetCurrentDirectory(), "configs", "stepperConfig.json");
             _timerConfigFile = Path.Join(Directory.GetCurrentDirectory(), "configs", "timerConfig.json");
@@ -107,10 +107,10 @@ namespace VirtualOperatorServer.Config
             LoadTimerConfig();
         }
 
-        public static Config Instance => _instance;
+        public static StaticConfig Instance => _instance;
 
         public StatusFacade.Facade.Stepper.Configuration[] StepperConfigs { get; private set; } = new StatusFacade.Facade.Stepper.Configuration[StatusFacade.Facade.StepperCount];
-        public ushort[] TimerPrescalers { get; private set; } = new ushort[StatusFacade.Facade.FlexTimerCount + 1];
+        public ushort[] TimerConfigs { get; private set; } = new ushort[StatusFacade.Facade.FlexTimerCount + 1];
 
         public void SaveStepperConfigs(in StatusFacade.Facade.Stepper.Configuration[] configs)
         {
@@ -143,20 +143,20 @@ namespace VirtualOperatorServer.Config
 
         public void SaveTimerConfigs(in ushort[] configs)
         {
-            if (configs.Length != TimerPrescalers.Length)
+            if (configs.Length != TimerConfigs.Length)
             {
                 Console.WriteLine("Error: invalid Timer configurations");
                 return;
             }
 
-            TimerPrescalers = configs;
-            string jsonStr = JsonSerializer.Serialize(TimerPrescalers);
+            TimerConfigs = configs;
+            string jsonStr = JsonSerializer.Serialize(TimerConfigs);
             SaveFile(_timerConfigFile, jsonStr);
         }
 
         public void SaveTimerConfig(uint index, ushort config)
         {
-            var configs = TimerPrescalers;
+            var configs = TimerConfigs;
 
             if (index >= configs.Length)
             {
@@ -168,6 +168,12 @@ namespace VirtualOperatorServer.Config
 
             SaveTimerConfigs(configs);
         }
+    }
+
+    public class DynamicConfig
+    {
+        public static StatusFacade.Facade.Stepper.Configuration[] StepperConfigs = StaticConfig.Instance.StepperConfigs;
+        public static ushort[] TimerConfigs = StaticConfig.Instance.TimerConfigs;
     }
 }
 
