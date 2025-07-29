@@ -17,7 +17,7 @@ namespace VirtualOperatorServer.Facade
             IncludeFields = true
         };
 
-        class Facade
+        public class Facade
         {
             public const int GpioPortCount = 11;
             public const int PowerOutputCount = 12;
