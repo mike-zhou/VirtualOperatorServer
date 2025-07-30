@@ -213,6 +213,11 @@ namespace VirtualOperatorServer.Facade
                         }
                     }
 
+                    public bool isEnableHigh;
+                    public bool isForwardHigh;
+                    public bool isRisingEdgeDriven;
+                    public bool isEnabled;
+                    public bool isForward;
                     public EnumTimer timer;
                     public EnumEncoder encoder;
                     public EnumMode mode;

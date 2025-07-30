@@ -316,6 +316,7 @@ function createTimerTable()
         html.push(`<td><label id="id_flexTimer_prescaler_value_${i}"></label></td>`);
         html.push(`<td><input type="number" id="id_flexTimer_prescaler_config_${i}" min="1" step="1" max="65536"></td>`);
         html.push(`<td><input type="button" id="id_flexTimer_prescaler_set_${i}" value="Set"></td>`);
+        html.push(`<td><input type="button" id="id_flexTimer_prescaler_save_${i}" value="Save"></td>`);
         html.push("</tr>");
     }
 
@@ -324,7 +325,8 @@ function createTimerTable()
     html.push(`<td><label id='id_fixTimer_state'></label></td>`);
     html.push(`<td><label id="id_fixTimer_prescaler_value"></label></td>`);
     html.push(`<td><input type="number" id="id_fixTimer_prescaler_config" min="1" step="1" max="65536"></td>`);
-    html.push(`<td><input type="button" id="id_fixTimer_prescaler_set" value="Set"></td>`);
+    html.push(`<td><label>Pulse period: </label></td>`);
+    html.push(`<td><input type="button" id="id_fixTimer_prescaler_save" value="Save"></td>`);
     html.push("</tr>");
     
     html.push("</tbody>");
@@ -351,7 +353,11 @@ function createStepperMode(stepperIndex)
     {
         html.push("<td>");
         html.push(`<div id='id_stepper_group_forced_${stepperIndex}'>`);
-        html.push(`<label>Pulse period: </label><input type="number" id="id_stepper_period_forced_${stepperIndex}" min="1" step="1" max="65536">`);
+        html.push(`<label>Pulse period: </label>`);
+        html.push(`<label id="id_stepper_period_forced_value_${stepperIndex}" ></label>`);
+        html.push(`<input type="number" id="id_stepper_period_forced_config_${stepperIndex}" min="1" step="1" max="65536">`);
+        html.push(`<input type="button" id="id_stepper_period_forced_set_${stepperIndex}" value="Set">`);
+        html.push(`<input type="button" id="id_stepper_period_forced_save_${stepperIndex}" value="Save">`);
         html.push("</div>");
         html.push("</td>");
     }
@@ -367,13 +373,37 @@ function createStepperMode(stepperIndex)
     {
         html.push("<td>");
         html.push(`<div id='id_stepper_group_active_${stepperIndex}'>`);
-        html.push(`<label>Starting pulse period: </label><input type="number" id="id_stepper_period_active_starting_${stepperIndex}" min="1" step="1" max="65536">`);
-        html.push(`<label>Acceleration steps: </label><input type="numbe\" id="id_stepper_period_active_accelerationSteps_${stepperIndex}" min="1" step="1" max="1024">`);
+
+        html.push(`<label>Starting pulse period: </label>`);
+        html.push(`<label id="id_stepper_period_active_starting_value_${stepperIndex}"></label>`);
+        html.push(`<input type="number" id="id_stepper_period_active_starting_config_${stepperIndex}" min="1" step="1" max="65536">`);
+        html.push(`<input type="button" id="id_stepper_period_active_starting_set_${stepperIndex}" value="Set">`);
+        html.push(`<input type="button" id="id_stepper_period_active_starting_save_${stepperIndex}" value="Save">`);
+        html.push(`<label>Acceleration steps: </label>`);
+        html.push(`<label id="id_stepper_period_active_accelerationSteps_value_${stepperIndex}"></label>`);
+        html.push(`<input type="numbe\" id="id_stepper_period_active_accelerationSteps_config_${stepperIndex}" min="1" step="1" max="1024">`);
+        html.push(`<input type="button" id="id_stepper_period_active_accelerationSteps_set_${stepperIndex}" value="Set">`);
+        html.push(`<input type="button" id="id_stepper_period_active_accelerationSteps_save_${stepperIndex}" value="Save">`);
         html.push("<br>");
-        html.push(`<label>Cruising period: </label><input type="number" id="id_stepper_period_active_cruising_${stepperIndex}" min="1" step="1" max="65536">`);
+
+        html.push(`<label>Cruising period: </label>`);
+        html.push(`<label id="id_stepper_period_active_cruising_value_${stepperIndex}"></label>`);
+        html.push(`<input type="number" id="id_stepper_period_active_cruising_config_${stepperIndex}" min="1" step="1" max="65536">`);
+        html.push(`<input type="button" id="id_stepper_period_active_cruising_set_${stepperIndex}" value="Set">`);
+        html.push(`<input type="button" id="id_stepper_period_active_cruising_save_${stepperIndex}" value="Save">`);
         html.push("<br>");
-        html.push(`<label>Ending pulse period: </label><input type="number" id="id_stepper_period_active_ending_${stepperIndex}" min="1" step="1" max="65536">`);
-        html.push(`<label>Deacceleration steps: </label><input type="number" id="id_stepper_period_active_deaccelerationSteps_${stepperIndex}" min="1" step="1" max="1024">`);
+
+        html.push(`<label>Ending pulse period: </label>`);
+        html.push(`<label id="id_stepper_period_active_ending_value_${stepperIndex}"></label>`);
+        html.push(`<input type="number" id="id_stepper_period_active_ending_config_${stepperIndex}" min="1" step="1" max="65536">`);
+        html.push(`<input type="button" id="id_stepper_period_active_ending_set_${stepperIndex}" value="Set">`);
+        html.push(`<input type="button" id="id_stepper_period_active_ending_save_${stepperIndex}" value="Save">`);
+        html.push(`<label>Deacceleration steps: </label>`);
+        html.push(`<label id="id_stepper_period_active_deaccelerationSteps_value_${stepperIndex}"></label>`);
+        html.push(`<input type="number" id="id_stepper_period_active_deaccelerationSteps_config_${stepperIndex}" min="1" step="1" max="1024">`);
+        html.push(`<input type="button" id="id_stepper_period_active_deaccelerationSteps_set_${stepperIndex}" value="Set">`);
+        html.push(`<input type="button" id="id_stepper_period_active_deaccelerationSteps_save_${stepperIndex}" value="Save">`);
+        
         html.push("</div>")
         html.push("</td>");
     }
@@ -389,7 +419,8 @@ function createStepperMode(stepperIndex)
     {
         html.push("<td>");
         html.push(`<div id='id_stepper_group_passive_${stepperIndex}'>`);
-        html.push(`<label>ActiveStepper: </label><select id="id_stepper_passive_activeStepper_${stepperIndex}">`);
+        html.push(`<label>ActiveStepper: </label>`);
+        html.push(`<select id="id_stepper_passive_activeStepper_${stepperIndex}">`);
         for(let i=0; i<10; i++)
         {
             if(i == stepperIndex)
@@ -417,8 +448,7 @@ function createStepperTable()
         "FLEX_TIMER_3",
         "FLEX_TIMER_4",
         "FLEX_TIMER_5",
-        "FIX_TIMER",
-        "NOT_SELECTED"
+        "FIX_TIMER"
     ];
 
     let encoderOptionList = [
@@ -450,34 +480,65 @@ function createStepperTable()
             html.push("<label>Alarm:</label>");
             html.push(`<div class="unknown-dot" id="id_stepperAlarm_state_${stepperIndex}"></div>`);
             html.push("</div>");
-            // disable, forward, clock
+            // GPIO: disable, forward, clock
             html.push("<div><table><tr>");
-            html.push(`<td><label>Disable<input type="checkbox" id="id_stepper_disable_${stepperIndex}"></label></td>`);
-            html.push(`<td><label>Forward<input type="checkbox" id="id_stepper_forward_${stepperIndex}"></label></td>`);
-            html.push(`<td><label>Clock<input type="checkbox" id="id_stepper_clock_${stepperIndex}"></label></td>`);
+            html.push(`<td><label>GpioDisable<input type="checkbox" id="id_stepper_gpio_disable_${stepperIndex}"></label></td>`);
+            html.push(`<td><label>GpioForward<input type="checkbox" id="id_stepper_gpio_forward_${stepperIndex}"></label></td>`);
+            html.push(`<td><label>GpioClock<input type="checkbox" id="id_stepper_gpio_clock_${stepperIndex}"></label></td>`);
             html.push("</tr></table></div>");
             // timer
             html.push("<div>");
-            html.push(`<label>Timer: </label><select id="id_stepper_timer_${stepperIndex}">`);
+            html.push(`<label>Timer: </label>`);
+            html.push(`<label id='id_stepper_timer_${stepperIndex}'></label>`)
+            html.push(`<select id="id_stepper_selectTimer_${stepperIndex}">`);
             for(let i=0; i<timerOptionList.length - 1; i++)
             {
                 html.push(`<option value="${timerOptionList[i]}">${timerOptionList[i]}</option>`);
             }
             html.push(`<option value="${timerOptionList.at(-1)}" selected>${timerOptionList.at(-1)}</option>`);
             html.push("</select>");
+            html.push(`<td><input type="button" id="id_stepper_setTimer_${stepperIndex}" value="Set"></td>`);
+            html.push(`<td><input type="button" id="id_stepper_saveTimer_${stepperIndex}" value="Save"></td>`);
             html.push("</div>");
             // encoder
             html.push("<div>");
-            html.push(`<label>Encoder: </label><select id="id_stepper_encoder_${stepperIndex}">`);
+            html.push(`<label>Encoder: </label>`);
+            html.push(`<label id='id_stepper_encoder_${stepperIndex}'></label>`);
+            html.push(`<select id="id_stepper_selectEncoder_${stepperIndex}">`);
             for(let i=0; i<encoderOptionList.length - 1; i++)
             {
                 html.push(`<option value="${encoderOptionList[i]}">${encoderOptionList[i]}</option>`);
             }
             html.push(`<option value="${encoderOptionList.at(-1)}" selected>${encoderOptionList.at(-1)}</option>`);
             html.push("</select>");
+            html.push(`<td><input type="button" id="id_stepper_setEncoder_${stepperIndex}" value="Set"></td>`);
+            html.push(`<td><input type="button" id="id_stepper_saveEncoder_${stepperIndex}" value="Save"></td>`);
             html.push("</div>");
             // mode
             html.push(createStepperMode(stepperIndex));
+            // control setting
+            html.push("<div><table>");
+            html.push(`<tr>`);
+            html.push(`<td><label>IsDisableHigh<input type="checkbox" id="id_stepper_control_disableHigh_value_${stepperIndex}"></label></td>`);
+            html.push(`<td><input type="button" id="id_stepper_control_disableHigh_set_${stepperIndex}" value="Set"></td>`);
+            html.push(`<td><input type="button" id="id_stepper_control_disableHigh_save_${stepperIndex}" value="Save"></td>`);
+            html.push(`</tr>`);
+            html.push(`<tr>`);
+            html.push(`<td><label>IsForwardHigh<input type="checkbox" id="id_stepper_control_forwardHigh_${stepperIndex}"></label></td>`);
+            html.push(`<td><input type="button" id="id_stepper_control_forwardHigh_set_${stepperIndex}" value="Set"></td>`);
+            html.push(`<td><input type="button" id="id_stepper_control_forwardHigh_save_${stepperIndex}" value="Save"></td>`);
+            html.push(`</tr>`);
+            html.push(`<tr>`);
+            html.push(`<td><label>IsRisingEdgeHigh<input type="checkbox" id="id_stepper_control_risingEdgeDriven_${stepperIndex}"></label></td>`);
+            html.push(`<td><input type="button" id="id_stepper_control_risingEdgeDriven_set_${stepperIndex}" value="Set"></td>`);
+            html.push(`<td><input type="button" id="id_stepper_control_risingEdgeDriven_save_${stepperIndex}" value="Save"></td>`);
+            html.push(`</tr>`);
+            html.push("</table></div>");
+            //
+            html.push("<div><table><tr>");
+            html.push(`<td><label>Disable<input type="checkbox" id="id_stepper_control_disable_${stepperIndex}"></label></td>`);
+            html.push(`<td><label>Forward<input type="checkbox" id="id_stepper_control_forward_${stepperIndex}"></label></td>`);
+            html.push("</tr></table></div>");
             // buttons
             html.push("<div>");
             html.push(`<button id="id_stepper_go_1_${stepperIndex}">1</button>`);
@@ -1275,9 +1336,9 @@ function updateStepper(status)
     for(let stepperIndex=0; stepperIndex<status.steppers.length; stepperIndex++)
     {
         let alarmId = `id_stepperAlarm_state_${stepperIndex}`;
-        let disableId = `id_stepper_disable_${stepperIndex}`;
-        let forwardId = `id_stepper_forward_${stepperIndex}`;
-        let clockId = `id_stepper_clock_${stepperIndex}`;
+        let gpioDisableId = `id_stepper_gpio_disable_${stepperIndex}`;
+        let gpioForwardId = `id_stepper_gpio_forward_${stepperIndex}`;
+        let gpioClockId = `id_stepper_gpio_clock_${stepperIndex}`;
         let timerId = `id_stepper_timer_${stepperIndex}`;
         let encoderId = `id_stepper_encoder_${stepperIndex}`;
 
@@ -1300,11 +1361,11 @@ function updateStepper(status)
         let data = status.steppers[stepperIndex];
 
         document.getElementById(alarmId).className = data.isAlarmTriggered ? "active-red-dot" : "inactive-red-dot";
-        document.getElementById(disableId).checked = data.gpios.isDisableHigh;
-        document.getElementById(forwardId).checked = data.gpios.isForwardHigh;
-        document.getElementById(clockId).checked = data.gpios.isClockHigh;
-        document.getElementById(timerId).value = data.config.timer;
-        document.getElementById(encoderId).value = data.config.encoder;
+        document.getElementById(gpioDisableId).checked = data.gpios.isDisableHigh;
+        document.getElementById(gpioForwardId).checked = data.gpios.isForwardHigh;
+        document.getElementById(gpioClockId).checked = data.gpios.isClockHigh;
+        document.getElementById(timerId).textContent = data.config.timer;
+        document.getElementById(encoderId).textContent = data.config.encoder;
 
 
     }
