@@ -141,6 +141,21 @@ namespace VirtualOperatorServer.Facade
 
                 public struct Configuration
                 {
+                    public enum EnumPort
+                    {
+                        PORT_A = 0,
+                        PORT_B,
+                        PORT_C,
+                        PORT_D,
+                        PORT_E,
+                        PORT_F,
+                        PORT_G,
+                        PORT_H,
+                        PORT_I,
+                        PORT_J,
+                        PORT_K
+                    }
+
                     public enum EnumTimer
                     {
                         FLEX_TIMER_0 = 0,
@@ -213,17 +228,33 @@ namespace VirtualOperatorServer.Facade
                         }
                     }
 
-                    public bool isEnableHigh;
-                    public bool isForwardHigh;
-                    public bool isRisingEdgeDriven;
-                    public bool isEnabled;
-                    public bool isForward;
                     public EnumTimer timer;
                     public EnumEncoder encoder;
                     public EnumMode mode;
                     public StepperModeForced forcedModeConfig;
                     public StepperModeActive activeModeConfig;
                     public StepperModePassive passiveModeConfig;
+                    
+                    public bool isEnableHigh;
+                    public bool isForwardHigh;
+                    public bool isRisingEdgeDriven;
+
+                    public EnumPort portHomeBoundary;
+                    public byte pinHomeBoundary;
+                    public EnumPort portEndBoundary;
+                    public byte pinEndBoundary;
+                    public EnumPort portEnable;
+                    public byte pinEnable;
+                    public EnumPort portForward;
+                    public byte pinForward;
+                    public EnumPort portClock;
+                    public byte pinClock;
+
+                    public ushort homeBoundaryToReadySteps;
+                    public uint range;
+                    public ushort stepsPerRotation;
+                    public ushort encoderCountsPerRotation;
+                    public ushort encoderOffsetErrorThreshold;
                 }
 
                 public bool isAlarmTriggered;

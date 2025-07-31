@@ -325,7 +325,7 @@ function createTimerTable()
     html.push(`<td><label id='id_fixTimer_state'></label></td>`);
     html.push(`<td><label id="id_fixTimer_prescaler_value"></label></td>`);
     html.push(`<td><input type="number" id="id_fixTimer_prescaler_config" min="1" step="1" max="65536"></td>`);
-    html.push(`<td><label>Pulse period: </label></td>`);
+    html.push(`<td><input type="button" id="id_fixTimer_prescaler_set" value="Set"></td>`);
     html.push(`<td><input type="button" id="id_fixTimer_prescaler_save" value="Save"></td>`);
     html.push("</tr>");
     
@@ -463,6 +463,20 @@ function createStepperTable()
         "NOT_SELECTED"
     ];
 
+    let portList = [
+        "PORT_A",
+        "PORT_B",
+        "PORT_C",
+        "PORT_D",
+        "PORT_E",
+        "PORT_F",
+        "PORT_G",
+        "PORT_H",
+        "PORT_I",
+        "PORT_J",
+        "PORT_K"
+    ];
+
     let html = [];
 
     html.push("<div>");
@@ -516,25 +530,109 @@ function createStepperTable()
             html.push("</div>");
             // mode
             html.push(createStepperMode(stepperIndex));
-            // control setting
+            // IsDisableHigh, IsForwardHigh, IsRisingEdgeDriven
             html.push("<div><table>");
             html.push(`<tr>`);
-            html.push(`<td><label>IsDisableHigh<input type="checkbox" id="id_stepper_control_disableHigh_value_${stepperIndex}"></label></td>`);
-            html.push(`<td><input type="button" id="id_stepper_control_disableHigh_set_${stepperIndex}" value="Set"></td>`);
-            html.push(`<td><input type="button" id="id_stepper_control_disableHigh_save_${stepperIndex}" value="Save"></td>`);
+            html.push(`<td><label>IsDisableHigh<input type="checkbox" id="id_stepper_isDisableHigh_value_${stepperIndex}"></label></td>`);
+            html.push(`<td><input type="button" id="id_stepper_isDisableHigh_set_${stepperIndex}" value="Set"></td>`);
+            html.push(`<td><input type="button" id="id_stepper_isDisableHigh_save_${stepperIndex}" value="Save"></td>`);
             html.push(`</tr>`);
             html.push(`<tr>`);
-            html.push(`<td><label>IsForwardHigh<input type="checkbox" id="id_stepper_control_forwardHigh_${stepperIndex}"></label></td>`);
-            html.push(`<td><input type="button" id="id_stepper_control_forwardHigh_set_${stepperIndex}" value="Set"></td>`);
-            html.push(`<td><input type="button" id="id_stepper_control_forwardHigh_save_${stepperIndex}" value="Save"></td>`);
+            html.push(`<td><label>IsForwardHigh<input type="checkbox" id="id_stepper_isForwardHigh_${stepperIndex}"></label></td>`);
+            html.push(`<td><input type="button" id="id_stepper_isForwardHigh_set_${stepperIndex}" value="Set"></td>`);
+            html.push(`<td><input type="button" id="id_stepper_isForwardHigh_save_${stepperIndex}" value="Save"></td>`);
             html.push(`</tr>`);
             html.push(`<tr>`);
-            html.push(`<td><label>IsRisingEdgeHigh<input type="checkbox" id="id_stepper_control_risingEdgeDriven_${stepperIndex}"></label></td>`);
-            html.push(`<td><input type="button" id="id_stepper_control_risingEdgeDriven_set_${stepperIndex}" value="Set"></td>`);
-            html.push(`<td><input type="button" id="id_stepper_control_risingEdgeDriven_save_${stepperIndex}" value="Save"></td>`);
+            html.push(`<td><label>IsRisingEdgeHigh<input type="checkbox" id="id_stepper_isRisingEdgeDriven_${stepperIndex}"></label></td>`);
+            html.push(`<td><input type="button" id="id_stepper_isRisingEdgeDriven_set_${stepperIndex}" value="Set"></td>`);
+            html.push(`<td><input type="button" id="id_stepper_isRisingEdgeDriven_save_${stepperIndex}" value="Save"></td>`);
             html.push(`</tr>`);
             html.push("</table></div>");
             //
+            html.push(`<div><table>`);
+            html.push(`<tr>`);
+            html.push(`<td><label>HomeBoundaryToReadySteps</label></td>`);
+            html.push(`<td><label id='id_stepper_homeBoundaryToReadySteps_value_${stepperIndex}'></label></td>`);
+            html.push(`<td><input type="number" id="id_stepper_homeBoundaryToReadySteps_config_${stepperIndex}" min="1" step="1" max="1024"></td>`);
+            html.push(`<td><input type="button" id="id_stepper_homeBoundaryToReadySteps_set_${stepperIndex}" value="Set"></td>`);
+            html.push(`<td><input type="button" id="id_stepper_homeBoundaryToReadySteps_save_${stepperIndex}" value="Save"></td>`);
+            html.push(`</tr>`);
+            html.push(`<tr>`);
+            html.push(`<td><label>Range</label></td>`);
+            html.push(`<td><label id='id_stepper_range_value_${stepperIndex}'></label></td>`);
+            html.push(`<td><input type="number" id="id_stepper_range_config_${stepperIndex}" min="1" step="1" max="10240"></td>`);
+            html.push(`<td><input type="button" id="id_stepper_range_set_${stepperIndex}" value="Set"></td>`);
+            html.push(`<td><input type="button" id="id_stepper_range_save_${stepperIndex}" value="Save"></td>`);
+            html.push(`</tr>`);
+            html.push(`<tr>`);
+            html.push(`<td><label>StepsPerRotation</label></td>`);
+            html.push(`<td><label id='id_stepper_stepsPerRotation_value_${stepperIndex}'></label></td>`);
+            html.push(`<td><input type="number" id="id_stepper_stepsPerRotation_config_${stepperIndex}" min="1" step="1" max="10240"></td>`);
+            html.push(`<td><input type="button" id="id_stepper_stepsPerRotation_set_${stepperIndex}" value="Set"></td>`);
+            html.push(`<td><input type="button" id="id_stepper_stepsPerRotation_save_${stepperIndex}" value="Save"></td>`);
+            html.push(`</tr>`);
+            html.push(`<tr>`);
+            html.push(`<td><label>EncoderCountsPerRotation</label></td>`);
+            html.push(`<td><label id='id_stepper_encoderCountsPerRotation_value_${stepperIndex}'></label></td>`);
+            html.push(`<td><input type="number" id="id_stepper_encoderCountsPerRotation_config_${stepperIndex}" min="1" step="1" max="10240"></td>`);
+            html.push(`<td><input type="button" id="id_stepper_encoderCountsPerRotation_set_${stepperIndex}" value="Set"></td>`);
+            html.push(`<td><input type="button" id="id_stepper_encoderCountsPerRotation_save_${stepperIndex}" value="Save"></td>`);
+            html.push(`</tr>`);
+            html.push(`<tr>`);
+            html.push(`<td><label>EncoderOffsetErrorThreshold</label></td>`);
+            html.push(`<td><label id='id_stepper_encoderOffsetErrorThreshold_value_${stepperIndex}'></label></td>`);
+            html.push(`<td><input type="number" id="id_stepper_encoderOffsetErrorThreshold_config_${stepperIndex}" min="1" step="1" max="10240"></td>`);
+            html.push(`<td><input type="button" id="id_stepper_encoderOffsetErrorThreshold_set_${stepperIndex}" value="Set"></td>`);
+            html.push(`<td><input type="button" id="id_stepper_encoderOffsetErrorThreshold_save_${stepperIndex}" value="Save"></td>`);
+            html.push(`</tr>`);
+            html.push("</table></div>");
+
+            {
+                let nameList = [
+                    "HomeBoundary",
+                    "EndBoundary",
+                    "Enable",
+                    "Forward",
+                    "Clock"
+                ];
+
+                html.push(`<div><table>`);
+
+                for(let name of nameList)
+                {
+                    html.push(`<tr>`);
+
+                    html.push(`<td><label>Port${name}</label></td>`);
+                    html.push(`<td><label id='id_stepper_port${name}_value_${stepperIndex}'></label></td>`);
+                    html.push(`<td>`);
+                    html.push(`<select id="stepper_port${name}_config_${stepperIndex}">`);
+                    for(let port of portList)
+                    {
+                        html.push(`<option value="${port}">${port}</option>`);
+                    }
+                    html.push(`</td>`);
+                    html.push(`<td><input type="button" id="stepper_port${name}_set_${stepperIndex}" value="Set"></td>`);
+                    html.push(`<td><input type="button" id="stepper_port${name}_save_${stepperIndex}" value="Save"></td>`);
+
+                    html.push(`<td><label>Pin${name}</label></td>`);
+                    html.push(`<td><label id='id_stepper_pin${name}_value_${stepperIndex}'></label></td>`);
+                    html.push(`<td>`);
+                    html.push(`<select id="stepper_pin${name}_config_${stepperIndex}">`);
+                    for(let i=0; i<16; i++)
+                    {
+                        html.push(`<option value="${i}">${i}</option>`);
+                    }
+                    html.push(`</td>`);
+                    html.push(`<td><input type="button" id="stepper_pin${name}_set_${stepperIndex}" value="Set"></td>`);
+                    html.push(`<td><input type="button" id="stepper_pin${name}_save_${stepperIndex}" value="Save"></td>`);
+
+                    html.push(`</tr>`);
+                }
+
+                html.push("</table></div>");
+            }
+
+            // control
             html.push("<div><table><tr>");
             html.push(`<td><label>Disable<input type="checkbox" id="id_stepper_control_disable_${stepperIndex}"></label></td>`);
             html.push(`<td><label>Forward<input type="checkbox" id="id_stepper_control_forward_${stepperIndex}"></label></td>`);
