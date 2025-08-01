@@ -212,8 +212,8 @@ namespace VirtualOperatorServer.Facade
                     public struct StepperModeActive
                     {
                         public ushort startingPulseWidth;
-                        public ushort accelerationSteps;
-                        public ushort cruisePulseWidth;
+                        public ushort acceleratingSteps;
+                        public ushort cruisingPulseWidth;
                         public ushort deacceleratingSteps;
                         public ushort endingPulseWidth;
                     }

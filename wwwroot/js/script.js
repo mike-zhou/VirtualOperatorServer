@@ -420,16 +420,16 @@ function createStepperMode(stepperIndex)
         html.push("<td>");
         html.push(`<div id='id_stepper_group_passive_${stepperIndex}'>`);
         html.push(`<label>ActiveStepper: </label>`);
-        html.push(`<select id="id_stepper_passive_activeStepper_${stepperIndex}">`);
+        html.push(`<select id="id_stepper_passive_activeStepper_select_${stepperIndex}">`);
         for(let i=0; i<10; i++)
         {
             if(i == stepperIndex)
             {
                 continue;
             }
-            html.push(`<option value="${i}">Stepper ${i}</option>`);
+            html.push(`<option value="STEPPER_${i}">STEPPER_${i}</option>`);
         }
-        html.push(`<option value="255" selected>Not selected</option>`);
+        html.push(`<option value="NOT_SELECTED" selected>NOT_SELECTED</option>`);
         html.push("</div>")
         html.push("</td>");
     }
@@ -605,7 +605,7 @@ function createStepperTable()
                     html.push(`<td><label>Port${name}</label></td>`);
                     html.push(`<td><label id='id_stepper_port${name}_value_${stepperIndex}'></label></td>`);
                     html.push(`<td>`);
-                    html.push(`<select id="stepper_port${name}_config_${stepperIndex}">`);
+                    html.push(`<select id="stepper_port${name}_select_${stepperIndex}">`);
                     for(let port of portList)
                     {
                         html.push(`<option value="${port}">${port}</option>`);
@@ -617,7 +617,7 @@ function createStepperTable()
                     html.push(`<td><label>Pin${name}</label></td>`);
                     html.push(`<td><label id='id_stepper_pin${name}_value_${stepperIndex}'></label></td>`);
                     html.push(`<td>`);
-                    html.push(`<select id="stepper_pin${name}_config_${stepperIndex}">`);
+                    html.push(`<select id="stepper_pin${name}_select_${stepperIndex}">`);
                     for(let i=0; i<16; i++)
                     {
                         html.push(`<option value="${i}">${i}</option>`);
@@ -1440,32 +1440,44 @@ function updateStepper(status)
         let timerId = `id_stepper_timer_${stepperIndex}`;
         let encoderId = `id_stepper_encoder_${stepperIndex}`;
 
-        let forcedModeId = `id_stepper_mode_forced_${stepperIndex}`;
-        let forcedModeGroupId = `id_stepper_group_forced_${stepperIndex}`;
-        let forcedModePeriodId = `id_stepper_period_forced_${stepperIndex}`;
+        let forcedModePeriodValueId = `id_stepper_period_forced_value_${stepperIndex}`;
         
-        let activeModeId = `id_stepper_mode_active_${stepperIndex}`;
-        let activeModeGroupId = `id_stepper_group_active_${stepperIndex}`;
-        let activeModeStartingPeriodId = `id_stepper_period_active_starting_${stepperIndex}`;
-        let activeModeAccelerationStepsId = `id_stepper_period_active_accelerationSteps_${stepperIndex}`;
-        let activeModeCruisePeriodId = `id_stepper_period_active_cruising_${stepperIndex}`;
-        let activeModeEndingPeriodId = `id_stepper_period_active_ending_${stepperIndex}`;
-        let activeModeDeaccelerationStepsId = `id_stepper_period_active_deaccelerationSteps_${stepperIndex}`;
+        let activeModeStartingPeriodValueId = `id_stepper_period_active_starting_value_${stepperIndex}`;
+        let activeModeAccelerationStepsValueId = `id_stepper_period_active_accelerationSteps_value_${stepperIndex}`;
+        let activeModeCruisePeriodValueId = `id_stepper_period_active_cruising_value_${stepperIndex}`;
+        let activeModeEndingPeriodValueId = `id_stepper_period_active_ending_value_${stepperIndex}`;
+        let activeModeDeaccelerationStepsValueId = `id_stepper_period_active_deaccelerationSteps_value_${stepperIndex}`;
 
-        let passiveModeId = `id_stepper_mode_passive_${stepperIndex}`;
-        let passiveModeGroupId = `id_stepper_group_passive_${stepperIndex}`;
-        let passiveModeActiveStepperId = `id_stepper_passive_activeStepper_${stepperIndex}`;
+        let passiveModeActiveStepperSelectId = `id_stepper_passive_activeStepper_select_${stepperIndex}`;
 
         let data = status.steppers[stepperIndex];
 
+        // alarm
         document.getElementById(alarmId).className = data.isAlarmTriggered ? "active-red-dot" : "inactive-red-dot";
+        // gpios
         document.getElementById(gpioDisableId).checked = data.gpios.isDisableHigh;
         document.getElementById(gpioForwardId).checked = data.gpios.isForwardHigh;
         document.getElementById(gpioClockId).checked = data.gpios.isClockHigh;
+        // timer
         document.getElementById(timerId).textContent = data.config.timer;
+        // encoder
         document.getElementById(encoderId).textContent = data.config.encoder;
-
-
+        // forced mode
+        document.getElementById(forcedModePeriodValueId).textContent = 
+            String(status.steppers[stepperIndex].config.forcedModeConfig.pulseWidth);
+        // active mode
+        document.getElementById(activeModeStartingPeriodValueId).textContent =
+            String(status.steppers[stepperIndex].config.activeModeConfig.startingPulseWidth);
+        document.getElementById(activeModeAccelerationStepsValueId).textContent =
+            String(status.steppers[stepperIndex].config.activeModeConfig.acceleratingSteps);
+        document.getElementById(activeModeCruisePeriodValueId).textContent =
+            String(status.steppers[stepperIndex].config.activeModeConfig.cruisingPulseWidth);
+        document.getElementById(activeModeEndingPeriodValueId).textContent =
+            String(status.steppers[stepperIndex].config.activeModeConfig.endingPulseWidth);
+        document.getElementById(activeModeDeaccelerationStepsValueId).textContent =
+            String(status.steppers[stepperIndex].config.activeModeConfig.deacceleratingSteps);
+        
+        // passive mode
     }
 }
 
