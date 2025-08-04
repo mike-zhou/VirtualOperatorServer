@@ -273,10 +273,10 @@ namespace VirtualOperatorServer.CommandAndReply
                 throw new InvalidRequestBodyException($"Not an JSON array in SetGPIO command");
             }
 
-            return createCommand(gpioArray);
+            return CreateCommand(gpioArray);
         }
 
-        static private byte[] createCommand(GPIO[] gpioArray)
+        static private byte[] CreateCommand(GPIO[] gpioArray)
         {
             var portCount = gpioArray.Length;
             if(portCount > 32)
@@ -348,7 +348,7 @@ namespace VirtualOperatorServer.CommandAndReply
         }
 
         public CmdSetGPIO(JsonElement jsonRoot) : base(CreateCommand(jsonRoot)) { }
-        public CmdSetGPIO(GPIO[] gpioArray) : base(createCommand(gpioArray)) { }
+        public CmdSetGPIO(GPIO[] gpioArray) : base(CreateCommand(gpioArray)) { }
         
         public override (bool result, string reason) ParseReply()
         {

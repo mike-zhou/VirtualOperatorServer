@@ -59,7 +59,7 @@ function createPowerTable()
         html.push("<div>");
         html.push(`<label>PO ${i}: </label>`);
         html.push(`<div class="unknown-dot" id="id_powerOutput_state_${i}"></div>`);
-        html.push(`<label id="id_powerOutput_set_${i}_label" for="id_powerOutput_set_${i}"> Enable </label>`);
+        html.push(`<label for="id_powerOutput_set_${i}"> Enable </label>`);
         html.push(`<input type="checkbox" id="id_powerOutput_set_${i}">`);
         html.push("</div>");
     }
@@ -702,52 +702,6 @@ async function post(endpoint, payload)
     return data;
 }
 
-async function getVersion() {
-    try {
-        document.getElementById("id_versionResult").innerHTML = "";
-        data = await get('Version');
-        document.getElementById("id_versionResult").innerHTML = data;
-    } catch (error) {
-        console.error("Error:", error);
-    }
-}
-
-async function testEcho() {
-    try {
-        let echoCount = parseInt(document.getElementById("id_echoCount").value);
-        if(isNaN(echoCount))
-        {
-            alert("Please enter a valid integer");
-            return;
-        }
-        
-        for(let i = 0; i < echoCount; i++)
-        {
-            let content = new Uint8Array(i%250);
-            for(let j=0; j < content.byteLength; j++)
-            {
-                content[j] = j;
-            }
-            
-            payload = 
-            {
-                data: Array.from(content)
-            };
-            
-            data = await post('Echo', payload);
-            if(data != "success")
-            {
-                alert(`ECHO failed at ${i}, reason: ${data}`);
-                return;
-            }
-
-            document.getElementById("id_echoProgress").value = i * 100 / echoCount;
-        }
-        document.getElementById("id_echoProgress").value = 100;
-    } catch (error) {
-        console.error("Error:", error);
-    }
-}
 
 async function getGPIOMode()
 {
@@ -771,8 +725,8 @@ async function readGPIO() {
 
 async function setGpio(id)
 {
-    segments = id.split("_");
-    if( (segments.length != 4) ||
+    let segments = id.split("_");
+    if( (segments.length < 4) ||
         (segments[0] != 'id') ||
         (segments[1] != 'setGpio'))
     
@@ -781,7 +735,9 @@ async function setGpio(id)
         return;
     }
     
-    const checkbox = document.getElementById(id);
+    let newId = `${segments[0]}_${segments[1]}_${segments[2]}_${segments[3]}`;
+
+    const checkbox = document.getElementById(newId);
     newValue = 0;
     if(checkbox.checked)
         newValue = 1;
@@ -950,6 +906,53 @@ function getStepperMode(stepperId)
     }
 }
 
+async function setFlexTimerPrescaler(elementId)
+{
+    let segments = elementId.split("_");
+    let action = segments[3];
+    let timerIndex = Number(segments[4]);
+
+    if(action == "set")
+    {
+        let configId = `${segments[0]}_${segments[1]}_${segments[2]}_config_${segments[4]}`;
+        let value = Number(document.getElementById(configId).value);
+
+        let payload = {
+            timerId: timerIndex,
+            prescaler: value
+        };
+
+        let data = await post('timerPrescaler', payload);
+        if(data != "success")
+        {
+            alert(`Error: failed to prescaler of flex timer ${timerIndex}, info: ${data}`);
+        }
+    }
+}
+
+async function setFixTimerPrescaler(elementId)
+{
+    let segments = elementId.split("_");
+    let action = segments[3];
+
+    if(action == "set")
+    {
+        let configId = `${segments[0]}_${segments[1]}_${segments[2]}_config`;
+        let value = Number(document.getElementById(configId).value);
+
+        let payload = {
+            timerId: 6,
+            prescaler: value
+        };
+
+        let data = await post('timerPrescaler', payload);
+        if(data != "success")
+        {
+            alert(`Error: failed to prescaler of fix timer, info: ${data}`);
+        }
+    }
+}
+
 async function setStepper(id) 
 {
     let segments = id.split("_");
@@ -1093,11 +1096,7 @@ async function onDocumentClick(event)
     if(elementId == "")
         return;
 
-    if (elementId == "id_getVersion")
-        await getVersion();
-    else if (elementId == "id_testEcho")
-        await testEcho();
-    else if (elementId.startsWith("id_setGpio_"))
+    if (elementId.startsWith("id_setGpio_"))
         await setGpio(elementId);
     else if (elementId.startsWith("id_powerOutput_set_"))
         await setPowerOutput(elementId);
@@ -1105,6 +1104,10 @@ async function onDocumentClick(event)
         await setBDCPowerOutput(elementId);
     else if (elementId.startsWith("id_bdcControl_"))
         await setBDCControl(elementId);
+    else if (elementId.startsWith("id_flexTimer_prescaler_"))
+        await setFlexTimerPrescaler(elementId);
+    else if (elementId.startsWith("id_fixTimer_prescaler_"))
+        await setFixTimerPrescaler(elementId);
     else if (elementId.startsWith("id_stepper_"))
         await setStepper(elementId);
 
@@ -1113,175 +1116,47 @@ async function onDocumentClick(event)
     await updateUI();
 }
 
-async function checkPeripharalStatus()
+function onInputNumberFlexTimer(id)
 {
-    try {
-        const data = await get('PeripharalStatus');
-        const status = JSON.parse(data);
+    let segments = id.split("_");
 
-        // Power
-        let powerStatus = status.Power;
-        for(let i=0; i<6; i++)
-        {
-            let po = `PO${i}`;
-            let enabled = powerStatus[po]["Enabled"];
-            let available = powerStatus[po]["Available"];
-
-            let id = `id_powerOutput_set_${i}`;
-            let powerSet = document.getElementById(id);
-            powerSet.checked = enabled;
-            
-            id = `id_powerOutput_state_${i}`
-            let powerState = document.getElementById(id);
-            if(available)
-            {
-                powerState.className = "active-green-dot";
-            }
-            else
-            {
-                powerState.className = "inactive-green-dot";
-            }
-        }
-
-        // Stepper Power
-        powerStatus = status.StepperPower;
-        for(let i=6; i<12; i++)
-        {
-            let po = `PO${i}`;
-            let enabled = powerStatus[po]["Enabled"];
-            let available = powerStatus[po]["Available"];
-
-            let id = `id_powerOutput_set_${i}`;
-            let powerSet = document.getElementById(id);
-            powerSet.checked = enabled;
-            
-            id = `id_powerOutput_state_${i}`
-            let powerState = document.getElementById(id);
-            if(available)
-            {
-                powerState.className = "active-green-dot";
-            }
-            else
-            {
-                powerState.className = "inactive-green-dot";
-            }
-        }
-
-        // BDC main power
-        powerStatus = status.BDCPower;
-        {
-            let id = "id_bdcPowerMain_set";
-            let powerSet = document.getElementById(id);
-            powerSet.checked = powerStatus["Enabled"];
-
-            id = "id_bdcPowerMain_state";
-            let powerState = document.getElementById(id);
-            if(powerStatus["Available"])
-            {
-                powerState.className = "active-green-dot";
-            }
-            else
-            {
-                powerState.className = "inactive-green-dot";
-            }
-        }
-
-        // BDC motors
-        let motorStatus = status.BDCMotor;
-        for(let i=0; i<3; i++)
-        {
-            let bdc = motorStatus[`BDC${i}`];
-            let control = bdc["Control"];
-            let powerAvailable = bdc["PowerAvailable"];
-
-            if(powerAvailable)
-                document.getElementById(`id_bdcPowerOutput_state_${i}`).className = "active-green-dot";
-            else
-                document.getElementById(`id_bdcPowerOutput_state_${i}`).className = "inactive-green-dot";
-
-            if(control == "Coast")
-                document.getElementById(`id_bdcControl_coast_${i}`).checked = true;
-            else if(control == "Forward")
-                document.getElementById(`id_bdcControl_forward_${i}`).checked = true;
-            else if(control == "Reverse")
-                document.getElementById(`id_bdcControl_reverse_${i}`).checked = true;
-            else if(control == "Brake")
-                document.getElementById(`id_bdcControl_brake_${i}`).checked = true;
-            else
-                console.error(`Error: unknown BDC motor control '${control}'`);
-        }
-
-        // stepper motors
-        motorStatus = status.StepperMotor;
-        for(let i=0; i<10; i++)
-        {
-            let stepper = motorStatus[`stepper${i}`];
-            let forward = stepper["forward"];
-            let disable = stepper["disable"];
-            let alarm = stepper["alarm"];
-            let clock = stepper["clock"];
-
-            if(alarm)
-                document.getElementById(`id_stepperAlarm_state_${i}`).className = "active-red-dot";
-            else
-                document.getElementById(`id_stepperAlarm_state_${i}`).className = "inactive-red-dot";
-
-            document.getElementById(`id_stepper_disable_${i}`).checked = disable;
-            document.getElementById(`id_stepper_forward_${i}`).checked = forward;
-            document.getElementById(`id_stepper_clock_${i}`).checked = clock;
-        }
-
-        // position detectors
-        let pdStatus = status.PositionDetector;
-        for(let i=0; i<20; i++)
-        {
-            let activated = pdStatus[`pd${i}`];
-            if(activated)
-                document.getElementById(`id_positionDetector_${i}`).className = "active-red-dot";
-            else
-                document.getElementById(`id_positionDetector_${i}`).className = "inactive-red-dot";
-        }
-        for(let i=20; i<49; i++)
-        {
-            let activated = pdStatus[`pd${i}`];
-            if(activated)
-                document.getElementById(`id_positionDetector_${i}`).className = "active-green-dot";
-            else
-                document.getElementById(`id_positionDetector_${i}`).className = "inactive-green-dot";
-        }
-        
-    } catch (error) {
-        console.error("Error in checkPeripharalStatus():", error);
+    let valueId = `${segments[0]}_${segments[1]}_${segments[2]}_value_${segments[4]}`;
+    let buttonId = `${segments[0]}_${segments[1]}_${segments[2]}_set_${segments[4]}`;
+    let value = Number(document.getElementById(valueId).textContent);
+    
+    if(value == Number(document.getElementById(id).value))
+    {
+        document.getElementById(buttonId).disabled = true;
+    }
+    else
+    {
+        document.getElementById(buttonId).disabled = false;
     }
 }
 
-async function checkEncoders()
+function onInputNumberFixTimer(id)
 {
-    try 
+    let value = Number(document.getElementById("id_fixTimer_prescaler_value").textContent);
+    
+    if(value == Number(document.getElementById("id_fixTimer_prescaler_config").value))
     {
-        const data = await get('Encoders');
-        const status = JSON.parse(data);
+        document.getElementById("id_fixTimer_prescaler_set").disabled = true;
+    }
+    else
+    {
+        document.getElementById("id_fixTimer_prescaler_set").disabled = false;
+    }
+}
 
-        const lptim1Counter = status.lptim1Counter;
-        const lptim2Counter = status.lptim2Counter;
-        const htim1Counter = status.htim1Counter;
-        const htim2Counter = status.htim2Counter;
-        const htim3Counter = status.htim3Counter;
-        const htim4Counter = status.htim4Counter;
-        const htim5Counter = status.htim5Counter;
-        const htim8Counter = status.htim8Counter;
-
-        document.getElementById("id_encoder_0").textContent = lptim1Counter.toString();
-        document.getElementById("id_encoder_1").textContent = lptim2Counter.toString();
-        document.getElementById("id_encoder_2").textContent = htim1Counter.toString();
-        document.getElementById("id_encoder_3").textContent = htim2Counter.toString();
-        document.getElementById("id_encoder_4").textContent = htim3Counter.toString();
-        document.getElementById("id_encoder_5").textContent = htim4Counter.toString();
-        document.getElementById("id_encoder_6").textContent = htim5Counter.toString();
-        document.getElementById("id_encoder_7").textContent = htim8Counter.toString();
-    } 
-    catch (error) {
-        console.error("Error in checkEncoders():", error);
+function onInputNumber(id)
+{
+    if(id.startsWith("id_flexTimer_prescaler_config_"))
+    {
+        onInputNumberFlexTimer(id);
+    }
+    else if(id.startsWith("id_fixTimer_prescaler_config"))
+    {
+        onInputNumberFixTimer(id);
     }
 }
 
@@ -1421,12 +1296,19 @@ function updateTimer(status)
 
         document.getElementById(stateId).textContent = status.flexTimers[i].state;
         document.getElementById(valueId).textContent = String(status.flexTimers[i].prescaler);
-        document.getElementById(configId).value = status.flexTimers[i].prescalerConfig;
+        let config = document.getElementById(configId);
+        if(config.value === "")
+        {
+            config.value = status.flexTimers[i].prescalerConfig;
+        }
     }
 
     document.getElementById("id_fixTimer_state").textContent = status.fixTimer.state;
     document.getElementById("id_fixTimer_prescaler_value").textContent = String(status.fixTimer.prescaler);
-    document.getElementById("id_fixTimer_prescaler_config").value = status.fixTimer.prescalerConfig;
+    if(document.getElementById("id_fixTimer_prescaler_config").value === "")
+    {
+        document.getElementById("id_fixTimer_prescaler_config").value = status.fixTimer.prescalerConfig;
+    }
 }
 
 function updateStepper(status)
@@ -1509,6 +1391,7 @@ async function updateUI()
         return;
     }
 
+    VO.status = status;
     document.getElementById("id_version").textContent = status.virtualOperatorVersion;
 
     updateGpio(status);
@@ -1521,7 +1404,18 @@ async function updateUI()
     updateStepper(status);
 }
 
-// document.addEventListener('click', async function(event) { onDocumentClick(event); } );
-let intervalId = setInterval(updateUI, 1000);
+const VO = {};
 
 document.body.innerHTML = createBody();
+
+document.addEventListener('click', async function(event) { onDocumentClick(event); } );
+document.addEventListener('input', (e) => {
+    const t = e.target;
+    if (t instanceof HTMLInputElement && t.type === 'number') {
+        const id = t.id;                  // ID of the input
+        onInputNumber(id);
+    }
+});
+
+let intervalId = setInterval(updateUI, 1000);
+

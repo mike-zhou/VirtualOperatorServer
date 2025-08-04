@@ -81,22 +81,35 @@ app.MapPost("/post/{*command}", async(HttpRequest request, string command, BackS
 
     try
     {
-        CommandAndReply cmd = CommandFactory.BuildPostCommand(command, jsonRoot);
-        if (cmd.Command.Length > 0)
+        if (
+            (command == "refreshStatus") ||
+            (command == "setGpio") ||
+            (command == "setPowerOutput") ||
+            (command == "setBDCPowerOutput") ||
+            (command == "setBDCControl") ||
+            (command == "disableStepper") ||
+            (command == "forwardStepper") ||
+            (command == "clockStepper") ||
+            (command == "timerPrescaler")
+        )
         {
-            cmd.Reply = await backSocket.SendAndReceiveAsync(cmd.Command);
-
-            bool success;
-            string reason;
-
-            (success, reason) = cmd.ParseReply();
-            if (success)
+            CommandAndReply cmd = CommandFactory.BuildPostCommand(command, jsonRoot);
+            if (cmd.Command.Length > 0)
             {
-                return Results.Text("success", "text/html");
-            }
-            else
-            {
-                return Results.Text($"failure: {reason}", "text/html");
+                cmd.Reply = await backSocket.SendAndReceiveAsync(cmd.Command);
+
+                bool success;
+                string reason;
+
+                (success, reason) = cmd.ParseReply();
+                if (success)
+                {
+                    return Results.Text("success", "text/html");
+                }
+                else
+                {
+                    return Results.Text($"failure: {reason}", "text/html");
+                }
             }
         }
     }
@@ -109,7 +122,7 @@ app.MapPost("/post/{*command}", async(HttpRequest request, string command, BackS
         Console.WriteLine($"Error: exception in MapPost: {e.Message}");
     }
 
-    return Results.Text("", "text/html");
+    return TypedResults.NotFound(new { error = "Item not found", command });
 });
 
 app.Run();

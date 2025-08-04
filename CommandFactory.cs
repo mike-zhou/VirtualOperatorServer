@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 using VirtualOperatorServer.CommandAndReply;
 
@@ -185,13 +186,39 @@ internal static class CommandFactory
         return new CmdSetGPIO(gpioArray);
     }
 
+    static CommandAndReply BuildSetTimerPrecalers(JsonElement jsonRoot)
+    {
+        var timerId = jsonRoot.GetProperty("timerId").GetByte();
+        var prescaler = jsonRoot.GetProperty("prescaler").GetUInt16();
+
+        Debug.Assert(timerId < CmdSetTimerPrescaler.TIMER_COUNT);
+
+        var status = CmdGetStatus.Status;
+        if (status == null)
+        {
+            throw new InvalidRequestBodyException($"CmdGetStatus.Status is not ready");
+        }
+        Debug.Assert(status.timersData.Length == CmdSetTimerPrescaler.TIMER_COUNT);
+        
+        // get current prescaler in all timers
+        ushort[] prescalers = new ushort[CmdSetTimerPrescaler.TIMER_COUNT];
+        for (int i = 0; i < CmdSetTimerPrescaler.TIMER_COUNT; i++)
+        {
+            prescalers[i] = status.timersData[i].prescaler;
+        }
+        // set prescaler
+        prescalers[timerId] = prescaler;
+
+        return new CmdSetTimerPrescaler(prescalers);
+    }
+
     static CommandAndReply BuildForwardStepper(JsonElement jsonRoot)
     {
         var stepperIndex = jsonRoot.GetProperty("index").GetByte();
         var forwardStepper = jsonRoot.GetProperty("forwardStepper").GetBoolean();
         CmdSetGPIO.GPIO gpio;
 
-        switch(stepperIndex)
+        switch (stepperIndex)
         {
             case 0:
                 // GP52
@@ -201,7 +228,7 @@ internal static class CommandFactory
                 // GP54
                 gpio = CreateGPIO("PH8", forwardStepper);
                 break;
-            case 2: 
+            case 2:
                 // GP56
                 gpio = CreateGPIO("PH12", forwardStepper);
                 break;
@@ -221,7 +248,7 @@ internal static class CommandFactory
                 // GP64
                 gpio = CreateGPIO("PJ11", forwardStepper);
                 break;
-            case 7: 
+            case 7:
                 // GP67
                 gpio = CreateGPIO("PK2", forwardStepper);
                 break;
@@ -345,6 +372,10 @@ internal static class CommandFactory
         else if (restApi == "refreshStatus")
         {
             cmd = new CmdGetStatus();
+        }
+        else if (restApi == "timerPrescaler")
+        {
+            cmd = BuildSetTimerPrecalers(jsonRoot);
         }
         else
         {
