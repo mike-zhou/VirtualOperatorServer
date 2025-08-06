@@ -156,9 +156,62 @@ app.MapPost("/post/{*command}", async(HttpRequest request, string command, BackS
 
             configs[stepperIndex].timer = enumTimer;
             StaticConfig.Instance.SaveStepperConfigs();
-            
+
             return Results.Text("success", "text/html");
         }
+        else if (command == "saveStepperEncoder")
+        {
+
+            var stepperIndex = jsonRoot.GetProperty("stepperId").GetByte();
+            var encoder = jsonRoot.GetProperty("encoder").GetString();
+
+            StatusFacade.Facade.Stepper.Configuration.EnumEncoder enumEncoder;
+
+            switch (encoder)
+            {
+                case "ENC0":
+                    enumEncoder = StatusFacade.Facade.Stepper.Configuration.EnumEncoder.ENC0;
+                    break;
+                case "ENC1":
+                    enumEncoder = StatusFacade.Facade.Stepper.Configuration.EnumEncoder.ENC1;
+                    break;
+                case "ENC2":
+                    enumEncoder = StatusFacade.Facade.Stepper.Configuration.EnumEncoder.ENC2;
+                    break;
+                case "ENC3":
+                    enumEncoder = StatusFacade.Facade.Stepper.Configuration.EnumEncoder.ENC3;
+                    break;
+                case "ENC4":
+                    enumEncoder = StatusFacade.Facade.Stepper.Configuration.EnumEncoder.ENC4;
+                    break;
+                case "ENC5":
+                    enumEncoder = StatusFacade.Facade.Stepper.Configuration.EnumEncoder.ENC5;
+                    break;
+                case "ENC6":
+                    enumEncoder = StatusFacade.Facade.Stepper.Configuration.EnumEncoder.ENC6;
+                    break;
+                case "ENC7":
+                    enumEncoder = StatusFacade.Facade.Stepper.Configuration.EnumEncoder.ENC7;
+                    break;
+                case "NOT_SELECTED":
+                    enumEncoder = StatusFacade.Facade.Stepper.Configuration.EnumEncoder.NOT_SELECTED;
+                    break;
+                default:
+                    throw new Exception($"Invalid encoder '{encoder}' in POST command '{command}'");
+            }
+
+            var configs = StaticConfig.Instance.StepperConfigs;
+            if (stepperIndex >= configs.Length)
+            {
+                throw new Exception($"Invalid stepper index '{stepperIndex}' in POST command '{command}'");
+            }
+
+            configs[stepperIndex].encoder = enumEncoder;
+            StaticConfig.Instance.SaveStepperConfigs();
+
+            return Results.Text("success", "text/html");
+        }
+        
     }
     catch (InvalidRequestBodyException e)
     {

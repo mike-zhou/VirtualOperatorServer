@@ -1031,7 +1031,20 @@ async function onClick_Stepper(id)
     {
         if(action == "save")
         {
+            let stepperIndex = Number(segments[4]);
+            let selectId = `id_stepper_encoder_select_${stepperIndex}`;
+            let encoder = document.getElementById(selectId).value;
 
+            let payload = {
+                stepperId: stepperIndex,
+                encoder: encoder
+            }
+
+            let data = await post('saveStepperEncoder', payload);
+            if(data != "success")
+            {
+                alert(`Error: failed save encoder, info: ${data}`);
+            }
         }
     }
 
