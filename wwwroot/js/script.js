@@ -317,6 +317,7 @@ function createTimerTable()
         html.push(`<td><input type="number" id="id_flexTimer_prescaler_config_${i}" min="1" step="1" max="65536"></td>`);
         html.push(`<td><input type="button" id="id_flexTimer_prescaler_set_${i}" value="Set"></td>`);
         html.push(`<td><input type="button" id="id_flexTimer_prescaler_save_${i}" value="Save"></td>`);
+        html.push(`<td><label id="id_flexTimer_prescaler_unit_${i}"> ns</td>`);
         html.push("</tr>");
     }
 
@@ -327,6 +328,7 @@ function createTimerTable()
     html.push(`<td><input type="number" id="id_fixTimer_prescaler_config" min="1" step="1" max="65536"></td>`);
     html.push(`<td><input type="button" id="id_fixTimer_prescaler_set" value="Set"></td>`);
     html.push(`<td><input type="button" id="id_fixTimer_prescaler_save" value="Save"></td>`);
+    html.push(`<td><label id="id_fixTimer_prescaler_unit"> ns</td>`);
     html.push("</tr>");
     
     html.push("</tbody>");
@@ -503,30 +505,30 @@ function createStepperTable()
             // timer
             html.push("<div>");
             html.push(`<label>Timer: </label>`);
-            html.push(`<label id='id_stepper_timer_${stepperIndex}'></label>`)
-            html.push(`<select id="id_stepper_selectTimer_${stepperIndex}">`);
+            html.push(`<label id='id_stepper_timer_value_${stepperIndex}'></label>`)
+            html.push(`<select id="id_stepper_timer_select_${stepperIndex}">`);
             for(let i=0; i<timerOptionList.length - 1; i++)
             {
                 html.push(`<option value="${timerOptionList[i]}">${timerOptionList[i]}</option>`);
             }
             html.push(`<option value="${timerOptionList.at(-1)}" selected>${timerOptionList.at(-1)}</option>`);
             html.push("</select>");
-            html.push(`<td><input type="button" id="id_stepper_setTimer_${stepperIndex}" value="Set"></td>`);
-            html.push(`<td><input type="button" id="id_stepper_saveTimer_${stepperIndex}" value="Save"></td>`);
+            html.push(`<td><input type="button" id="id_stepper_timer_set_${stepperIndex}" value="Set"></td>`);
+            html.push(`<td><input type="button" id="id_stepper_timer_save_${stepperIndex}" value="Save"></td>`);
             html.push("</div>");
             // encoder
             html.push("<div>");
             html.push(`<label>Encoder: </label>`);
-            html.push(`<label id='id_stepper_encoder_${stepperIndex}'></label>`);
-            html.push(`<select id="id_stepper_selectEncoder_${stepperIndex}">`);
+            html.push(`<label id='id_stepper_encoder_value_${stepperIndex}'></label>`);
+            html.push(`<select id="id_stepper_encoder_select_${stepperIndex}">`);
             for(let i=0; i<encoderOptionList.length - 1; i++)
             {
                 html.push(`<option value="${encoderOptionList[i]}">${encoderOptionList[i]}</option>`);
             }
             html.push(`<option value="${encoderOptionList.at(-1)}" selected>${encoderOptionList.at(-1)}</option>`);
             html.push("</select>");
-            html.push(`<td><input type="button" id="id_stepper_setEncoder_${stepperIndex}" value="Set"></td>`);
-            html.push(`<td><input type="button" id="id_stepper_saveEncoder_${stepperIndex}" value="Save"></td>`);
+            html.push(`<td><input type="button" id="id_stepper_encoder_set_${stepperIndex}" value="Set"></td>`);
+            html.push(`<td><input type="button" id="id_stepper_encoder_save_${stepperIndex}" value="Save"></td>`);
             html.push("</div>");
             // mode
             html.push(createStepperMode(stepperIndex));
@@ -723,7 +725,7 @@ async function readGPIO() {
     }
 }
 
-async function setGpio(id)
+async function onClick_Gpio(id)
 {
     let segments = id.split("_");
     if( (segments.length < 4) ||
@@ -757,7 +759,7 @@ async function setGpio(id)
     }
 }
 
-async function setPowerOutput(id) 
+async function onClick_PowerOutput(id) 
 {
     segments = id.split('_');
 
@@ -777,7 +779,7 @@ async function setPowerOutput(id)
     }
 }
 
-async function setBDCPowerOutput(id) 
+async function onClick_BDCPowerOutput(id) 
 {
     enablePower = document.getElementById(id).checked;
 
@@ -793,7 +795,7 @@ async function setBDCPowerOutput(id)
     }
 }
 
-async function setBDCControl(id) 
+async function onClick_BDCControl(id) 
 {
     segments = id.split("_");
     actionStr = segments[2];
@@ -906,7 +908,7 @@ function getStepperMode(stepperId)
     }
 }
 
-async function setFlexTimerPrescaler(elementId)
+async function onClick_FlexTimerPrescaler(elementId)
 {
     let segments = elementId.split("_");
     let action = segments[3];
@@ -922,7 +924,7 @@ async function setFlexTimerPrescaler(elementId)
             prescaler: value
         };
 
-        let data = await post('timerPrescaler', payload);
+        let data = await post('setTimerPrescaler', payload);
         if(data != "success")
         {
             alert(`Error: failed to prescaler of flex timer ${timerIndex}, info: ${data}`);
@@ -930,7 +932,7 @@ async function setFlexTimerPrescaler(elementId)
     }
 }
 
-async function setFixTimerPrescaler(elementId)
+async function onClick_FixTimerPrescaler(elementId)
 {
     let segments = elementId.split("_");
     let action = segments[3];
@@ -945,7 +947,7 @@ async function setFixTimerPrescaler(elementId)
             prescaler: value
         };
 
-        let data = await post('timerPrescaler', payload);
+        let data = await post('setTimerPrescaler', payload);
         if(data != "success")
         {
             alert(`Error: failed to prescaler of fix timer, info: ${data}`);
@@ -953,51 +955,86 @@ async function setFixTimerPrescaler(elementId)
     }
 }
 
-async function setStepper(id) 
+async function onClick_Stepper(id) 
 {
     let segments = id.split("_");
-    let action = segments[2];
+    let classification = segments[2];
+    let action = segments[3];
 
-    if(action == "disable")
+    if(classification == "gpio")
     {
-        payload = {
-            index: parseInt(segments[3], 10),
-            disableStepper: document.getElementById(id).checked
-        }
+        let stepperId = segments[4];
 
-        data = await post('disableStepper', payload);
-        if(data != "success")
+        if(action == "disable")
         {
-            alert(`Error: failed to enabl stepper ${segments[3]}, info: ${data}`);
+            payload = {
+                index: parseInt(stepperId, 10),
+                disableStepper: document.getElementById(id).checked
+            }
+
+            data = await post('disableStepper', payload);
+            if(data != "success")
+            {
+                alert(`Error: failed to enabl stepper ${stepperId}, info: ${data}`);
+            }
+        }
+        else if(action == "forward")
+        {
+            payload = {
+                index: parseInt(stepperId, 10),
+                forwardStepper: document.getElementById(id).checked
+            }
+
+            data = await post('forwardStepper', payload);
+            if(data != "success")
+            {
+                alert(`Error: failed to forward stepper ${stepperId}, info: ${data}`);
+            }
+        }
+        else if(action == "clock")
+        {
+            payload = {
+                index: parseInt(stepperId, 10),
+                highLevel: document.getElementById(id).checked
+            }
+
+            data = await post('clockStepper', payload);
+            if(data != "success")
+            {
+                alert(`Error: failed to clock stepper ${stepperId}, info: ${data}`);
+            }
         }
     }
-    else if(action == "forward")
+    else if(classification == "timer")
     {
-        payload = {
-            index: parseInt(segments[3], 10),
-            forwardStepper: document.getElementById(id).checked
-        }
-
-        data = await post('forwardStepper', payload);
-        if(data != "success")
+        if(action == "save")
         {
-            alert(`Error: failed to forward stepper ${segments[3]}, info: ${data}`);
+            let stepperIndex = Number(segments[4]);
+            let selectId = `id_stepper_timer_select_${stepperIndex}`;
+            let timer = document.getElementById(selectId).value;
+
+            let payload = {
+                stepperId: stepperIndex,
+                timer: timer
+            }
+
+            let data = await post('saveStepperTimer', payload);
+            if(data != "success")
+            {
+                alert(`Error: failed save timer, info: ${data}`);
+            }
         }
     }
-    else if(action == "clock")
+    else if(classification == "encoder")
     {
-        payload = {
-            index: parseInt(segments[3], 10),
-            highLevel: document.getElementById(id).checked
-        }
-
-        data = await post('clockStepper', payload);
-        if(data != "success")
+        if(action == "save")
         {
-            alert(`Error: failed to clock stepper ${segments[3]}, info: ${data}`);
+
         }
     }
-    else if(action == "go")
+
+
+    else if(classification == "go")
     {
         let stepperId = parseInt(segments[4], 10);
         let stepsNum = NaN;
@@ -1042,6 +1079,7 @@ async function setStepper(id)
             alert(`Error: failed to run stepper ${segments[4]}, info: ${data}`);
         }
     }
+
     else if(action == "steps")
     {
         // do nothing when id_stepper_steps_X is clicked
@@ -1081,7 +1119,7 @@ async function setStepper(id)
     }
 }
 
-async function onDocumentClick(event)
+async function onClick(event)
 {
     const element = event.target;
     elementId = element.id;
@@ -1097,19 +1135,19 @@ async function onDocumentClick(event)
         return;
 
     if (elementId.startsWith("id_setGpio_"))
-        await setGpio(elementId);
+        await onClick_Gpio(elementId);
     else if (elementId.startsWith("id_powerOutput_set_"))
-        await setPowerOutput(elementId);
+        await onClick_PowerOutput(elementId);
     else if (elementId == "id_bdcPowerMain_set")
-        await setBDCPowerOutput(elementId);
+        await onClick_BDCPowerOutput(elementId);
     else if (elementId.startsWith("id_bdcControl_"))
-        await setBDCControl(elementId);
+        await onClick_BDCControl(elementId);
     else if (elementId.startsWith("id_flexTimer_prescaler_"))
-        await setFlexTimerPrescaler(elementId);
+        await onClick_FlexTimerPrescaler(elementId);
     else if (elementId.startsWith("id_fixTimer_prescaler_"))
-        await setFixTimerPrescaler(elementId);
+        await onClick_FixTimerPrescaler(elementId);
     else if (elementId.startsWith("id_stepper_"))
-        await setStepper(elementId);
+        await onClick_Stepper(elementId);
 
     // refresh webpage
     await post('refreshStatus', {});
@@ -1319,8 +1357,8 @@ function updateStepper(status)
         let gpioDisableId = `id_stepper_gpio_disable_${stepperIndex}`;
         let gpioForwardId = `id_stepper_gpio_forward_${stepperIndex}`;
         let gpioClockId = `id_stepper_gpio_clock_${stepperIndex}`;
-        let timerId = `id_stepper_timer_${stepperIndex}`;
-        let encoderId = `id_stepper_encoder_${stepperIndex}`;
+        let timerId = `id_stepper_timer_value_${stepperIndex}`;
+        let encoderId = `id_stepper_encoder_value_${stepperIndex}`;
 
         let forcedModePeriodValueId = `id_stepper_period_forced_value_${stepperIndex}`;
         
@@ -1408,7 +1446,7 @@ const VO = {};
 
 document.body.innerHTML = createBody();
 
-document.addEventListener('click', async function(event) { onDocumentClick(event); } );
+document.addEventListener('click', async function(event) { onClick(event); } );
 document.addEventListener('input', (e) => {
     const t = e.target;
     if (t instanceof HTMLInputElement && t.type === 'number') {

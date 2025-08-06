@@ -3,6 +3,7 @@ using System.Text.Json;
 using VirtualOperatorServer.CommandAndReply;
 using VirtualOperatorServer.Facade;
 using VirtualOperatorServer.Services;
+using VirtualOperatorServer.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -90,7 +91,7 @@ app.MapPost("/post/{*command}", async(HttpRequest request, string command, BackS
             (command == "disableStepper") ||
             (command == "forwardStepper") ||
             (command == "clockStepper") ||
-            (command == "timerPrescaler")
+            (command == "setTimerPrescaler")
         )
         {
             CommandAndReply cmd = CommandFactory.BuildPostCommand(command, jsonRoot);
@@ -112,12 +113,58 @@ app.MapPost("/post/{*command}", async(HttpRequest request, string command, BackS
                 }
             }
         }
+        else if (command == "saveStepperTimer")
+        {
+
+            var stepperIndex = jsonRoot.GetProperty("stepperId").GetByte();
+            var timer = jsonRoot.GetProperty("timer").GetString();
+
+            StatusFacade.Facade.Stepper.Configuration.EnumTimer enumTimer;
+
+            switch (timer)
+            {
+                case "FLEX_TIMER_0":
+                    enumTimer = StatusFacade.Facade.Stepper.Configuration.EnumTimer.FLEX_TIMER_0;
+                    break;
+                case "FLEX_TIMER_1":
+                    enumTimer = StatusFacade.Facade.Stepper.Configuration.EnumTimer.FLEX_TIMER_1;
+                    break;
+                case "FLEX_TIMER_2":
+                    enumTimer = StatusFacade.Facade.Stepper.Configuration.EnumTimer.FLEX_TIMER_2;
+                    break;
+                case "FLEX_TIMER_3":
+                    enumTimer = StatusFacade.Facade.Stepper.Configuration.EnumTimer.FLEX_TIMER_3;
+                    break;
+                case "FLEX_TIMER_4":
+                    enumTimer = StatusFacade.Facade.Stepper.Configuration.EnumTimer.FLEX_TIMER_4;
+                    break;
+                case "FLEX_TIMER_5":
+                    enumTimer = StatusFacade.Facade.Stepper.Configuration.EnumTimer.FLEX_TIMER_5;
+                    break;
+                case "FIX_TIMER":
+                    enumTimer = StatusFacade.Facade.Stepper.Configuration.EnumTimer.FIX_TIMER;
+                    break;
+                default:
+                    throw new Exception($"Invalid timer '{timer}' in POST command '{command}'");
+            }
+
+            var configs = StaticConfig.Instance.StepperConfigs;
+            if (stepperIndex >= configs.Length)
+            {
+                throw new Exception($"Invalid stepper index '{stepperIndex}' in POST command '{command}'");
+            }
+
+            configs[stepperIndex].timer = enumTimer;
+            StaticConfig.Instance.SaveStepperConfigs();
+            
+            return Results.Text("success", "text/html");
+        }
     }
-    catch(InvalidRequestBodyException e)
+    catch (InvalidRequestBodyException e)
     {
         Console.WriteLine($"Error: exception in buildPostCommand(): {e.Message}");
     }
-    catch(Exception e)
+    catch (Exception e)
     {
         Console.WriteLine($"Error: exception in MapPost: {e.Message}");
     }

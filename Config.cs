@@ -21,15 +21,13 @@ namespace VirtualOperatorServer.Configuration
 
         private void LoadStepperConfig()
         {
-            StatusFacade.Facade.Stepper.Configuration[]? tmpConfigs = null;
-
             try
             {
                 if (!File.Exists(_stepperConfigFile))
                     throw new FileNotFoundException("The file does not exist.", _stepperConfigFile);
 
                 string jsonContent = File.ReadAllText(_stepperConfigFile);
-                tmpConfigs = JsonSerializer.Deserialize<StatusFacade.Facade.Stepper.Configuration[]>(jsonContent);
+                var tmpConfigs = JsonSerializer.Deserialize<StatusFacade.Facade.Stepper.Configuration[]>(jsonContent, _serializerOption);
 
                 if (tmpConfigs == null)
                     throw new Exception($"Failed to deserialize '{_stepperConfigFile}'");
@@ -52,15 +50,13 @@ namespace VirtualOperatorServer.Configuration
 
         private void LoadTimerConfig()
         {
-            ushort[]? tmpConfigs = null;
-
             try
             {
                 if (!File.Exists(_timerConfigFile))
                     throw new FileNotFoundException("The file does not exist.", _timerConfigFile);
 
                 string jsonContent = File.ReadAllText(_timerConfigFile);
-                tmpConfigs = JsonSerializer.Deserialize<ushort[]>(jsonContent);
+                var tmpConfigs = JsonSerializer.Deserialize<ushort[]>(jsonContent, _serializerOption);
 
                 if (tmpConfigs == null)
                     throw new Exception($"Failed to deserialize '{_timerConfigFile}'");
@@ -112,61 +108,16 @@ namespace VirtualOperatorServer.Configuration
         public StatusFacade.Facade.Stepper.Configuration[] StepperConfigs { get; private set; } = new StatusFacade.Facade.Stepper.Configuration[StatusFacade.Facade.StepperCount];
         public ushort[] TimerConfigs { get; private set; } = new ushort[StatusFacade.Facade.FlexTimerCount + 1];
 
-        public void SaveStepperConfigs(in StatusFacade.Facade.Stepper.Configuration[] configs)
+        public void SaveStepperConfigs()
         {
-            if (configs.Length != StepperConfigs.Length)
-            {
-                Console.WriteLine("Error: invalid stepper configurations");
-                return;
-            }
-
-            StepperConfigs = configs;
-
             string jsonStr = JsonSerializer.Serialize(StepperConfigs, _serializerOption);
             SaveFile(_stepperConfigFile, jsonStr);
         }
 
-        public void SaveStepperConfig(uint index, in StatusFacade.Facade.Stepper.Configuration config)
+        public void SaveTimerConfigs()
         {
-            var configs = StepperConfigs;
-
-            if (index >= configs.Length)
-            {
-                Console.WriteLine($"Error: invalid stepper index {index}");
-                return;
-            }
-
-            configs[index] = config;
-
-            SaveStepperConfigs(configs);
-        }
-
-        public void SaveTimerConfigs(in ushort[] configs)
-        {
-            if (configs.Length != TimerConfigs.Length)
-            {
-                Console.WriteLine("Error: invalid Timer configurations");
-                return;
-            }
-
-            TimerConfigs = configs;
             string jsonStr = JsonSerializer.Serialize(TimerConfigs);
             SaveFile(_timerConfigFile, jsonStr);
-        }
-
-        public void SaveTimerConfig(uint index, ushort config)
-        {
-            var configs = TimerConfigs;
-
-            if (index >= configs.Length)
-            {
-                Console.WriteLine($"Error: invalid timer index {index}");
-                return;
-            }
-
-            configs[index] = config;
-
-            SaveTimerConfigs(configs);
         }
     }
 

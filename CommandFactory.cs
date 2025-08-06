@@ -373,7 +373,7 @@ internal static class CommandFactory
         {
             cmd = new CmdGetStatus();
         }
-        else if (restApi == "timerPrescaler")
+        else if (restApi == "setTimerPrescaler")
         {
             cmd = BuildSetTimerPrecalers(jsonRoot);
         }
