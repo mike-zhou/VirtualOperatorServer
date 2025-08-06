@@ -317,7 +317,8 @@ function createTimerTable()
         html.push(`<td><input type="number" id="id_flexTimer_prescaler_config_${i}" min="1" step="1" max="65536"></td>`);
         html.push(`<td><input type="button" id="id_flexTimer_prescaler_set_${i}" value="Set"></td>`);
         html.push(`<td><input type="button" id="id_flexTimer_prescaler_save_${i}" value="Save"></td>`);
-        html.push(`<td><label id="id_flexTimer_prescaler_unit_${i}"> ns</td>`);
+        html.push(`<td><label id="id_flexTimer_prescaler_unit_${i}"></label></td>`);
+        html.push(`<td> ns</td>`);
         html.push("</tr>");
     }
 
@@ -328,7 +329,8 @@ function createTimerTable()
     html.push(`<td><input type="number" id="id_fixTimer_prescaler_config" min="1" step="1" max="65536"></td>`);
     html.push(`<td><input type="button" id="id_fixTimer_prescaler_set" value="Set"></td>`);
     html.push(`<td><input type="button" id="id_fixTimer_prescaler_save" value="Save"></td>`);
-    html.push(`<td><label id="id_fixTimer_prescaler_unit"> ns</td>`);
+    html.push(`<td><label id="id_fixTimer_prescaler_unit"></label></td>`);
+    html.push(`<td> ns</td>`);
     html.push("</tr>");
     
     html.push("</tbody>");
@@ -1331,6 +1333,7 @@ function updateTimer(status)
         let stateId = `id_flexTimer_state_${i}`;
         let valueId = `id_flexTimer_prescaler_value_${i}`;
         let configId = `id_flexTimer_prescaler_config_${i}`;
+        let unitId = `id_flexTimer_prescaler_unit_${i}`;
 
         document.getElementById(stateId).textContent = status.flexTimers[i].state;
         document.getElementById(valueId).textContent = String(status.flexTimers[i].prescaler);
@@ -1339,6 +1342,8 @@ function updateTimer(status)
         {
             config.value = status.flexTimers[i].prescalerConfig;
         }
+
+        document.getElementById(unitId).textContent = (status.flexTimers[i].prescaler * 4.16).toLocaleString('en-US'); 
     }
 
     document.getElementById("id_fixTimer_state").textContent = status.fixTimer.state;
@@ -1347,6 +1352,8 @@ function updateTimer(status)
     {
         document.getElementById("id_fixTimer_prescaler_config").value = status.fixTimer.prescalerConfig;
     }
+
+    document.getElementById("id_fixTimer_prescaler_unit").textContent = (status.fixTimer.prescaler * 10).toLocaleString('en-US'); 
 }
 
 function updateStepper(status)
