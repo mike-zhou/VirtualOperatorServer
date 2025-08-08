@@ -65,3 +65,9 @@
     cursor: auto;
 }
 
+.disabled-label {
+    color: gray;
+    pointer-events: none;
+    opacity: 0.5;
+}
+

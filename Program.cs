@@ -161,7 +161,6 @@ app.MapPost("/post/{*command}", async(HttpRequest request, string command, BackS
         }
         else if (command == "saveStepperEncoder")
         {
-
             var stepperIndex = jsonRoot.GetProperty("stepperId").GetByte();
             var encoder = jsonRoot.GetProperty("encoder").GetString();
 
@@ -211,7 +210,59 @@ app.MapPost("/post/{*command}", async(HttpRequest request, string command, BackS
 
             return Results.Text("success", "text/html");
         }
-        
+        else if (command == "saveStepperMode")
+        {
+            var stepperIndex = jsonRoot.GetProperty("stepperId").GetByte();
+            var mode = jsonRoot.GetProperty("mode").GetString();
+            var configs = StaticConfig.Instance.StepperConfigs;
+
+            if (stepperIndex >= configs.Length)
+            {
+                throw new Exception($"Invalid stepper index '{stepperIndex}' in POST command '{command}'");
+            }
+
+            switch (mode)
+            {
+                case "forced":
+                {
+                    var value = jsonRoot.GetProperty("value").GetUInt16();
+                    configs[stepperIndex].forcedModeConfig.pulseWidth = value;
+                    break;
+                }
+                case "active":
+                {
+                    var type = jsonRoot.GetProperty("type").GetString();
+                    var value = jsonRoot.GetProperty("value").GetUInt16();
+
+                    switch (type)
+                    {
+                        case "starting":
+                            configs[stepperIndex].activeModeConfig.startingPulseWidth = value;
+                            break;
+                        case "accelerationSteps":
+                            configs[stepperIndex].activeModeConfig.acceleratingSteps = value;
+                            break;
+                        case "cruising":
+                            configs[stepperIndex].activeModeConfig.cruisingPulseWidth = value;
+                            break;
+                        case "ending":
+                            configs[stepperIndex].activeModeConfig.endingPulseWidth = value;
+                            break;
+                        case "deaccelerationSteps":
+                            configs[stepperIndex].activeModeConfig.deacceleratingSteps = value;
+                            break;
+                        default:
+                            throw new Exception($"Invalid type '{type}' in POST command '{command}'");
+                    }
+                    break;
+                }
+                default:
+                    throw new Exception($"Invalid mode '{mode}' in POST command '{command}'");
+            }
+
+            StaticConfig.Instance.SaveStepperConfigs();
+            return Results.Text("success", "text/html");
+        }
     }
     catch (InvalidRequestBodyException e)
     {

@@ -357,7 +357,7 @@ function createStepperMode(stepperIndex)
     {
         html.push("<td>");
         html.push(`<div id='id_stepper_group_forced_${stepperIndex}'>`);
-        html.push(`<label>Pulse period: </label>`);
+        html.push(`<label id="id_stepper_period_forced_name_${stepperIndex}">Pulse period: </label>`);
         html.push(`<label id="id_stepper_period_forced_value_${stepperIndex}" ></label>`);
         html.push(`<input type="number" id="id_stepper_period_forced_config_${stepperIndex}" min="1" step="1" max="65536">`);
         html.push(`<input type="button" id="id_stepper_period_forced_set_${stepperIndex}" value="Set">`);
@@ -378,31 +378,31 @@ function createStepperMode(stepperIndex)
         html.push("<td>");
         html.push(`<div id='id_stepper_group_active_${stepperIndex}'>`);
 
-        html.push(`<label>Starting pulse period: </label>`);
+        html.push(`<label id="id_stepper_period_active_starting_name_${stepperIndex}">Starting pulse period: </label>`);
         html.push(`<label id="id_stepper_period_active_starting_value_${stepperIndex}"></label>`);
         html.push(`<input type="number" id="id_stepper_period_active_starting_config_${stepperIndex}" min="1" step="1" max="65536">`);
         html.push(`<input type="button" id="id_stepper_period_active_starting_set_${stepperIndex}" value="Set">`);
         html.push(`<input type="button" id="id_stepper_period_active_starting_save_${stepperIndex}" value="Save">`);
-        html.push(`<label>Acceleration steps: </label>`);
+        html.push(`<label id="id_stepper_period_active_accelerationSteps_name_${stepperIndex}">Acceleration steps: </label>`);
         html.push(`<label id="id_stepper_period_active_accelerationSteps_value_${stepperIndex}"></label>`);
         html.push(`<input type="numbe\" id="id_stepper_period_active_accelerationSteps_config_${stepperIndex}" min="1" step="1" max="1024">`);
         html.push(`<input type="button" id="id_stepper_period_active_accelerationSteps_set_${stepperIndex}" value="Set">`);
         html.push(`<input type="button" id="id_stepper_period_active_accelerationSteps_save_${stepperIndex}" value="Save">`);
         html.push("<br>");
 
-        html.push(`<label>Cruising period: </label>`);
+        html.push(`<label id="id_stepper_period_active_cruising_name_${stepperIndex}">Cruising period: </label>`);
         html.push(`<label id="id_stepper_period_active_cruising_value_${stepperIndex}"></label>`);
         html.push(`<input type="number" id="id_stepper_period_active_cruising_config_${stepperIndex}" min="1" step="1" max="65536">`);
         html.push(`<input type="button" id="id_stepper_period_active_cruising_set_${stepperIndex}" value="Set">`);
         html.push(`<input type="button" id="id_stepper_period_active_cruising_save_${stepperIndex}" value="Save">`);
         html.push("<br>");
 
-        html.push(`<label>Ending pulse period: </label>`);
+        html.push(`<label id="id_stepper_period_active_ending_name_${stepperIndex}">Ending pulse period: </label>`);
         html.push(`<label id="id_stepper_period_active_ending_value_${stepperIndex}"></label>`);
         html.push(`<input type="number" id="id_stepper_period_active_ending_config_${stepperIndex}" min="1" step="1" max="65536">`);
         html.push(`<input type="button" id="id_stepper_period_active_ending_set_${stepperIndex}" value="Set">`);
         html.push(`<input type="button" id="id_stepper_period_active_ending_save_${stepperIndex}" value="Save">`);
-        html.push(`<label>Deacceleration steps: </label>`);
+        html.push(`<label id="id_stepper_period_active_deaccelerationSteps_name_${stepperIndex}">Deacceleration steps: </label>`);
         html.push(`<label id="id_stepper_period_active_deaccelerationSteps_value_${stepperIndex}"></label>`);
         html.push(`<input type="number" id="id_stepper_period_active_deaccelerationSteps_config_${stepperIndex}" min="1" step="1" max="1024">`);
         html.push(`<input type="button" id="id_stepper_period_active_deaccelerationSteps_set_${stepperIndex}" value="Set">`);
@@ -1047,7 +1047,131 @@ async function onClick_Stepper(id)
             }
         }
     }
+    else if(classification == "period")
+    {
+        let mode = segments[3];
 
+        let payload;
+        let errString = "";
+
+        if(mode == "forced")
+        {
+            let action = segments[4];
+            let stepperIndex = segments[5];
+            if(action == "save")
+            {
+                let periodId = `id_stepper_period_forced_config_${stepperIndex}`;
+                let period = document.getElementById(periodId).value;
+
+                payload = {
+                    stepperId: Number(stepperIndex),
+                    mode: mode,
+                    value: Number(period)
+                }
+                errString = `Error: failed save forced period`;
+            }
+        }
+        else if(mode == "active")
+        {
+            let type = segments[4];
+            let action = segments[5];
+            let stepperIndex = segments[6];
+
+            if(type == "starting")
+            {
+                if(action == "save")
+                {
+                    let periodId = `id_stepper_period_active_starting_config_${stepperIndex}`;
+                    let period = document.getElementById(periodId).value;
+
+                    payload = {
+                        stepperId: Number(stepperIndex),
+                        mode: mode,
+                        type: type,
+                        value: Number(period)
+                    }
+                    errString = `Error: failed save active starting period`;
+                }
+            }
+            else if(type == "accelerationSteps")
+            {
+                if(action == "save")
+                {
+                    let stepsId = `id_stepper_period_active_accelerationSteps_config_${stepperIndex}`;
+                    let steps = document.getElementById(stepsId).value;
+
+                    payload = {
+                        stepperId: Number(stepperIndex),
+                        mode: mode,
+                        type: type,
+                        value: Number(steps)
+                    }
+                    errString = `Error: failed to save active acceleration steps`;
+                }
+            }
+            else if(type == "cruising")
+            {
+                if(action == "save")
+                {
+                    let periodId = `id_stepper_period_active_cruising_config_${stepperIndex}`;
+                    let period = document.getElementById(periodId).value;
+
+                    payload = {
+                        stepperId: Number(stepperIndex),
+                        mode: mode,
+                        type: type,
+                        value: Number(period)
+                    }
+                    errString = `Error: failed save active cruising period`;
+                }
+            }
+            else if(type == "ending")
+            {
+                if(action == "save")
+                {
+                    let periodId = `id_stepper_period_active_ending_config_${stepperIndex}`;
+                    let period = document.getElementById(periodId).value;
+
+                    payload = {
+                        stepperId: Number(stepperIndex),
+                        mode: mode,
+                        type: type,
+                        value: Number(period)
+                    }
+                    errString = `Error: failed save active ending period`;
+                }
+            }
+            else if(type == "deaccelerationSteps")
+            {
+                if(action == "save")
+                {
+                    let stepsId = `id_stepper_period_active_deaccelerationSteps_config_${stepperIndex}`;
+                    let steps = document.getElementById(stepsId).value;
+
+                    payload = {
+                        stepperId: Number(stepperIndex),
+                        mode: mode,
+                        type: type,
+                        value: Number(steps)
+                    }
+                    errString = `Error: failed to save active deacceleration steps`;
+                }
+            }
+        }
+
+        if(payload != undefined)
+        {
+            let data = await post('saveStepperMode', payload);
+            if(data != "success")
+            {
+                alert(`${errString}, info: ${data}`);
+            }
+        }
+    }
+    else if(classification == "passive")
+    {
+        // ignore passive settings
+    }
 
     else if(classification == "go")
     {
@@ -1099,30 +1223,40 @@ async function onClick_Stepper(id)
     {
         // do nothing when id_stepper_steps_X is clicked
     }
-    else if(action == "mode")
+    else if(classification == "mode")
     {
         let modeValue = segments[3];
         let stepperId = segments[4];
 
-        let group = document.getElementById(`id_stepper_group_mode_forced_${stepperId}`);
-        let elements = group.querySelectorAll("input, select, label");
-        elements.forEach(el => el.disabled = true);
+        let group;
+        let elements;
 
-        group = document.getElementById(`id_stepper_group_mode_active_${stepperId}`);
-        elements = group.querySelectorAll("input, select, label");
+        // disable all groups
+        group = document.getElementById(`id_stepper_group_forced_${stepperId}`);
+        elements = group.querySelectorAll("input, select");
         elements.forEach(el => el.disabled = true);
+        elements = group.querySelectorAll("label");
+        elements.forEach(el => el.className = "disabled-label");
 
-        group = document.getElementById(`id_stepper_group_mode_passive_${stepperId}`);
-        elements = group.querySelectorAll("input, select, label");
+
+        group = document.getElementById(`id_stepper_group_active_${stepperId}`);
+        elements = group.querySelectorAll("input, select");
         elements.forEach(el => el.disabled = true);
+        elements = group.querySelectorAll("label");
+        elements.forEach(el => el.className = "disabled-label");
 
-        group = document.getElementById(`id_stepper_group_mode_${modeValue}_${stepperId}`);
-        elements = group.querySelectorAll("input, select, label");
+        group = document.getElementById(`id_stepper_group_passive_${stepperId}`);
+        elements = group.querySelectorAll("input, select");
+        elements.forEach(el => el.disabled = true);
+        elements = group.querySelectorAll("label");
+        elements.forEach(el => el.className = "disabled-label");
+
+        // enable the chosen group
+        group = document.getElementById(`id_stepper_group_${modeValue}_${stepperId}`);
+        elements = group.querySelectorAll("input, select");
         elements.forEach(el => el.disabled = false);
-    }
-    else if(action == "period")
-    {
-        // do nothing
+        elements = group.querySelectorAll("label");
+        elements.forEach(el => el.className = "");
     }
     else if(action == "group")
     {
