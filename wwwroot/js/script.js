@@ -534,20 +534,20 @@ function createStepperTable()
             html.push("</div>");
             // mode
             html.push(createStepperMode(stepperIndex));
-            // IsDisableHigh, IsForwardHigh, IsRisingEdgeDriven
+            // isEnableHigh, IsForwardHigh, IsRisingEdgeDriven
             html.push("<div><table>");
             html.push(`<tr>`);
-            html.push(`<td><label>IsDisableHigh<input type="checkbox" id="id_stepper_isDisableHigh_value_${stepperIndex}"></label></td>`);
-            html.push(`<td><input type="button" id="id_stepper_isDisableHigh_set_${stepperIndex}" value="Set"></td>`);
-            html.push(`<td><input type="button" id="id_stepper_isDisableHigh_save_${stepperIndex}" value="Save"></td>`);
+            html.push(`<td><label>isEnableHigh<input type="checkbox" id="id_stepper_isEnableHigh_value_${stepperIndex}"></label></td>`);
+            html.push(`<td><input type="button" id="id_stepper_isEnableHigh_set_${stepperIndex}" value="Set"></td>`);
+            html.push(`<td><input type="button" id="id_stepper_isEnableHigh_save_${stepperIndex}" value="Save"></td>`);
             html.push(`</tr>`);
             html.push(`<tr>`);
-            html.push(`<td><label>IsForwardHigh<input type="checkbox" id="id_stepper_isForwardHigh_${stepperIndex}"></label></td>`);
+            html.push(`<td><label>IsForwardHigh<input type="checkbox" id="id_stepper_isForwardHigh_value_${stepperIndex}"></label></td>`);
             html.push(`<td><input type="button" id="id_stepper_isForwardHigh_set_${stepperIndex}" value="Set"></td>`);
             html.push(`<td><input type="button" id="id_stepper_isForwardHigh_save_${stepperIndex}" value="Save"></td>`);
             html.push(`</tr>`);
             html.push(`<tr>`);
-            html.push(`<td><label>IsRisingEdgeHigh<input type="checkbox" id="id_stepper_isRisingEdgeDriven_${stepperIndex}"></label></td>`);
+            html.push(`<td><label>IsRisingEdgeHigh<input type="checkbox" id="id_stepper_isRisingEdgeDriven_value_${stepperIndex}"></label></td>`);
             html.push(`<td><input type="button" id="id_stepper_isRisingEdgeDriven_set_${stepperIndex}" value="Set"></td>`);
             html.push(`<td><input type="button" id="id_stepper_isRisingEdgeDriven_save_${stepperIndex}" value="Save"></td>`);
             html.push(`</tr>`);
@@ -1020,7 +1020,7 @@ async function onClick_Stepper(id)
                 timer: timer
             }
 
-            let data = await post('saveStepperTimer', payload);
+            let data = await post('saveStepperConfigTimer', payload);
             if(data != "success")
             {
                 alert(`Error: failed save timer, info: ${data}`);
@@ -1040,7 +1040,7 @@ async function onClick_Stepper(id)
                 encoder: encoder
             }
 
-            let data = await post('saveStepperEncoder', payload);
+            let data = await post('saveStepperConfigEncoder', payload);
             if(data != "success")
             {
                 alert(`Error: failed save encoder, info: ${data}`);
@@ -1161,7 +1161,7 @@ async function onClick_Stepper(id)
 
         if(payload != undefined)
         {
-            let data = await post('saveStepperMode', payload);
+            let data = await post('saveStepperConfigMode', payload);
             if(data != "success")
             {
                 alert(`${errString}, info: ${data}`);
@@ -1171,6 +1171,70 @@ async function onClick_Stepper(id)
     else if(classification == "passive")
     {
         // ignore passive settings
+    }
+    else if(classification == "mode")
+    {
+        let modeValue = segments[3];
+        let stepperId = segments[4];
+
+        let group;
+        let elements;
+
+        // disable all groups
+        group = document.getElementById(`id_stepper_group_forced_${stepperId}`);
+        elements = group.querySelectorAll("input, select");
+        elements.forEach(el => el.disabled = true);
+        elements = group.querySelectorAll("label");
+        elements.forEach(el => el.className = "disabled-label");
+
+
+        group = document.getElementById(`id_stepper_group_active_${stepperId}`);
+        elements = group.querySelectorAll("input, select");
+        elements.forEach(el => el.disabled = true);
+        elements = group.querySelectorAll("label");
+        elements.forEach(el => el.className = "disabled-label");
+
+        group = document.getElementById(`id_stepper_group_passive_${stepperId}`);
+        elements = group.querySelectorAll("input, select");
+        elements.forEach(el => el.disabled = true);
+        elements = group.querySelectorAll("label");
+        elements.forEach(el => el.className = "disabled-label");
+
+        // enable the chosen group
+        group = document.getElementById(`id_stepper_group_${modeValue}_${stepperId}`);
+        elements = group.querySelectorAll("input, select");
+        elements.forEach(el => el.disabled = false);
+        elements = group.querySelectorAll("label");
+        elements.forEach(el => el.className = "");
+    }
+    else if(classification == "group")
+    {
+        // do nothing
+    }
+    else if((classification == "isEnableHigh") ||
+            (classification == "isForwardHigh") ||
+            (classification == "isRisingEdgeDriven"))
+    {
+        let action = segments[3];
+
+        if(action == 'save')
+        {
+            let stepperIndex = segments[4];
+            let checkId = `id_stepper_${classification}_value_${stepperIndex}`;
+            let checked = document.getElementById(checkId).checked;
+
+            let payload = {
+                stepperId: Number(stepperIndex),
+                classification: classification,
+                isChecked: checked
+            }
+
+            let data = await post('saveStepperConfig', payload);
+            if(data != "success")
+            {
+                alert(`${errString}, info: ${data}`);
+            }
+        }
     }
 
     else if(classification == "go")
@@ -1222,45 +1286,6 @@ async function onClick_Stepper(id)
     else if(action == "steps")
     {
         // do nothing when id_stepper_steps_X is clicked
-    }
-    else if(classification == "mode")
-    {
-        let modeValue = segments[3];
-        let stepperId = segments[4];
-
-        let group;
-        let elements;
-
-        // disable all groups
-        group = document.getElementById(`id_stepper_group_forced_${stepperId}`);
-        elements = group.querySelectorAll("input, select");
-        elements.forEach(el => el.disabled = true);
-        elements = group.querySelectorAll("label");
-        elements.forEach(el => el.className = "disabled-label");
-
-
-        group = document.getElementById(`id_stepper_group_active_${stepperId}`);
-        elements = group.querySelectorAll("input, select");
-        elements.forEach(el => el.disabled = true);
-        elements = group.querySelectorAll("label");
-        elements.forEach(el => el.className = "disabled-label");
-
-        group = document.getElementById(`id_stepper_group_passive_${stepperId}`);
-        elements = group.querySelectorAll("input, select");
-        elements.forEach(el => el.disabled = true);
-        elements = group.querySelectorAll("label");
-        elements.forEach(el => el.className = "disabled-label");
-
-        // enable the chosen group
-        group = document.getElementById(`id_stepper_group_${modeValue}_${stepperId}`);
-        elements = group.querySelectorAll("input, select");
-        elements.forEach(el => el.disabled = false);
-        elements = group.querySelectorAll("label");
-        elements.forEach(el => el.className = "");
-    }
-    else if(action == "group")
-    {
-        // do nothing
     }
     else
     {
@@ -1522,7 +1547,14 @@ function updateStepper(status)
         let activeModeEndingPeriodValueId = `id_stepper_period_active_ending_value_${stepperIndex}`;
         let activeModeDeaccelerationStepsValueId = `id_stepper_period_active_deaccelerationSteps_value_${stepperIndex}`;
 
-        let passiveModeActiveStepperSelectId = `id_stepper_passive_activeStepper_select_${stepperIndex}`;
+        let isEnableHighValueId = `id_stepper_isEnableHigh_value_${stepperIndex}`;
+        let isEnableHighSaveId = `id_stepper_isEnableHigh_save_${stepperIndex}`;
+        let isForwardHighValueId = `id_stepper_isForwardHigh_value_${stepperIndex}`;
+        let isForwardHighSaveId = `id_stepper_isForwardHigh_save_${stepperIndex}`;
+        let isRisingEdgeDrivenValueId = `id_stepper_isRisingEdgeDriven_value_${stepperIndex}`;
+        let isRisingEdgeDrivenSaveId = `id_stepper_isRisingEdgeDriven_save_${stepperIndex}`;
+
+        
 
         let data = status.steppers[stepperIndex];
 
@@ -1550,8 +1582,34 @@ function updateStepper(status)
             String(status.steppers[stepperIndex].config.activeModeConfig.endingPulseWidth);
         document.getElementById(activeModeDeaccelerationStepsValueId).textContent =
             String(status.steppers[stepperIndex].config.activeModeConfig.deacceleratingSteps);
-        
-        // passive mode
+        // isEnableHigh
+        if(document.getElementById(isEnableHighValueId).checked == status.steppers[stepperIndex].config.isEnableHigh)
+        {
+            document.getElementById(isEnableHighSaveId).disabled = true;
+        }
+        else
+        {
+            document.getElementById(isEnableHighSaveId).disabled = false;
+        }
+        // isForwardHigh
+        if(document.getElementById(isForwardHighValueId).checked == status.steppers[stepperIndex].config.isForwardHigh)
+        {
+            document.getElementById(isForwardHighSaveId).disabled = true;
+        }
+        else
+        {
+            document.getElementById(isForwardHighSaveId).disabled = false;
+        }
+        // isRisingEdgeDriven
+        if(document.getElementById(isRisingEdgeDrivenValueId).checked == status.steppers[stepperIndex].config.isRisingEdgeDriven)
+        {
+            document.getElementById(isRisingEdgeDrivenSaveId).disabled = true;
+        }
+        else
+        {
+            document.getElementById(isRisingEdgeDrivenSaveId).disabled = false;
+        }
+
     }
 }
 
