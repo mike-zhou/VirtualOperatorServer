@@ -556,37 +556,27 @@ function createStepperTable()
             html.push(`<div><table>`);
             html.push(`<tr>`);
             html.push(`<td><label>HomeBoundaryToReadySteps</label></td>`);
-            html.push(`<td><label id='id_stepper_homeBoundaryToReadySteps_value_${stepperIndex}'></label></td>`);
-            html.push(`<td><input type="number" id="id_stepper_homeBoundaryToReadySteps_config_${stepperIndex}" min="1" step="1" max="1024"></td>`);
-            html.push(`<td><input type="button" id="id_stepper_homeBoundaryToReadySteps_set_${stepperIndex}" value="Set"></td>`);
+            html.push(`<td><input type="number" id="id_stepper_homeBoundaryToReadySteps_value_${stepperIndex}" min="1" step="1" max="1024"></td>`);
             html.push(`<td><input type="button" id="id_stepper_homeBoundaryToReadySteps_save_${stepperIndex}" value="Save"></td>`);
             html.push(`</tr>`);
             html.push(`<tr>`);
             html.push(`<td><label>Range</label></td>`);
-            html.push(`<td><label id='id_stepper_range_value_${stepperIndex}'></label></td>`);
-            html.push(`<td><input type="number" id="id_stepper_range_config_${stepperIndex}" min="1" step="1" max="10240"></td>`);
-            html.push(`<td><input type="button" id="id_stepper_range_set_${stepperIndex}" value="Set"></td>`);
+            html.push(`<td><input type="number" id="id_stepper_range_value_${stepperIndex}" min="1" step="1" max="10240"></td>`);
             html.push(`<td><input type="button" id="id_stepper_range_save_${stepperIndex}" value="Save"></td>`);
             html.push(`</tr>`);
             html.push(`<tr>`);
             html.push(`<td><label>StepsPerRotation</label></td>`);
-            html.push(`<td><label id='id_stepper_stepsPerRotation_value_${stepperIndex}'></label></td>`);
-            html.push(`<td><input type="number" id="id_stepper_stepsPerRotation_config_${stepperIndex}" min="1" step="1" max="10240"></td>`);
-            html.push(`<td><input type="button" id="id_stepper_stepsPerRotation_set_${stepperIndex}" value="Set"></td>`);
+            html.push(`<td><input type="number" id="id_stepper_stepsPerRotation_value_${stepperIndex}" min="1" step="1" max="10240"></td>`);
             html.push(`<td><input type="button" id="id_stepper_stepsPerRotation_save_${stepperIndex}" value="Save"></td>`);
             html.push(`</tr>`);
             html.push(`<tr>`);
             html.push(`<td><label>EncoderCountsPerRotation</label></td>`);
-            html.push(`<td><label id='id_stepper_encoderCountsPerRotation_value_${stepperIndex}'></label></td>`);
-            html.push(`<td><input type="number" id="id_stepper_encoderCountsPerRotation_config_${stepperIndex}" min="1" step="1" max="10240"></td>`);
-            html.push(`<td><input type="button" id="id_stepper_encoderCountsPerRotation_set_${stepperIndex}" value="Set"></td>`);
+            html.push(`<td><input type="number" id="id_stepper_encoderCountsPerRotation_value_${stepperIndex}" min="1" step="1" max="10240"></td>`);
             html.push(`<td><input type="button" id="id_stepper_encoderCountsPerRotation_save_${stepperIndex}" value="Save"></td>`);
             html.push(`</tr>`);
             html.push(`<tr>`);
             html.push(`<td><label>EncoderOffsetErrorThreshold</label></td>`);
-            html.push(`<td><label id='id_stepper_encoderOffsetErrorThreshold_value_${stepperIndex}'></label></td>`);
-            html.push(`<td><input type="number" id="id_stepper_encoderOffsetErrorThreshold_config_${stepperIndex}" min="1" step="1" max="10240"></td>`);
-            html.push(`<td><input type="button" id="id_stepper_encoderOffsetErrorThreshold_set_${stepperIndex}" value="Set"></td>`);
+            html.push(`<td><input type="number" id="id_stepper_encoderOffsetErrorThreshold_value_${stepperIndex}" min="1" step="1" max="10240"></td>`);
             html.push(`<td><input type="button" id="id_stepper_encoderOffsetErrorThreshold_save_${stepperIndex}" value="Save"></td>`);
             html.push(`</tr>`);
             html.push("</table></div>");
@@ -1236,6 +1226,34 @@ async function onClick_Stepper(id)
             }
         }
     }
+    else if((classification == "homeBoundaryToReadySteps") ||
+            (classification == "range") ||
+            (classification == "stepsPerRotation") ||
+            (classification == "encoderCountsPerRotation") ||
+            (classification == "encoderOffsetErrorThreshold"))
+    {
+        let action = segments[3];
+
+        if(action == 'save')
+        {
+            let stepperIndex = segments[4];
+            let valueId = `id_stepper_${classification}_value_${stepperIndex}`;
+            let value = document.getElementById(valueId).valueAsNumber;
+
+            let payload = {
+                stepperId: Number(stepperIndex),
+                classification: classification,
+                value: value
+            }
+
+            let data = await post('saveStepperConfig', payload);
+            if(data != "success")
+            {
+                alert(`${errString}, info: ${data}`);
+            }
+        }
+    }
+
 
     else if(classification == "go")
     {
@@ -1532,58 +1550,54 @@ function updateStepper(status)
 {
     for(let stepperIndex=0; stepperIndex<status.steppers.length; stepperIndex++)
     {
+        let data = status.steppers[stepperIndex];
+
+        // alarm
         let alarmId = `id_stepperAlarm_state_${stepperIndex}`;
+        document.getElementById(alarmId).className = data.isAlarmTriggered ? "active-red-dot" : "inactive-red-dot";
+
+        // gpios
         let gpioDisableId = `id_stepper_gpio_disable_${stepperIndex}`;
         let gpioForwardId = `id_stepper_gpio_forward_${stepperIndex}`;
         let gpioClockId = `id_stepper_gpio_clock_${stepperIndex}`;
-        let timerId = `id_stepper_timer_value_${stepperIndex}`;
-        let encoderId = `id_stepper_encoder_value_${stepperIndex}`;
+        document.getElementById(gpioDisableId).checked = data.gpios.isDisableHigh;
+        document.getElementById(gpioForwardId).checked = data.gpios.isForwardHigh;
+        document.getElementById(gpioClockId).checked = data.gpios.isClockHigh;
 
+        // timer
+        let timerId = `id_stepper_timer_value_${stepperIndex}`;
+        document.getElementById(timerId).textContent = data.config.timer;
+
+        // encoder
+        let encoderId = `id_stepper_encoder_value_${stepperIndex}`;
+        document.getElementById(encoderId).textContent = data.config.encoder;
+
+        // forced mode
         let forcedModePeriodValueId = `id_stepper_period_forced_value_${stepperIndex}`;
-        
+        document.getElementById(forcedModePeriodValueId).textContent = 
+            String(data.config.forcedModeConfig.pulseWidth);
+
+        // active mode
         let activeModeStartingPeriodValueId = `id_stepper_period_active_starting_value_${stepperIndex}`;
         let activeModeAccelerationStepsValueId = `id_stepper_period_active_accelerationSteps_value_${stepperIndex}`;
         let activeModeCruisePeriodValueId = `id_stepper_period_active_cruising_value_${stepperIndex}`;
         let activeModeEndingPeriodValueId = `id_stepper_period_active_ending_value_${stepperIndex}`;
         let activeModeDeaccelerationStepsValueId = `id_stepper_period_active_deaccelerationSteps_value_${stepperIndex}`;
+        document.getElementById(activeModeStartingPeriodValueId).textContent =
+            String(data.config.activeModeConfig.startingPulseWidth);
+        document.getElementById(activeModeAccelerationStepsValueId).textContent =
+            String(data.config.activeModeConfig.acceleratingSteps);
+        document.getElementById(activeModeCruisePeriodValueId).textContent =
+            String(data.config.activeModeConfig.cruisingPulseWidth);
+        document.getElementById(activeModeEndingPeriodValueId).textContent =
+            String(data.config.activeModeConfig.endingPulseWidth);
+        document.getElementById(activeModeDeaccelerationStepsValueId).textContent =
+            String(data.config.activeModeConfig.deacceleratingSteps);
 
+        // isEnableHigh
         let isEnableHighValueId = `id_stepper_isEnableHigh_value_${stepperIndex}`;
         let isEnableHighSaveId = `id_stepper_isEnableHigh_save_${stepperIndex}`;
-        let isForwardHighValueId = `id_stepper_isForwardHigh_value_${stepperIndex}`;
-        let isForwardHighSaveId = `id_stepper_isForwardHigh_save_${stepperIndex}`;
-        let isRisingEdgeDrivenValueId = `id_stepper_isRisingEdgeDriven_value_${stepperIndex}`;
-        let isRisingEdgeDrivenSaveId = `id_stepper_isRisingEdgeDriven_save_${stepperIndex}`;
-
-        
-
-        let data = status.steppers[stepperIndex];
-
-        // alarm
-        document.getElementById(alarmId).className = data.isAlarmTriggered ? "active-red-dot" : "inactive-red-dot";
-        // gpios
-        document.getElementById(gpioDisableId).checked = data.gpios.isDisableHigh;
-        document.getElementById(gpioForwardId).checked = data.gpios.isForwardHigh;
-        document.getElementById(gpioClockId).checked = data.gpios.isClockHigh;
-        // timer
-        document.getElementById(timerId).textContent = data.config.timer;
-        // encoder
-        document.getElementById(encoderId).textContent = data.config.encoder;
-        // forced mode
-        document.getElementById(forcedModePeriodValueId).textContent = 
-            String(status.steppers[stepperIndex].config.forcedModeConfig.pulseWidth);
-        // active mode
-        document.getElementById(activeModeStartingPeriodValueId).textContent =
-            String(status.steppers[stepperIndex].config.activeModeConfig.startingPulseWidth);
-        document.getElementById(activeModeAccelerationStepsValueId).textContent =
-            String(status.steppers[stepperIndex].config.activeModeConfig.acceleratingSteps);
-        document.getElementById(activeModeCruisePeriodValueId).textContent =
-            String(status.steppers[stepperIndex].config.activeModeConfig.cruisingPulseWidth);
-        document.getElementById(activeModeEndingPeriodValueId).textContent =
-            String(status.steppers[stepperIndex].config.activeModeConfig.endingPulseWidth);
-        document.getElementById(activeModeDeaccelerationStepsValueId).textContent =
-            String(status.steppers[stepperIndex].config.activeModeConfig.deacceleratingSteps);
-        // isEnableHigh
-        if(document.getElementById(isEnableHighValueId).checked == status.steppers[stepperIndex].config.isEnableHigh)
+        if(document.getElementById(isEnableHighValueId).checked == data.config.isEnableHigh)
         {
             document.getElementById(isEnableHighSaveId).disabled = true;
         }
@@ -1592,7 +1606,9 @@ function updateStepper(status)
             document.getElementById(isEnableHighSaveId).disabled = false;
         }
         // isForwardHigh
-        if(document.getElementById(isForwardHighValueId).checked == status.steppers[stepperIndex].config.isForwardHigh)
+        let isForwardHighValueId = `id_stepper_isForwardHigh_value_${stepperIndex}`;
+        let isForwardHighSaveId = `id_stepper_isForwardHigh_save_${stepperIndex}`;
+        if(document.getElementById(isForwardHighValueId).checked == data.config.isForwardHigh)
         {
             document.getElementById(isForwardHighSaveId).disabled = true;
         }
@@ -1601,13 +1617,105 @@ function updateStepper(status)
             document.getElementById(isForwardHighSaveId).disabled = false;
         }
         // isRisingEdgeDriven
-        if(document.getElementById(isRisingEdgeDrivenValueId).checked == status.steppers[stepperIndex].config.isRisingEdgeDriven)
+        let isRisingEdgeDrivenValueId = `id_stepper_isRisingEdgeDriven_value_${stepperIndex}`;
+        let isRisingEdgeDrivenSaveId = `id_stepper_isRisingEdgeDriven_save_${stepperIndex}`;
+        if(document.getElementById(isRisingEdgeDrivenValueId).checked == data.config.isRisingEdgeDriven)
         {
             document.getElementById(isRisingEdgeDrivenSaveId).disabled = true;
         }
         else
         {
             document.getElementById(isRisingEdgeDrivenSaveId).disabled = false;
+        }
+
+        // homeBoundaryToReadySteps
+        let homeBoundaryToReadyStepsValueId = `id_stepper_homeBoundaryToReadySteps_value_${stepperIndex}`;
+        let homeBoundaryToReadyStepsSaveId = `id_stepper_homeBoundaryToReadySteps_save_${stepperIndex}`;
+        var homeBoundaryToReadySteps = document.getElementById(homeBoundaryToReadyStepsValueId).valueAsNumber
+        if(Number.isNaN(homeBoundaryToReadySteps))
+        {
+            document.getElementById(homeBoundaryToReadyStepsValueId).valueAsNumber = data.config.homeBoundaryToReadySteps;
+            homeBoundaryToReadySteps = data.config.homeBoundaryToReadySteps;
+        }
+        if(homeBoundaryToReadySteps == data.config.homeBoundaryToReadySteps)
+        {
+            document.getElementById(homeBoundaryToReadyStepsSaveId).disabled = true;
+        }
+        else
+        {
+            document.getElementById(homeBoundaryToReadyStepsSaveId).disabled = false;
+        }
+
+        // range
+        let rangeValueId = `id_stepper_range_value_${stepperIndex}`;
+        let rangeSaveId = `id_stepper_range_save_${stepperIndex}`;
+        var range = document.getElementById(rangeValueId).valueAsNumber
+        if(Number.isNaN(range))
+        {
+            document.getElementById(rangeValueId).valueAsNumber = data.config.range;
+            range = data.config.range;
+        }
+        if(range == data.config.range)
+        {
+            document.getElementById(rangeSaveId).disabled = true;
+        }
+        else
+        {
+            document.getElementById(rangeSaveId).disabled = false;
+        }
+
+        // stepsPerRotation
+        let stepsPerRotationValueId = `id_stepper_stepsPerRotation_value_${stepperIndex}`;
+        let stepsPerRotationSaveId = `id_stepper_stepsPerRotation_save_${stepperIndex}`;
+        var stepsPerRotation = document.getElementById(stepsPerRotationValueId).valueAsNumber
+        if(Number.isNaN(stepsPerRotation))
+        {
+            document.getElementById(stepsPerRotationValueId).valueAsNumber = data.config.stepsPerRotation;
+            stepsPerRotation = data.config.stepsPerRotation;
+        }
+        if(stepsPerRotation == data.config.stepsPerRotation)
+        {
+            document.getElementById(stepsPerRotationSaveId).disabled = true;
+        }
+        else
+        {
+            document.getElementById(stepsPerRotationSaveId).disabled = false;
+        }
+
+        // encoderCountsPerRotation
+        let encoderCountsPerRotationValueId = `id_stepper_encoderCountsPerRotation_value_${stepperIndex}`;
+        let encoderCountsPerRotationSaveId = `id_stepper_encoderCountsPerRotation_save_${stepperIndex}`;
+        var encoderCountsPerRotation = document.getElementById(encoderCountsPerRotationValueId).valueAsNumber
+        if(Number.isNaN(encoderCountsPerRotation))
+        {
+            document.getElementById(encoderCountsPerRotationValueId).valueAsNumber = data.config.encoderCountsPerRotation;
+            encoderCountsPerRotation = data.config.encoderCountsPerRotation;
+        }
+        if(encoderCountsPerRotation == data.config.encoderCountsPerRotation)
+        {
+            document.getElementById(encoderCountsPerRotationSaveId).disabled = true;
+        }
+        else
+        {
+            document.getElementById(encoderCountsPerRotationSaveId).disabled = false;
+        }
+
+        // encoderOffsetErrorThreshold
+        let encoderOffsetErrorThresholdValueId = `id_stepper_encoderOffsetErrorThreshold_value_${stepperIndex}`;
+        let encoderOffsetErrorThresholdSaveId = `id_stepper_encoderOffsetErrorThreshold_save_${stepperIndex}`;
+        var encoderOffsetErrorThreshold = document.getElementById(encoderOffsetErrorThresholdValueId).valueAsNumber
+        if(Number.isNaN(encoderOffsetErrorThreshold))
+        {
+            document.getElementById(encoderOffsetErrorThresholdValueId).valueAsNumber = data.config.encoderOffsetErrorThreshold;
+            encoderOffsetErrorThreshold = data.config.encoderOffsetErrorThreshold;
+        }
+        if(encoderOffsetErrorThreshold == data.config.encoderOffsetErrorThreshold)
+        {
+            document.getElementById(encoderOffsetErrorThresholdSaveId).disabled = true;
+        }
+        else
+        {
+            document.getElementById(encoderOffsetErrorThresholdSaveId).disabled = false;
         }
 
     }

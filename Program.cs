@@ -294,6 +294,36 @@ app.MapPost("/post/{*command}", async (HttpRequest request, string command, Back
                         configs[stepperIndex].isRisingEdgeDriven = isChecked;
                     }
                     break;
+                case "homeBoundaryToReadySteps":
+                    {
+                        var value = jsonRoot.GetProperty("value").GetUInt32();
+                        configs[stepperIndex].homeBoundaryToReadySteps = (ushort)value;
+                    }
+                    break;
+                case "range":
+                    {
+                        var value = jsonRoot.GetProperty("value").GetUInt32();
+                        configs[stepperIndex].range = value;
+                    }
+                    break;
+                case "stepsPerRotation":
+                    {
+                        var value = jsonRoot.GetProperty("value").GetUInt32();
+                        configs[stepperIndex].stepsPerRotation = (ushort)value;
+                    }
+                    break;
+                case "encoderCountsPerRotation":
+                    {
+                        var value = jsonRoot.GetProperty("value").GetUInt32();
+                        configs[stepperIndex].encoderCountsPerRotation = (ushort)value;
+                    }
+                    break;
+                case "encoderOffsetErrorThreshold":
+                    {
+                        var value = jsonRoot.GetProperty("value").GetUInt32();
+                        configs[stepperIndex].encoderOffsetErrorThreshold = (ushort)value;
+                    }
+                    break;
                 default:
                     throw new Exception($"Invalid classification '{classification}' in POST command '{command}'");
             }
