@@ -324,6 +324,72 @@ app.MapPost("/post/{*command}", async (HttpRequest request, string command, Back
                         configs[stepperIndex].encoderOffsetErrorThreshold = (ushort)value;
                     }
                     break;
+                case "port":
+                    {
+                        var value = jsonRoot.GetProperty("value").GetString();
+                        if (Enum.TryParse(value, out StatusFacade.Facade.Stepper.Configuration.EnumPort enumPort))
+                        {
+                            var name = jsonRoot.GetProperty("name").GetString();
+                            switch (name)
+                            {
+                                case "HomeBoundary":
+                                    configs[stepperIndex].portHomeBoundary = enumPort;
+                                    break;
+                                case "EndBoundary":
+                                    configs[stepperIndex].portEndBoundary = enumPort;
+                                    break;
+                                case "Enable":
+                                    configs[stepperIndex].portEnable = enumPort;
+                                    break;
+                                case "Forward":
+                                    configs[stepperIndex].portForward = enumPort;
+                                    break;
+                                case "Clock":
+                                    configs[stepperIndex].portClock = enumPort;
+                                    break;
+                                default:
+                                    throw new Exception($"Invalid port name '{name}' in POST command '{command}'");
+                            }
+                        }
+                        else
+                        {
+                            throw new Exception($"Invalid port '{value}' in POST command '{command}'");
+                        }
+                    }
+                    break;
+                case "pin":
+                    {
+                        var value = jsonRoot.GetProperty("value").GetString();
+                        if (byte.TryParse(value, out byte pin))
+                        {
+                            var name = jsonRoot.GetProperty("name").GetString();
+                            switch (name)
+                            {
+                                case "HomeBoundary":
+                                    configs[stepperIndex].pinHomeBoundary = pin;
+                                    break;
+                                case "EndBoundary":
+                                    configs[stepperIndex].pinEndBoundary = pin;
+                                    break;
+                                case "Enable":
+                                    configs[stepperIndex].pinEnable = pin;
+                                    break;
+                                case "Forward":
+                                    configs[stepperIndex].pinForward = pin;
+                                    break;
+                                case "Clock":
+                                    configs[stepperIndex].pinClock = pin;
+                                    break;
+                                default:
+                                    throw new Exception($"Invalid pin name '{name}' in POST command '{command}'");
+                            }
+                        }
+                        else
+                        {
+                            throw new Exception($"Invalid port '{value}' in POST command '{command}'");
+                        }
+                    }
+                    break;
                 default:
                     throw new Exception($"Invalid classification '{classification}' in POST command '{command}'");
             }

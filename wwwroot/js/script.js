@@ -597,28 +597,30 @@ function createStepperTable()
                     html.push(`<tr>`);
 
                     html.push(`<td><label>Port${name}</label></td>`);
-                    html.push(`<td><label id='id_stepper_port${name}_value_${stepperIndex}'></label></td>`);
                     html.push(`<td>`);
-                    html.push(`<select id="stepper_port${name}_select_${stepperIndex}">`);
-                    for(let port of portList)
                     {
-                        html.push(`<option value="${port}">${port}</option>`);
+                        html.push(`<select id="id_stepper_port_${name}_select_${stepperIndex}">`);
+                        html.push(`<option value="" selected disabled>-- choose --</option>`);
+                        for(let i=0; i<portList.length; i++)
+                        {
+                            html.push(`<option value="${portList[i]}">${portList[i]}</option>`);
+                        }
                     }
                     html.push(`</td>`);
-                    html.push(`<td><input type="button" id="stepper_port${name}_set_${stepperIndex}" value="Set"></td>`);
-                    html.push(`<td><input type="button" id="stepper_port${name}_save_${stepperIndex}" value="Save"></td>`);
+                    html.push(`<td><input type="button" id="id_stepper_port_${name}_save_${stepperIndex}" value="Save"></td>`);
 
                     html.push(`<td><label>Pin${name}</label></td>`);
-                    html.push(`<td><label id='id_stepper_pin${name}_value_${stepperIndex}'></label></td>`);
                     html.push(`<td>`);
-                    html.push(`<select id="stepper_pin${name}_select_${stepperIndex}">`);
-                    for(let i=0; i<16; i++)
                     {
-                        html.push(`<option value="${i}">${i}</option>`);
+                        html.push(`<select id="id_stepper_pin_${name}_select_${stepperIndex}">`);
+                        html.push(`<option value="" selected disabled>-- choose --</option>`);
+                        for(let i=0; i<16; i++)
+                        {
+                            html.push(`<option value="${i}">${i}</option>`);
+                        }
                     }
                     html.push(`</td>`);
-                    html.push(`<td><input type="button" id="stepper_pin${name}_set_${stepperIndex}" value="Set"></td>`);
-                    html.push(`<td><input type="button" id="stepper_pin${name}_save_${stepperIndex}" value="Save"></td>`);
+                    html.push(`<td><input type="button" id="id_stepper_pin_${name}_save_${stepperIndex}" value="Save"></td>`);
 
                     html.push(`</tr>`);
                 }
@@ -1253,6 +1255,33 @@ async function onClick_Stepper(id)
             }
         }
     }
+    else if((classification == "port") ||
+            (classification == "pin"))
+    {
+        let action = segments[4];
+
+        if(action == 'save')
+        {
+            let name = segments[3];
+            let stepperIndex = segments[5];
+
+            let selectionId = `id_stepper_${classification}_${name}_select_${stepperIndex}`;
+            let value = document.getElementById(selectionId).value;
+
+            let payload = {
+                stepperId: Number(stepperIndex),
+                classification: classification,
+                name: name,
+                value: value
+            }
+                
+            let data = await post('saveStepperConfig', payload);
+            if(data != "success")
+            {
+                alert(`${errString}, info: ${data}`);
+            }
+        }
+    }
 
 
     else if(classification == "go")
@@ -1716,6 +1745,156 @@ function updateStepper(status)
         else
         {
             document.getElementById(encoderOffsetErrorThresholdSaveId).disabled = false;
+        }
+
+        // HomeBoundary
+        let portHomeBoundarySelectId = `id_stepper_port_HomeBoundary_select_${stepperIndex}`;
+        let portHomeBoundarySaveId = `id_stepper_port_HomeBoundary_save_${stepperIndex}`;
+        let pinHomeBoundarySelectId = `id_stepper_pin_HomeBoundary_select_${stepperIndex}`;
+        let pinHomeBoundarySaveId = `id_stepper_pin_HomeBoundary_save_${stepperIndex}`;
+        if(document.getElementById(portHomeBoundarySelectId).value == "")
+        {
+            document.getElementById(portHomeBoundarySelectId).value = data.config.portHomeBoundary;
+        }
+        if(document.getElementById(portHomeBoundarySelectId).value == data.config.portHomeBoundary)
+        {
+            document.getElementById(portHomeBoundarySaveId).disabled = true;
+        }
+        else
+        {
+            document.getElementById(portHomeBoundarySaveId).disabled = false;
+        }
+        if(document.getElementById(pinHomeBoundarySelectId).value == "")
+        {
+            document.getElementById(pinHomeBoundarySelectId).value = data.config.pinHomeBoundary;
+        }
+        if(document.getElementById(pinHomeBoundarySelectId).value == data.config.pinHomeBoundary)
+        {
+            document.getElementById(pinHomeBoundarySaveId).disabled = true;
+        }
+        else
+        {
+            document.getElementById(pinHomeBoundarySaveId).disabled = false;
+        }
+
+        // EndBoundary
+        let portEndBoundarySelectId = `id_stepper_port_EndBoundary_select_${stepperIndex}`;
+        let portEndBoundarySaveId = `id_stepper_port_EndBoundary_save_${stepperIndex}`;
+        let pinEndBoundarySelectId = `id_stepper_pin_EndBoundary_select_${stepperIndex}`;
+        let pinEndBoundarySaveId = `id_stepper_pin_EndBoundary_save_${stepperIndex}`;
+        if(document.getElementById(portEndBoundarySelectId).value == "")
+        {
+            document.getElementById(portEndBoundarySelectId).value = data.config.portEndBoundary;
+        }
+        if(document.getElementById(portEndBoundarySelectId).value == data.config.portEndBoundary)
+        {
+            document.getElementById(portEndBoundarySaveId).disabled = true;
+        }
+        else
+        {
+            document.getElementById(portEndBoundarySaveId).disabled = false;
+        }
+        if(document.getElementById(pinEndBoundarySelectId).value == "")
+        {
+            document.getElementById(pinEndBoundarySelectId).value = data.config.pinEndBoundary;
+        }
+        if(document.getElementById(pinEndBoundarySelectId).value == data.config.pinEndBoundary)
+        {
+            document.getElementById(pinEndBoundarySaveId).disabled = true;
+        }
+        else
+        {
+            document.getElementById(pinEndBoundarySaveId).disabled = false;
+        }
+
+        // Enable
+        let portEnableSelectId = `id_stepper_port_Enable_select_${stepperIndex}`;
+        let portEnableSaveId = `id_stepper_port_Enable_save_${stepperIndex}`;
+        let pinEnableSelectId = `id_stepper_pin_Enable_select_${stepperIndex}`;
+        let pinEnableSaveId = `id_stepper_pin_Enable_save_${stepperIndex}`;
+        if(document.getElementById(portEnableSelectId).value == "")
+        {
+            document.getElementById(portEnableSelectId).value = data.config.portEnable;
+        }
+        if(document.getElementById(portEnableSelectId).value == data.config.portEnable)
+        {
+            document.getElementById(portEnableSaveId).disabled = true;
+        }
+        else
+        {
+            document.getElementById(portEnableSaveId).disabled = false;
+        }
+        if(document.getElementById(pinEnableSelectId).value == "")
+        {
+            document.getElementById(pinEnableSelectId).value = data.config.pinEnable;
+        }
+        if(document.getElementById(pinEnableSelectId).value == data.config.pinEnable)
+        {
+            document.getElementById(pinEnableSaveId).disabled = true;
+        }
+        else
+        {
+            document.getElementById(pinEnableSaveId).disabled = false;
+        }
+
+        // Forward
+        let portForwardSelectId = `id_stepper_port_Forward_select_${stepperIndex}`;
+        let portForwardSaveId = `id_stepper_port_Forward_save_${stepperIndex}`;
+        let pinForwardSelectId = `id_stepper_pin_Forward_select_${stepperIndex}`;
+        let pinForwardSaveId = `id_stepper_pin_Forward_save_${stepperIndex}`;
+        if(document.getElementById(portForwardSelectId).value == "")
+        {
+            document.getElementById(portForwardSelectId).value = data.config.portForward;
+        }
+        if(document.getElementById(portForwardSelectId).value == data.config.portForward)
+        {
+            document.getElementById(portForwardSaveId).disabled = true;
+        }
+        else
+        {
+            document.getElementById(portForwardSaveId).disabled = false;
+        }
+        if(document.getElementById(pinForwardSelectId).value == "")
+        {
+            document.getElementById(pinForwardSelectId).value = data.config.pinForward;
+        }
+        if(document.getElementById(pinForwardSelectId).value == data.config.pinForward)
+        {
+            document.getElementById(pinForwardSaveId).disabled = true;
+        }
+        else
+        {
+            document.getElementById(pinForwardSaveId).disabled = false;
+        }
+
+        // Clock
+        let portClockSelectId = `id_stepper_port_Clock_select_${stepperIndex}`;
+        let portClockSaveId = `id_stepper_port_Clock_save_${stepperIndex}`;
+        let pinClockSelectId = `id_stepper_pin_Clock_select_${stepperIndex}`;
+        let pinClockSaveId = `id_stepper_pin_Clock_save_${stepperIndex}`;
+        if(document.getElementById(portClockSelectId).value == "")
+        {
+            document.getElementById(portClockSelectId).value = data.config.portClock;
+        }
+        if(document.getElementById(portClockSelectId).value == data.config.portClock)
+        {
+            document.getElementById(portClockSaveId).disabled = true;
+        }
+        else
+        {
+            document.getElementById(portClockSaveId).disabled = false;
+        }
+        if(document.getElementById(pinClockSelectId).value == "")
+        {
+            document.getElementById(pinClockSelectId).value = data.config.pinClock;
+        }
+        if(document.getElementById(pinClockSelectId).value == data.config.pinClock)
+        {
+            document.getElementById(pinClockSaveId).disabled = true;
+        }
+        else
+        {
+            document.getElementById(pinClockSaveId).disabled = false;
         }
 
     }
