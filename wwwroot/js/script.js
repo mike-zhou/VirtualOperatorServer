@@ -808,100 +808,6 @@ async function onClick_BDCControl(id)
     }
 }
 
-function getStepperMode(stepperId)
-{
-    if(stepperId < 0 || stepperId > 9)
-    {
-        return;
-    }
-
-    if(document.getElementById(`id_stepper_mode_forced_${stepperId}`).checked)
-    {
-        let e = document.getElementById(`id_stepper_period_force_${stepperId}`);
-        if(!e.checkValidity())
-        {
-            return;
-        }
-        let period = Number(e.value);
-
-        let mode = {
-            mode: "forced",
-            period: period
-        }
-
-        return mode;
-    }
-    else if (document.getElementById(`id_stepper_mode_active_${stepperId}`).checked)
-    {
-        let e = document.getElementById(`id_stepper_period_active_starting_${stepperId}`);
-        if(!e.checkValidity())
-        {
-            return;
-        }
-        let startingPeriod = Number(e.value);
-
-        e = document.getElementById(`id_stepper_period_active_accelerationSteps_${stepperId}`);
-        if(!e.checkValidity())
-        {
-            return;
-        }
-        let accelerationSteps = Number(e.value);
-
-        e = document.getElementById(`id_stepper_period_active_cruising_${stepperId}`);
-        if(!e.checkValidity())
-        {
-            return;
-        }
-        let cruisingPeriod = Number(e.value);
-
-        e = document.getElementById(`id_stepper_period_active_ending_${stepperId}`);
-        if(!e.checkValidity())
-        {
-            return;
-        }
-        let endingPeriod = Number(e.value);
-
-        e = document.getElementById(`id_stepper_period_active_deaccelerationSteps_${stepperId}`);
-        if(!e.checkValidity())
-        {
-            return;
-        }
-        let deaccelerationSteps = Number(e.value);
-
-        let mode = {
-            mode: "active",
-            startingPeriod: startingPeriod,
-            accelerationSteps: accelerationSteps,
-            cruisingPeriod: cruisingPeriod,
-            deaccelerationSteps: deaccelerationSteps,
-            endingPeriod: endingPeriod
-        }
-
-        return mode;
-    }
-    else if (document.getElementById(`id_stepper_mode_passive_${stepperId}`).checked)
-    {
-        let e = document.getElementById(`id_stepper_period_passive_stepper_${stepperId}`);
-        let selection = e.value;
-        let index = Number(selection);
-        if(index == NaN)
-        {
-            return;
-        }
-        if(index < 0 || index > 9 || index == stepperId)
-        {
-            return;
-        }
-
-        let mode = {
-            mode: "passive",
-            activeStepperIndex: index
-        }
-
-        return mode;
-    }
-}
-
 async function onClick_FlexTimerPrescaler(elementId)
 {
     let segments = elementId.split("_");
@@ -953,7 +859,6 @@ async function onClick_Stepper(id)
 {
     let segments = id.split("_");
     let classification = segments[2];
-    let action = segments[3];
 
     if(classification == "gpio")
     {
@@ -1282,11 +1187,17 @@ async function onClick_Stepper(id)
             }
         }
     }
-
-
+    else if(classification == "control")
+    {
+        // do nothing
+    }
+    else if(classification == "steps")
+    {
+        // do nothing
+    }
     else if(classification == "go")
     {
-        let stepperId = parseInt(segments[4], 10);
+        let stepperIndex = parseInt(segments[4], 10);
         let stepsNum = NaN;
 
         steps = segments[3];
@@ -1306,21 +1217,52 @@ async function onClick_Stepper(id)
 
         if((stepsNum < 0) || (stepsNum > 1024))
         {
-            alert(`Error: Out of range of clocks ${stepsNum}`);
+            alert(`Error: Out of range of steps: ${stepsNum}`);
             return;
         }
 
-        mode = getStepperMode(stepperId);
-        if(!mode)
+        var mode = "";
+
+        if(document.getElementById(`id_stepper_mode_forced_${stepperIndex}`).checked)
+        {
+            mode = "forced";
+        }
+        else if(document.getElementById(`id_stepper_mode_active_${stepperIndex}`).checked)
+        {
+            mode = "active";
+        }
+        else if(document.getElementById(`id_stepper_mode_passive_${stepperIndex}`).checked)
+        {
+            mode = "passive";
+        }
+
+        if(mode == "")
         {
             alert(`Error: invalid mode`);
             return;
         }
 
+        var forward = document.getElementById(`id_stepper_control_forward_${stepperIndex}`).checked;
+
         payload = {
-            index: stepperId,
-            clocks: stepsNum,
-            mode: mode
+            stepperId: Number(stepperIndex),
+            classification: classification,
+            mode: mode,
+            forward: forward,
+            steps: stepsNum
+        }
+
+        if(mode == "passive")
+        {
+            var activeStepper = document.getElementById(`id_stepper_passive_activeStepper_select_${stepperIndex}`).value;
+            
+            if(activeStepper == "NOT_SELECTED")
+            {
+                alert(`Error: active stepper is not selected in passive mode`);
+                return;
+            }
+
+            payload.activeStepperId = Number(activeStepper.split('_')[1]);
         }
 
         data = await post('runStepper', payload);
@@ -1329,14 +1271,9 @@ async function onClick_Stepper(id)
             alert(`Error: failed to run stepper ${segments[4]}, info: ${data}`);
         }
     }
-
-    else if(action == "steps")
-    {
-        // do nothing when id_stepper_steps_X is clicked
-    }
     else
     {
-        alert(`Unsupported action '${action}' in '${id}'`);
+        alert(`Unsupported classification '${classification}' in '${id}'`);
     }
 }
 

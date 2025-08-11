@@ -397,6 +397,10 @@ app.MapPost("/post/{*command}", async (HttpRequest request, string command, Back
             StaticConfig.Instance.SaveStepperConfigs();
             return Results.Text("success", "text/html");
         }
+        else if (command == "runStepper")
+        {
+            
+        }
 
     }
     catch (InvalidRequestBodyException e)
