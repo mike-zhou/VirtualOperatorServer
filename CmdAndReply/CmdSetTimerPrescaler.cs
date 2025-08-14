@@ -45,6 +45,8 @@ namespace VirtualOperatorServer.CommandAndReply
 
             switch (errorCode)
             {
+                case 0:
+                    return (true, "");
                 case 1:
                     return (false, "invalid prescaler length");
                 case 2:
@@ -55,9 +57,9 @@ namespace VirtualOperatorServer.CommandAndReply
                 case 7:
                 case 8:
                     return (false, $"timer_set_prescaler failure for timer {errorCode - 2}");
+                default:
+                    return (false, $"unknown error code {errorCode}");
             }
-            
-            return (true, "");
         }
     }
 }

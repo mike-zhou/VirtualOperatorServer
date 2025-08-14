@@ -1246,7 +1246,6 @@ async function onClick_Stepper(id)
 
         payload = {
             stepperId: Number(stepperIndex),
-            classification: classification,
             mode: mode,
             forward: forward,
             steps: stepsNum
