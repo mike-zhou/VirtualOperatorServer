@@ -4,6 +4,8 @@ using VirtualOperatorServer.CommandAndReply;
 using VirtualOperatorServer.Facade;
 using VirtualOperatorServer.Services;
 using VirtualOperatorServer.Configuration;
+using System.Runtime.Intrinsics.Arm;
+using System.Threading.Tasks;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,9 +13,33 @@ builder.Services.AddSingleton<BackSocket>();
 builder.Services.AddHostedService<BackService>();
 
 var app = builder.Build();
+var backSocket = app.Services.GetRequiredService<BackSocket>();
 
 app.UseDefaultFiles();
 app.UseStaticFiles();
+
+async Task<string> RunCommand(CommandAndReply cmd)
+{
+    if (cmd.Command.Length < 1)
+    {
+        throw new Exception("Invalid command length");
+    }
+
+    cmd.Reply = await backSocket.SendAndReceiveAsync(cmd.Command);
+
+    bool success;
+    string reason;
+
+    (success, reason) = cmd.ParseReply();
+    if (success)
+    {
+        return "success";
+    }
+    else
+    {
+        return $"failure: {reason}";
+    }
+}
 
 string ProcessGetCommand(string command)
 {
@@ -56,6 +82,95 @@ string ProcessGetCommand(string command)
     return "";
 }
 
+async Task<IResult> RunStepperForced(byte stepperId, uint steps)
+{
+    if (stepperId >= StatusFacade.Facade.StepperCount)
+    {
+        throw new Exception($"Invalid stepper index '{stepperId}' in RunStepperForced");
+    }
+    if (steps > 1024)
+    {
+        throw new Exception($"Invalid steps '{steps}' in RunStepperForced");
+    }
+
+    var stepperConfig = StaticConfig.Instance.StepperConfigs[stepperId];
+
+    if (stepperConfig.timer == StatusFacade.Facade.Stepper.Configuration.EnumTimer.NOT_SELECTED)
+    {
+        throw new Exception($"Timer must be selected in RunStepperForced");
+    }
+
+    ushort pulseWidth = stepperConfig.forcedModeConfig.pulseWidth;
+    string result;
+
+    var cmd = new CmdRunStepperForce(stepperId, (byte)stepperConfig.timer, pulseWidth, (ushort)steps);
+    result = await RunCommand(cmd);
+    if (result != "success")
+    {
+        return Results.Text($"failure: RunStepperForced: {result}", "text/html");
+    }
+
+    return Results.Text(result, "text/html");
+}
+
+async Task<IResult> RunStepperActive(byte stepperId, uint steps)
+{
+    if (stepperId >= StatusFacade.Facade.StepperCount)
+    {
+        throw new Exception($"Invalid stepper index '{stepperId}' in RunStepperActive");
+    }
+
+    var stepperConfig = StaticConfig.Instance.StepperConfigs[stepperId];
+
+    if (stepperConfig.timer == StatusFacade.Facade.Stepper.Configuration.EnumTimer.NOT_SELECTED)
+    {
+        throw new Exception($"Timer must be selected in RunStepperActive");
+    }
+
+    var activeModeConfig = stepperConfig.activeModeConfig;
+
+    return Results.Text($"failure: RunStepperPassive: not implemented", "text/html");
+}
+
+async Task<IResult> RunStepperPassive(byte stepperId, uint steps, byte activeStepperId)
+{
+    return Results.Text($"failure: RunStepperPassive: not implemented", "text/html");
+}
+
+async Task<IResult> RunStepper(JsonElement payload)
+{
+    var stepperId = payload.GetProperty("stepperId").GetByte();
+    var mode = payload.GetProperty("mode").GetString();
+    var steps = payload.GetProperty("steps").GetUInt32();
+
+    if (stepperId >= StatusFacade.Facade.StepperCount)
+    {
+        return Results.Text($"failure: invalid stepperId '{stepperId}'", "text/html");
+    }
+
+    switch (mode)
+    {
+        case "forced":
+            return await RunStepperForced(stepperId, steps);
+        case "active":
+            return await RunStepperActive(stepperId, steps);
+        case "passive":
+            {
+                byte activeStepperId = payload.GetProperty("activeStepperId").GetByte();
+
+                if ((activeStepperId >= StatusFacade.Facade.StepperCount) ||
+                    (activeStepperId == stepperId))
+                {
+                    return Results.Text($"failure: invalid activeStepperId '{activeStepperId}'", "text/html");
+                }
+
+                return await RunStepperPassive(stepperId, steps, activeStepperId);
+            }
+        default:
+            return Results.Text($"failure: unknown mode '{mode}'", "text/html");
+    }
+}
+
 app.MapGet("/get/{*command}", (string command) =>
 {
     Console.WriteLine($"/get/{command}");
@@ -95,23 +210,9 @@ app.MapPost("/post/{*command}", async (HttpRequest request, string command, Back
         )
         {
             CommandAndReply cmd = CommandFactory.BuildPostCommand(command, jsonRoot);
-            if (cmd.Command.Length > 0)
-            {
-                cmd.Reply = await backSocket.SendAndReceiveAsync(cmd.Command);
 
-                bool success;
-                string reason;
-
-                (success, reason) = cmd.ParseReply();
-                if (success)
-                {
-                    return Results.Text("success", "text/html");
-                }
-                else
-                {
-                    return Results.Text($"failure: {reason}", "text/html");
-                }
-            }
+            var result = await RunCommand(cmd);
+            return Results.Text(result, "text/html");;
         }
         else if (command == "saveStepperConfigTimer")
         {
@@ -399,9 +500,8 @@ app.MapPost("/post/{*command}", async (HttpRequest request, string command, Back
         }
         else if (command == "runStepper")
         {
-            
+            return await RunStepper(jsonRoot);
         }
-
     }
     catch (InvalidRequestBodyException e)
     {

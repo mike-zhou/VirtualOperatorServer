@@ -6,7 +6,11 @@ using VirtualOperatorServer.Facade;
 
 namespace VirtualOperatorServer.Configuration
 {
-
+    /// <summary>
+    /// StaticConfig is singleton of steppers and timers configurations.
+    /// It loads configurations from files when constructed, and provides
+    /// APIs to save stepper and timer configurations respectively.
+    /// </summary>        
     public class StaticConfig
     {
         private static readonly StaticConfig _instance = new();

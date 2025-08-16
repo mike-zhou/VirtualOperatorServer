@@ -7,7 +7,11 @@ using VirtualOperatorServer.CommandAndReply;
 
 namespace VirtualOperatorServer.Facade
 {
-
+    /// <summary>
+    /// StatusFacade is used to create a JSON string,
+    /// which contains all information to be displayed
+    /// in UI.
+    /// </summary>        
     public class StatusFacade
     {
         static uint previousMainLoop = 0;
@@ -17,6 +21,11 @@ namespace VirtualOperatorServer.Facade
             IncludeFields = true
         };
 
+        /// <summary>
+        /// This class contains all information needed by UI.
+        /// It is used as a template to create a JSON string
+        /// to be returned to UI.
+        /// </summary>        
         public class Facade
         {
             public const int GpioPortCount = 11;
@@ -234,7 +243,7 @@ namespace VirtualOperatorServer.Facade
                     public StepperModeForced forcedModeConfig;
                     public StepperModeActive activeModeConfig;
                     public StepperModePassive passiveModeConfig;
-                    
+
                     public bool isEnableHigh;
                     public bool isForwardHigh;
                     public bool isRisingEdgeDriven;
@@ -284,6 +293,11 @@ namespace VirtualOperatorServer.Facade
             }
         }
 
+        /// <summary>
+        /// This static function construct a temporary Facade object,
+        /// fill its content with information collected from different sources,
+        /// then convert the object to a JSON string.
+        /// </summary>        
         public static string CreateStatusJsonString()
         {
             if (CmdGetVersion.Version == null)
