@@ -212,7 +212,23 @@ app.MapPost("/post/{*command}", async (HttpRequest request, string command, Back
             CommandAndReply cmd = CommandFactory.BuildPostCommand(command, jsonRoot);
 
             var result = await RunCommand(cmd);
-            return Results.Text(result, "text/html");;
+            return Results.Text(result, "text/html"); ;
+        }
+        else if (command == "saveTimerPrescaler")
+        {
+            var timerId = jsonRoot.GetProperty("timerId").GetByte();
+            var prescaler = jsonRoot.GetProperty("prescaler").GetUInt16();
+            var timerConfigs = StaticConfig.Instance.TimerConfigs;
+
+            if (timerId >= timerConfigs.Length)
+            {
+                throw new InvalidRequestBodyException($"invalid timer id: {timerId}");
+            }
+
+            timerConfigs[timerId] = prescaler;
+            StaticConfig.Instance.SaveTimerConfigs();
+
+            return Results.Text("success", "text/html"); ;
         }
         else if (command == "saveStepperConfigTimer")
         {

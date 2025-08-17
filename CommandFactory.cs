@@ -365,10 +365,6 @@ internal static class CommandFactory
         {
             cmd = BuildClockStepper(jsonRoot);
         }
-        else if (restApi == "runStepper")
-        {
-
-        }
         else if (restApi == "refreshStatus")
         {
             cmd = new CmdGetStatus();

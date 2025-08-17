@@ -830,6 +830,22 @@ async function onClick_FlexTimerPrescaler(elementId)
             alert(`Error: failed to prescaler of flex timer ${timerIndex}, info: ${data}`);
         }
     }
+    else if(action == 'save')
+    {
+        let configId = `${segments[0]}_${segments[1]}_${segments[2]}_config_${segments[4]}`;
+        let value = Number(document.getElementById(configId).value);
+
+        let payload = {
+            timerId: timerIndex,
+            prescaler: value
+        };
+
+        let data = await post('saveTimerPrescaler', payload);
+        if(data != "success")
+        {
+            alert(`Error: failed to prescaler of flex timer ${timerIndex}, info: ${data}`);
+        }
+    }
 }
 
 async function onClick_FixTimerPrescaler(elementId)
@@ -848,6 +864,22 @@ async function onClick_FixTimerPrescaler(elementId)
         };
 
         let data = await post('setTimerPrescaler', payload);
+        if(data != "success")
+        {
+            alert(`Error: failed to prescaler of fix timer, info: ${data}`);
+        }
+    }
+    else if(action == "save")
+    {
+        let configId = `${segments[0]}_${segments[1]}_${segments[2]}_config`;
+        let value = Number(document.getElementById(configId).value);
+
+        let payload = {
+            timerId: 6,
+            prescaler: value
+        };
+
+        let data = await post('saveTimerPrescaler', payload);
         if(data != "success")
         {
             alert(`Error: failed to prescaler of fix timer, info: ${data}`);
