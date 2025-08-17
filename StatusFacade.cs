@@ -148,7 +148,7 @@ namespace VirtualOperatorServer.Facade
                     public byte maxEncoderOffsetError;
                 }
 
-                public struct Configuration
+                public class Configuration
                 {
                     public enum EnumPort
                     {
@@ -213,57 +213,52 @@ namespace VirtualOperatorServer.Facade
                         NOT_SELECTED = 255
                     }
 
-                    public struct StepperModeForced
+                    public class StepperModeForced
                     {
-                        public ushort pulseWidth;
+                        public ushort pulseWidth { get; set; }
                     }
 
-                    public struct StepperModeActive
+                    public class StepperModeActive
                     {
-                        public ushort startingPulseWidth;
-                        public ushort acceleratingSteps;
-                        public ushort cruisingPulseWidth;
-                        public ushort deacceleratingSteps;
-                        public ushort endingPulseWidth;
+                        public ushort startingPulseWidth { get; set; }
+                        public ushort acceleratingSteps { get; set; }
+                        public ushort cruisingPulseWidth { get; set; }
+                        public ushort deacceleratingSteps { get; set; }
+                        public ushort endingPulseWidth { get; set; }
                     }
 
-                    public struct StepperModePassive
+                    public class StepperModePassive
                     {
-                        public EnumStepper activeStepper;
-
-                        public StepperModePassive()
-                        {
-                            activeStepper = EnumStepper.NOT_SELECTED;
-                        }
+                        public EnumStepper activeStepper { get; set; } = EnumStepper.NOT_SELECTED;
                     }
 
-                    public EnumTimer timer;
-                    public EnumEncoder encoder;
-                    public EnumMode mode;
-                    public StepperModeForced forcedModeConfig;
-                    public StepperModeActive activeModeConfig;
-                    public StepperModePassive passiveModeConfig;
+                    public EnumTimer timer { get; set; }
+                    public EnumEncoder encoder { get; set; }
+                    public EnumMode mode { get; set; }
+                    public StepperModeForced forcedModeConfig { get; set; } = new();
+                    public StepperModeActive activeModeConfig { get; set; } = new();
+                    public StepperModePassive passiveModeConfig { get; set; } = new();
 
-                    public bool isEnableHigh;
-                    public bool isForwardHigh;
-                    public bool isRisingEdgeDriven;
+                    public bool isEnableHigh { get; set; }
+                    public bool isForwardHigh { get; set; }
+                    public bool isRisingEdgeDriven { get; set; }
 
-                    public EnumPort portHomeBoundary;
-                    public byte pinHomeBoundary;
-                    public EnumPort portEndBoundary;
-                    public byte pinEndBoundary;
-                    public EnumPort portEnable;
-                    public byte pinEnable;
-                    public EnumPort portForward;
-                    public byte pinForward;
-                    public EnumPort portClock;
-                    public byte pinClock;
+                    public EnumPort portHomeBoundary { get; set; }
+                    public byte pinHomeBoundary { get; set; }
+                    public EnumPort portEndBoundary { get; set; }
+                    public byte pinEndBoundary { get; set; }
+                    public EnumPort portEnable { get; set; }
+                    public byte pinEnable { get; set; }
+                    public EnumPort portForward { get; set; }
+                    public byte pinForward { get; set; }
+                    public EnumPort portClock { get; set; }
+                    public byte pinClock { get; set; }
 
-                    public ushort homeBoundaryToReadySteps;
-                    public uint range;
-                    public ushort stepsPerRotation;
-                    public ushort encoderCountsPerRotation;
-                    public ushort encoderOffsetErrorThreshold;
+                    public ushort homeBoundaryToReadySteps { get; set; }
+                    public uint range { get; set; }
+                    public ushort stepsPerRotation { get; set; }
+                    public ushort encoderCountsPerRotation { get; set; }
+                    public ushort encoderOffsetErrorThreshold { get; set; }
                 }
 
                 public bool isAlarmTriggered;
@@ -561,7 +556,7 @@ namespace VirtualOperatorServer.Facade
             // Timers
             Debug.Assert(Facade.FlexTimerCount == (VirtualOperatorStatus.TimerCount - 1), "Different flex timer count between Facade and VirtualOperatorStatus");
             {
-                var configs = VirtualOperatorServer.Configuration.DynamicConfig.TimerConfigs;
+                var configs = VirtualOperatorServer.Configuration.StaticConfig.Instance.TimerConfigs;
                 Debug.Assert(configs.Length == (Facade.FlexTimerCount + 1), "Different timer count between configs and Facade");
 
                 for (int i = 0; i < Facade.FlexTimerCount; i++)
@@ -668,7 +663,7 @@ namespace VirtualOperatorServer.Facade
                 }
 
                 // config
-                var configs = VirtualOperatorServer.Configuration.DynamicConfig.StepperConfigs;
+                var configs = VirtualOperatorServer.Configuration.StaticConfig.Instance.StepperConfigs;
                 Debug.Assert(configs.Length == Facade.StepperCount, "Stepper count difference between configs and facade");
                 for (int i = 0; i < Facade.StepperCount; i++)
                 {

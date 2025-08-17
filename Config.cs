@@ -16,12 +16,6 @@ namespace VirtualOperatorServer.Configuration
         private static readonly StaticConfig _instance = new();
         private readonly string _stepperConfigFile;
         private readonly string _timerConfigFile;
-        static readonly JsonSerializerOptions _serializerOption = new()
-        {
-            Converters = { new JsonStringEnumConverter() },
-            IncludeFields = true
-        };
-
 
         private void LoadStepperConfig()
         {
@@ -31,7 +25,7 @@ namespace VirtualOperatorServer.Configuration
                     throw new FileNotFoundException("The file does not exist.", _stepperConfigFile);
 
                 string jsonContent = File.ReadAllText(_stepperConfigFile);
-                var tmpConfigs = JsonSerializer.Deserialize<StatusFacade.Facade.Stepper.Configuration[]>(jsonContent, _serializerOption);
+                var tmpConfigs = JsonSerializer.Deserialize<StatusFacade.Facade.Stepper.Configuration[]>(jsonContent);
 
                 if (tmpConfigs == null)
                     throw new Exception($"Failed to deserialize '{_stepperConfigFile}'");
@@ -103,18 +97,26 @@ namespace VirtualOperatorServer.Configuration
             _stepperConfigFile = Path.Join(Directory.GetCurrentDirectory(), "configs", "stepperConfig.json");
             _timerConfigFile = Path.Join(Directory.GetCurrentDirectory(), "configs", "timerConfig.json");
 
+            TimerConfigs = new ushort[StatusFacade.Facade.FlexTimerCount + 1];
+
+            StepperConfigs = new StatusFacade.Facade.Stepper.Configuration[StatusFacade.Facade.StepperCount];
+            for (int i = 0; i < StepperConfigs.Length; i++)
+            {
+                StepperConfigs[i] = new StatusFacade.Facade.Stepper.Configuration();
+            }
+
             LoadStepperConfig();
             LoadTimerConfig();
         }
 
         public static StaticConfig Instance => _instance;
 
-        public StatusFacade.Facade.Stepper.Configuration[] StepperConfigs { get; private set; } = new StatusFacade.Facade.Stepper.Configuration[StatusFacade.Facade.StepperCount];
-        public ushort[] TimerConfigs { get; private set; } = new ushort[StatusFacade.Facade.FlexTimerCount + 1];
+        public StatusFacade.Facade.Stepper.Configuration[] StepperConfigs { get; private set; }
+        public ushort[] TimerConfigs { get; private set; } 
 
         public void SaveStepperConfigs()
         {
-            string jsonStr = JsonSerializer.Serialize(StepperConfigs, _serializerOption);
+            string jsonStr = JsonSerializer.Serialize<StatusFacade.Facade.Stepper.Configuration[]>(StepperConfigs);
             SaveFile(_stepperConfigFile, jsonStr);
         }
 
@@ -123,12 +125,6 @@ namespace VirtualOperatorServer.Configuration
             string jsonStr = JsonSerializer.Serialize(TimerConfigs);
             SaveFile(_timerConfigFile, jsonStr);
         }
-    }
-
-    public class DynamicConfig
-    {
-        public static StatusFacade.Facade.Stepper.Configuration[] StepperConfigs = StaticConfig.Instance.StepperConfigs;
-        public static ushort[] TimerConfigs = StaticConfig.Instance.TimerConfigs;
     }
 }
 
