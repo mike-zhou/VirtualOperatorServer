@@ -514,6 +514,160 @@ app.MapPost("/post/{*command}", async (HttpRequest request, string command, Back
             StaticConfig.Instance.SaveStepperConfigs();
             return Results.Text("success", "text/html");
         }
+        else if (command == "setActivePeriods")
+        {
+            const byte PERIODS_PER_BATCH = 100;
+            byte stepperIndex = jsonRoot.GetProperty("stepperId").GetByte();
+            var configs = StaticConfig.Instance.StepperConfigs;
+
+            if (stepperIndex >= configs.Length)
+            {
+                throw new InvalidRequestBodyException($"Invalid stepper index '{stepperIndex}'");
+            }
+
+            var config = configs[stepperIndex];
+
+            if (config.activeModeConfig.acceleratingSteps < 1)
+            {
+                throw new InvalidRequestBodyException($"Invalid count of rampup periods: {config.activeModeConfig.acceleratingSteps}");
+            }
+            else
+            {
+                ushort[] acceleratingPeriods = new ushort[config.activeModeConfig.acceleratingSteps];
+                double acceleratingRate = config.activeModeConfig.startingPulseWidth - config.activeModeConfig.cruisingPulseWidth;
+                acceleratingRate /= config.activeModeConfig.acceleratingSteps;
+                if (acceleratingRate < 0)
+                {
+                    throw new InvalidRequestBodyException($"Invalid rampup periods: '{config.activeModeConfig.startingPulseWidth}', '{config.activeModeConfig.cruisingPulseWidth}'");
+                }
+
+                for (int i = 0; i < acceleratingPeriods.Length; i++)
+                {
+                    acceleratingPeriods[i] = (ushort)Math.Round(config.activeModeConfig.startingPulseWidth - i * acceleratingRate);
+                }
+
+                var totalBatches = (acceleratingPeriods.Length + PERIODS_PER_BATCH - 1) / PERIODS_PER_BATCH;
+                for (int batchIndex = 0; batchIndex < totalBatches; batchIndex++)
+                {
+                    ushort[] batch;
+
+                    if ((batchIndex + 1) * PERIODS_PER_BATCH > acceleratingPeriods.Length)
+                    {
+                        batch = new ushort[acceleratingPeriods.Length - batchIndex * PERIODS_PER_BATCH];
+                    }
+                    else
+                    {
+                        batch = new ushort[PERIODS_PER_BATCH];
+                    }
+
+                    for (int i = 0; i < batch.Length; i++)
+                    {
+                        batch[i] = acceleratingPeriods[batchIndex * PERIODS_PER_BATCH + i];
+                    }
+
+                    var cmd = new CmdSetStepperActiveRampupPulseWidth(stepperIndex, (byte)batchIndex, (byte)totalBatches, batch);
+                    var result = await RunCommand(cmd);
+                    if (result != "success")
+                    {
+                        return Results.Text($"Failed in set rampup periods: '{result}'", "text/html");
+                    }
+                }
+            }
+
+            // cruising period
+            {
+                var cmd = new CmdSetStepperActiveCruisePulseWidth(stepperIndex, config.activeModeConfig.cruisingPulseWidth);
+                var result = await RunCommand(cmd);
+                if (result != "success")
+                {
+                    return Results.Text($"Failed in set cruising period: '{result}'", "text/html");
+                }
+            }
+
+            if (config.activeModeConfig.deacceleratingSteps < 1)
+            {
+                throw new InvalidRequestBodyException($"Invalid count of rampdown periods: {config.activeModeConfig.deacceleratingSteps}");
+            }
+            else
+            {
+                ushort[] deacceleratingPeriods = new ushort[config.activeModeConfig.deacceleratingSteps];
+                double deacceleratingRate = config.activeModeConfig.endingPulseWidth - config.activeModeConfig.cruisingPulseWidth;
+                deacceleratingRate /= config.activeModeConfig.deacceleratingSteps;
+                if (deacceleratingRate < 0)
+                {
+                    throw new InvalidRequestBodyException($"Invalid rampdown periods: '{config.activeModeConfig.endingPulseWidth}', '{config.activeModeConfig.cruisingPulseWidth}'");
+                }
+
+                for (int i = 0; i < deacceleratingPeriods.Length; i++)
+                {
+                    deacceleratingPeriods[i] = (ushort)Math.Round(config.activeModeConfig.cruisingPulseWidth + i * deacceleratingRate);
+                }
+
+                var totalBatches = (deacceleratingPeriods.Length + PERIODS_PER_BATCH - 1) / PERIODS_PER_BATCH;
+                for (int batchIndex = 0; batchIndex < totalBatches; batchIndex++)
+                {
+                    ushort[] batch;
+
+                    if ((batchIndex + 1) * PERIODS_PER_BATCH > deacceleratingPeriods.Length)
+                    {
+                        batch = new ushort[deacceleratingPeriods.Length - batchIndex * PERIODS_PER_BATCH];
+                    }
+                    else
+                    {
+                        batch = new ushort[PERIODS_PER_BATCH];
+                    }
+
+                    for (int i = 0; i < batch.Length; i++)
+                    {
+                        batch[i] = deacceleratingPeriods[batchIndex * PERIODS_PER_BATCH + i];
+                    }
+
+                    var cmd = new CmdSetStepperActiveRampdownPulseWidth(stepperIndex, (byte)batchIndex, (byte)totalBatches, batch);
+                    var result = await RunCommand(cmd);
+                    if (result != "success")
+                    {
+                        return Results.Text($"Failed in set rampdown periods: '{result}'", "text/html");
+                    }
+                }
+            }
+
+            return Results.Text("success", "text/html");
+        }
+        else if (command == "setStepperControls")
+        {
+            byte stepperIndex = jsonRoot.GetProperty("stepperId").GetByte();
+            var configs = StaticConfig.Instance.StepperConfigs;
+
+            if (stepperIndex >= configs.Length)
+            {
+                throw new InvalidRequestBodyException($"Invalid stepper index '{stepperIndex}'");
+            }
+
+            var config = configs[stepperIndex];
+            var cmd = new CmdSetSteppeControls(stepperIndex,
+                                                config.isRisingEdgeDriven,
+                                                config.isForwardHigh,
+                                                config.isEnableHigh,
+                                                (byte)config.portHomeBoundary,
+                                                config.pinHomeBoundary,
+                                                (byte)config.portEndBoundary,
+                                                config.pinEndBoundary,
+                                                (byte)config.portEnable,
+                                                config.pinEnable,
+                                                (byte)config.portForward,
+                                                config.pinForward,
+                                                (byte)config.portClock,
+                                                config.pinClock,
+                                                config.homeBoundaryToReadySteps,
+                                                config.range,
+                                                config.stepsPerRotation,
+                                                (byte)config.encoder,
+                                                config.encoderCountsPerRotation,
+                                                config.encoderOffsetErrorThreshold);
+            string result = await RunCommand(cmd);
+
+            return Results.Text(result, "text/html");
+        }
         else if (command == "runStepper")
         {
             return await RunStepper(jsonRoot);

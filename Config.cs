@@ -54,7 +54,7 @@ namespace VirtualOperatorServer.Configuration
                     throw new FileNotFoundException("The file does not exist.", _timerConfigFile);
 
                 string jsonContent = File.ReadAllText(_timerConfigFile);
-                var tmpConfigs = JsonSerializer.Deserialize<ushort[]>(jsonContent, _serializerOption);
+                var tmpConfigs = JsonSerializer.Deserialize<ushort[]>(jsonContent);
 
                 if (tmpConfigs == null)
                     throw new Exception($"Failed to deserialize '{_timerConfigFile}'");

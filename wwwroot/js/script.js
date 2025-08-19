@@ -547,7 +547,7 @@ function createStepperTable()
             html.push(`<td><input type="button" id="id_stepper_isForwardHigh_save_${stepperIndex}" value="Save"></td>`);
             html.push(`</tr>`);
             html.push(`<tr>`);
-            html.push(`<td><label>IsRisingEdgeHigh<input type="checkbox" id="id_stepper_isRisingEdgeDriven_value_${stepperIndex}"></label></td>`);
+            html.push(`<td><label>IsRisingEdgeDriven<input type="checkbox" id="id_stepper_isRisingEdgeDriven_value_${stepperIndex}"></label></td>`);
             html.push(`<td><input type="button" id="id_stepper_isRisingEdgeDriven_set_${stepperIndex}" value="Set"></td>`);
             html.push(`<td><input type="button" id="id_stepper_isRisingEdgeDriven_save_${stepperIndex}" value="Save"></td>`);
             html.push(`</tr>`);
@@ -581,6 +581,7 @@ function createStepperTable()
             html.push(`</tr>`);
             html.push("</table></div>");
 
+            // signal configurations
             {
                 let nameList = [
                     "HomeBoundary",
@@ -628,6 +629,11 @@ function createStepperTable()
                 html.push("</table></div>");
             }
 
+            // set controls
+            html.push('<div>');
+            html.push(`<button id="id_stepper_setActivePeriods_${stepperIndex}">Set Active Periods</button>`);
+            html.push(`<button id="id_stepper_setControls_${stepperIndex}">Set Controls</button>`);
+            html.push('</div>');
             // control
             html.push("<div><table><tr>");
             html.push(`<td><label>Disable<input type="checkbox" id="id_stepper_control_disable_${stepperIndex}"></label></td>`);
@@ -738,7 +744,7 @@ async function onClick_Gpio(id)
     if(checkbox.checked)
         newValue = 1;
 
-    payload = [
+    let payload = [
         {
             PortName : segments[2],
             BitIndex : parseInt(segments[3], 10),
@@ -760,7 +766,7 @@ async function onClick_PowerOutput(id)
     powerNumber = segments[segments.length - 1];
     enablePower = document.getElementById(id).checked;
 
-    payload = 
+    let payload = 
         { 
             powerOutput: parseInt(powerNumber, 10),
             enable: enablePower
@@ -777,7 +783,7 @@ async function onClick_BDCPowerOutput(id)
 {
     enablePower = document.getElementById(id).checked;
 
-    payload = 
+    let payload = 
         { 
             enable: enablePower
         };
@@ -795,7 +801,7 @@ async function onClick_BDCControl(id)
     actionStr = segments[2];
     indexStr = segments[3];
 
-    payload = 
+    let payload = 
         { 
             action: actionStr,
             index: parseInt(indexStr, 10)
@@ -894,16 +900,17 @@ async function onClick_Stepper(id)
 
     if(classification == "gpio")
     {
+        let action = segments[3];
         let stepperId = segments[4];
 
         if(action == "disable")
         {
-            payload = {
+            let payload = {
                 index: parseInt(stepperId, 10),
                 disableStepper: document.getElementById(id).checked
             }
 
-            data = await post('disableStepper', payload);
+            let data = await post('disableStepper', payload);
             if(data != "success")
             {
                 alert(`Error: failed to enabl stepper ${stepperId}, info: ${data}`);
@@ -911,12 +918,12 @@ async function onClick_Stepper(id)
         }
         else if(action == "forward")
         {
-            payload = {
+            let payload = {
                 index: parseInt(stepperId, 10),
                 forwardStepper: document.getElementById(id).checked
             }
 
-            data = await post('forwardStepper', payload);
+            let data = await post('forwardStepper', payload);
             if(data != "success")
             {
                 alert(`Error: failed to forward stepper ${stepperId}, info: ${data}`);
@@ -924,12 +931,12 @@ async function onClick_Stepper(id)
         }
         else if(action == "clock")
         {
-            payload = {
+            let payload = {
                 index: parseInt(stepperId, 10),
                 highLevel: document.getElementById(id).checked
             }
 
-            data = await post('clockStepper', payload);
+            let data = await post('clockStepper', payload);
             if(data != "success")
             {
                 alert(`Error: failed to clock stepper ${stepperId}, info: ${data}`);
@@ -938,6 +945,8 @@ async function onClick_Stepper(id)
     }
     else if(classification == "timer")
     {
+        let action = segments[3];
+
         if(action == "save")
         {
             let stepperIndex = Number(segments[4]);
@@ -958,6 +967,8 @@ async function onClick_Stepper(id)
     }
     else if(classification == "encoder")
     {
+        let action = segments[3];
+
         if(action == "save")
         {
             let stepperIndex = Number(segments[4]);
@@ -1219,6 +1230,32 @@ async function onClick_Stepper(id)
             }
         }
     }
+    else if(classification == "setActivePeriods")
+    {
+        let stepperIndex = parseInt(segments[3], 10);
+        let payload = {
+            stepperId: Number(stepperIndex)
+        }
+
+        let data = await post('setActivePeriods', payload);
+        if(data != "success")
+        {
+            alert(`Error: failed to set active periods, info: ${data}`);
+        }
+    }
+    else if(classification == "setControls")
+    {
+        let stepperIndex = parseInt(segments[3], 10);
+        let payload = {
+            stepperId: Number(stepperIndex)
+        }
+
+        let data = await post('setStepperControls', payload);
+        if(data != "success")
+        {
+            alert(`Error: failed to set controls, info: ${data}`);
+        }
+    }
     else if(classification == "control")
     {
         // do nothing
@@ -1232,7 +1269,7 @@ async function onClick_Stepper(id)
         let stepperIndex = parseInt(segments[4], 10);
         let stepsNum = NaN;
 
-        steps = segments[3];
+        let steps = segments[3];
         if(steps == "steps")
         {
             stepsNum = document.getElementById(`id_stepper_steps_${segments[4]}`).valueAsNumber;
@@ -1276,7 +1313,7 @@ async function onClick_Stepper(id)
 
         var forward = document.getElementById(`id_stepper_control_forward_${stepperIndex}`).checked;
 
-        payload = {
+        let payload = {
             stepperId: Number(stepperIndex),
             mode: mode,
             forward: forward,
@@ -1296,7 +1333,7 @@ async function onClick_Stepper(id)
             payload.activeStepperId = Number(activeStepper.split('_')[1]);
         }
 
-        data = await post('runStepper', payload);
+        let data = await post('runStepper', payload);
         if(data != "success")
         {
             alert(`Error: failed to run stepper ${segments[4]}, info: ${data}`);
