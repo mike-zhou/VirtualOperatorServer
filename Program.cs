@@ -668,6 +668,36 @@ app.MapPost("/post/{*command}", async (HttpRequest request, string command, Back
 
             return Results.Text(result, "text/html");
         }
+        else if (command == "setStepperEnable")
+        {
+            byte stepperIndex = jsonRoot.GetProperty("stepperId").GetByte();
+            bool isEnable = jsonRoot.GetProperty("enable").GetBoolean();
+
+            if (stepperIndex >= StatusFacade.Facade.StepperCount)
+            {
+                throw new InvalidRequestBodyException($"Invalid stepper index '{stepperIndex}'");
+            }
+
+            var cmd = new CmdSetStepperEnable(stepperIndex, isEnable);
+            string result = await RunCommand(cmd);
+
+            return Results.Text(result, "text/html");
+        }
+        else if (command == "setStepperForward")
+        {
+            byte stepperIndex = jsonRoot.GetProperty("stepperId").GetByte();
+            bool isForward = jsonRoot.GetProperty("forward").GetBoolean();
+
+            if (stepperIndex >= StatusFacade.Facade.StepperCount)
+            {
+                throw new InvalidRequestBodyException($"Invalid stepper index '{stepperIndex}'");
+            }
+
+            var cmd = new CmdSetStepperForward(stepperIndex, isForward);
+            string result = await RunCommand(cmd);
+
+            return Results.Text(result, "text/html");
+        }
         else if (command == "runStepper")
         {
             return await RunStepper(jsonRoot);

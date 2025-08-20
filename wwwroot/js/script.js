@@ -493,6 +493,11 @@ function createStepperTable()
         html.push(`<h2>Stepper ${stepperIndex}</h2>`);
         html.push("<div>");
         {
+            // state
+            html.push("<div>");
+            html.push("<label>State: </label>");
+            html.push(`<label id='id_stepper_state_${stepperIndex}'></label>`)
+            html.push("</div>");
             // alarm
             html.push("<div>");
             html.push("<label>Alarm:</label>");
@@ -636,7 +641,7 @@ function createStepperTable()
             html.push('</div>');
             // control
             html.push("<div><table><tr>");
-            html.push(`<td><label>Disable<input type="checkbox" id="id_stepper_control_disable_${stepperIndex}"></label></td>`);
+            html.push(`<td><label>Enable<input type="checkbox" id="id_stepper_control_enable_${stepperIndex}"></label></td>`);
             html.push(`<td><label>Forward<input type="checkbox" id="id_stepper_control_forward_${stepperIndex}"></label></td>`);
             html.push("</tr></table></div>");
             // buttons
@@ -1234,7 +1239,7 @@ async function onClick_Stepper(id)
     {
         let stepperIndex = parseInt(segments[3], 10);
         let payload = {
-            stepperId: Number(stepperIndex)
+            stepperId: stepperIndex
         }
 
         let data = await post('setActivePeriods', payload);
@@ -1247,7 +1252,7 @@ async function onClick_Stepper(id)
     {
         let stepperIndex = parseInt(segments[3], 10);
         let payload = {
-            stepperId: Number(stepperIndex)
+            stepperId: stepperIndex
         }
 
         let data = await post('setStepperControls', payload);
@@ -1258,7 +1263,42 @@ async function onClick_Stepper(id)
     }
     else if(classification == "control")
     {
-        // do nothing
+        let action = segments[3];
+
+        if(action == 'enable')
+        {
+            let stepperIndex = parseInt(segments[4], 10);
+            let checked = document.getElementById(id).checked;
+            let payload = {
+                stepperId: stepperIndex,
+                enable: checked
+            }
+
+            let data = await post('setStepperEnable', payload);
+            if(data != "success")
+            {
+                alert(`Error: failed to set stepper disable, info: ${data}`);
+            }
+        }
+        else if(action == 'forward')
+        {
+            let stepperIndex = parseInt(segments[4], 10);
+            let checked = document.getElementById(id).checked;
+            let payload = {
+                stepperId: stepperIndex,
+                forward: checked
+            }
+
+            let data = await post('setStepperForward', payload);
+            if(data != "success")
+            {
+                alert(`Error: failed to set stepper forward, info: ${data}`);
+            }
+        }
+        else
+        {
+            alert(`Unsupported action '${action}' in '${id}'`);
+        }
     }
     else if(classification == "steps")
     {
@@ -1584,32 +1624,35 @@ function updateStepper(status)
 {
     for(let stepperIndex=0; stepperIndex<status.steppers.length; stepperIndex++)
     {
-        let data = status.steppers[stepperIndex];
+        let stepper = status.steppers[stepperIndex];
+
+        // state
+        document.getElementById(`id_stepper_state_${stepperIndex}`).textContent = stepper.status.state;
 
         // alarm
         let alarmId = `id_stepperAlarm_state_${stepperIndex}`;
-        document.getElementById(alarmId).className = data.isAlarmTriggered ? "active-red-dot" : "inactive-red-dot";
+        document.getElementById(alarmId).className = stepper.isAlarmTriggered ? "active-red-dot" : "inactive-red-dot";
 
         // gpios
         let gpioDisableId = `id_stepper_gpio_disable_${stepperIndex}`;
         let gpioForwardId = `id_stepper_gpio_forward_${stepperIndex}`;
         let gpioClockId = `id_stepper_gpio_clock_${stepperIndex}`;
-        document.getElementById(gpioDisableId).checked = data.gpios.isDisableHigh;
-        document.getElementById(gpioForwardId).checked = data.gpios.isForwardHigh;
-        document.getElementById(gpioClockId).checked = data.gpios.isClockHigh;
+        document.getElementById(gpioDisableId).checked = stepper.gpios.isDisableHigh;
+        document.getElementById(gpioForwardId).checked = stepper.gpios.isForwardHigh;
+        document.getElementById(gpioClockId).checked = stepper.gpios.isClockHigh;
 
         // timer
         let timerId = `id_stepper_timer_value_${stepperIndex}`;
-        document.getElementById(timerId).textContent = data.config.timer;
+        document.getElementById(timerId).textContent = stepper.config.timer;
 
         // encoder
         let encoderId = `id_stepper_encoder_value_${stepperIndex}`;
-        document.getElementById(encoderId).textContent = data.config.encoder;
+        document.getElementById(encoderId).textContent = stepper.config.encoder;
 
         // forced mode
         let forcedModePeriodValueId = `id_stepper_period_forced_value_${stepperIndex}`;
         document.getElementById(forcedModePeriodValueId).textContent = 
-            String(data.config.forcedModeConfig.pulseWidth);
+            String(stepper.config.forcedModeConfig.pulseWidth);
 
         // active mode
         let activeModeStartingPeriodValueId = `id_stepper_period_active_starting_value_${stepperIndex}`;
@@ -1618,20 +1661,20 @@ function updateStepper(status)
         let activeModeEndingPeriodValueId = `id_stepper_period_active_ending_value_${stepperIndex}`;
         let activeModeDeaccelerationStepsValueId = `id_stepper_period_active_deaccelerationSteps_value_${stepperIndex}`;
         document.getElementById(activeModeStartingPeriodValueId).textContent =
-            String(data.config.activeModeConfig.startingPulseWidth);
+            String(stepper.config.activeModeConfig.startingPulseWidth);
         document.getElementById(activeModeAccelerationStepsValueId).textContent =
-            String(data.config.activeModeConfig.acceleratingSteps);
+            String(stepper.config.activeModeConfig.acceleratingSteps);
         document.getElementById(activeModeCruisePeriodValueId).textContent =
-            String(data.config.activeModeConfig.cruisingPulseWidth);
+            String(stepper.config.activeModeConfig.cruisingPulseWidth);
         document.getElementById(activeModeEndingPeriodValueId).textContent =
-            String(data.config.activeModeConfig.endingPulseWidth);
+            String(stepper.config.activeModeConfig.endingPulseWidth);
         document.getElementById(activeModeDeaccelerationStepsValueId).textContent =
-            String(data.config.activeModeConfig.deacceleratingSteps);
+            String(stepper.config.activeModeConfig.deacceleratingSteps);
 
         // isEnableHigh
         let isEnableHighValueId = `id_stepper_isEnableHigh_value_${stepperIndex}`;
         let isEnableHighSaveId = `id_stepper_isEnableHigh_save_${stepperIndex}`;
-        if(document.getElementById(isEnableHighValueId).checked == data.config.isEnableHigh)
+        if(document.getElementById(isEnableHighValueId).checked == stepper.config.isEnableHigh)
         {
             document.getElementById(isEnableHighSaveId).disabled = true;
         }
@@ -1642,7 +1685,7 @@ function updateStepper(status)
         // isForwardHigh
         let isForwardHighValueId = `id_stepper_isForwardHigh_value_${stepperIndex}`;
         let isForwardHighSaveId = `id_stepper_isForwardHigh_save_${stepperIndex}`;
-        if(document.getElementById(isForwardHighValueId).checked == data.config.isForwardHigh)
+        if(document.getElementById(isForwardHighValueId).checked == stepper.config.isForwardHigh)
         {
             document.getElementById(isForwardHighSaveId).disabled = true;
         }
@@ -1653,7 +1696,7 @@ function updateStepper(status)
         // isRisingEdgeDriven
         let isRisingEdgeDrivenValueId = `id_stepper_isRisingEdgeDriven_value_${stepperIndex}`;
         let isRisingEdgeDrivenSaveId = `id_stepper_isRisingEdgeDriven_save_${stepperIndex}`;
-        if(document.getElementById(isRisingEdgeDrivenValueId).checked == data.config.isRisingEdgeDriven)
+        if(document.getElementById(isRisingEdgeDrivenValueId).checked == stepper.config.isRisingEdgeDriven)
         {
             document.getElementById(isRisingEdgeDrivenSaveId).disabled = true;
         }
@@ -1668,10 +1711,10 @@ function updateStepper(status)
         var homeBoundaryToReadySteps = document.getElementById(homeBoundaryToReadyStepsValueId).valueAsNumber
         if(Number.isNaN(homeBoundaryToReadySteps))
         {
-            document.getElementById(homeBoundaryToReadyStepsValueId).valueAsNumber = data.config.homeBoundaryToReadySteps;
-            homeBoundaryToReadySteps = data.config.homeBoundaryToReadySteps;
+            document.getElementById(homeBoundaryToReadyStepsValueId).valueAsNumber = stepper.config.homeBoundaryToReadySteps;
+            homeBoundaryToReadySteps = stepper.config.homeBoundaryToReadySteps;
         }
-        if(homeBoundaryToReadySteps == data.config.homeBoundaryToReadySteps)
+        if(homeBoundaryToReadySteps == stepper.config.homeBoundaryToReadySteps)
         {
             document.getElementById(homeBoundaryToReadyStepsSaveId).disabled = true;
         }
@@ -1686,10 +1729,10 @@ function updateStepper(status)
         var range = document.getElementById(rangeValueId).valueAsNumber
         if(Number.isNaN(range))
         {
-            document.getElementById(rangeValueId).valueAsNumber = data.config.range;
-            range = data.config.range;
+            document.getElementById(rangeValueId).valueAsNumber = stepper.config.range;
+            range = stepper.config.range;
         }
-        if(range == data.config.range)
+        if(range == stepper.config.range)
         {
             document.getElementById(rangeSaveId).disabled = true;
         }
@@ -1704,10 +1747,10 @@ function updateStepper(status)
         var stepsPerRotation = document.getElementById(stepsPerRotationValueId).valueAsNumber
         if(Number.isNaN(stepsPerRotation))
         {
-            document.getElementById(stepsPerRotationValueId).valueAsNumber = data.config.stepsPerRotation;
-            stepsPerRotation = data.config.stepsPerRotation;
+            document.getElementById(stepsPerRotationValueId).valueAsNumber = stepper.config.stepsPerRotation;
+            stepsPerRotation = stepper.config.stepsPerRotation;
         }
-        if(stepsPerRotation == data.config.stepsPerRotation)
+        if(stepsPerRotation == stepper.config.stepsPerRotation)
         {
             document.getElementById(stepsPerRotationSaveId).disabled = true;
         }
@@ -1722,10 +1765,10 @@ function updateStepper(status)
         var encoderCountsPerRotation = document.getElementById(encoderCountsPerRotationValueId).valueAsNumber
         if(Number.isNaN(encoderCountsPerRotation))
         {
-            document.getElementById(encoderCountsPerRotationValueId).valueAsNumber = data.config.encoderCountsPerRotation;
-            encoderCountsPerRotation = data.config.encoderCountsPerRotation;
+            document.getElementById(encoderCountsPerRotationValueId).valueAsNumber = stepper.config.encoderCountsPerRotation;
+            encoderCountsPerRotation = stepper.config.encoderCountsPerRotation;
         }
-        if(encoderCountsPerRotation == data.config.encoderCountsPerRotation)
+        if(encoderCountsPerRotation == stepper.config.encoderCountsPerRotation)
         {
             document.getElementById(encoderCountsPerRotationSaveId).disabled = true;
         }
@@ -1740,10 +1783,10 @@ function updateStepper(status)
         var encoderOffsetErrorThreshold = document.getElementById(encoderOffsetErrorThresholdValueId).valueAsNumber
         if(Number.isNaN(encoderOffsetErrorThreshold))
         {
-            document.getElementById(encoderOffsetErrorThresholdValueId).valueAsNumber = data.config.encoderOffsetErrorThreshold;
-            encoderOffsetErrorThreshold = data.config.encoderOffsetErrorThreshold;
+            document.getElementById(encoderOffsetErrorThresholdValueId).valueAsNumber = stepper.config.encoderOffsetErrorThreshold;
+            encoderOffsetErrorThreshold = stepper.config.encoderOffsetErrorThreshold;
         }
-        if(encoderOffsetErrorThreshold == data.config.encoderOffsetErrorThreshold)
+        if(encoderOffsetErrorThreshold == stepper.config.encoderOffsetErrorThreshold)
         {
             document.getElementById(encoderOffsetErrorThresholdSaveId).disabled = true;
         }
@@ -1759,9 +1802,9 @@ function updateStepper(status)
         let pinHomeBoundarySaveId = `id_stepper_pin_HomeBoundary_save_${stepperIndex}`;
         if(document.getElementById(portHomeBoundarySelectId).value == "")
         {
-            document.getElementById(portHomeBoundarySelectId).value = data.config.portHomeBoundary;
+            document.getElementById(portHomeBoundarySelectId).value = stepper.config.portHomeBoundary;
         }
-        if(document.getElementById(portHomeBoundarySelectId).value == data.config.portHomeBoundary)
+        if(document.getElementById(portHomeBoundarySelectId).value == stepper.config.portHomeBoundary)
         {
             document.getElementById(portHomeBoundarySaveId).disabled = true;
         }
@@ -1771,9 +1814,9 @@ function updateStepper(status)
         }
         if(document.getElementById(pinHomeBoundarySelectId).value == "")
         {
-            document.getElementById(pinHomeBoundarySelectId).value = data.config.pinHomeBoundary;
+            document.getElementById(pinHomeBoundarySelectId).value = stepper.config.pinHomeBoundary;
         }
-        if(document.getElementById(pinHomeBoundarySelectId).value == data.config.pinHomeBoundary)
+        if(document.getElementById(pinHomeBoundarySelectId).value == stepper.config.pinHomeBoundary)
         {
             document.getElementById(pinHomeBoundarySaveId).disabled = true;
         }
@@ -1789,9 +1832,9 @@ function updateStepper(status)
         let pinEndBoundarySaveId = `id_stepper_pin_EndBoundary_save_${stepperIndex}`;
         if(document.getElementById(portEndBoundarySelectId).value == "")
         {
-            document.getElementById(portEndBoundarySelectId).value = data.config.portEndBoundary;
+            document.getElementById(portEndBoundarySelectId).value = stepper.config.portEndBoundary;
         }
-        if(document.getElementById(portEndBoundarySelectId).value == data.config.portEndBoundary)
+        if(document.getElementById(portEndBoundarySelectId).value == stepper.config.portEndBoundary)
         {
             document.getElementById(portEndBoundarySaveId).disabled = true;
         }
@@ -1801,9 +1844,9 @@ function updateStepper(status)
         }
         if(document.getElementById(pinEndBoundarySelectId).value == "")
         {
-            document.getElementById(pinEndBoundarySelectId).value = data.config.pinEndBoundary;
+            document.getElementById(pinEndBoundarySelectId).value = stepper.config.pinEndBoundary;
         }
-        if(document.getElementById(pinEndBoundarySelectId).value == data.config.pinEndBoundary)
+        if(document.getElementById(pinEndBoundarySelectId).value == stepper.config.pinEndBoundary)
         {
             document.getElementById(pinEndBoundarySaveId).disabled = true;
         }
@@ -1812,16 +1855,16 @@ function updateStepper(status)
             document.getElementById(pinEndBoundarySaveId).disabled = false;
         }
 
-        // Enable
+        // Enable signal
         let portEnableSelectId = `id_stepper_port_Enable_select_${stepperIndex}`;
         let portEnableSaveId = `id_stepper_port_Enable_save_${stepperIndex}`;
         let pinEnableSelectId = `id_stepper_pin_Enable_select_${stepperIndex}`;
         let pinEnableSaveId = `id_stepper_pin_Enable_save_${stepperIndex}`;
         if(document.getElementById(portEnableSelectId).value == "")
         {
-            document.getElementById(portEnableSelectId).value = data.config.portEnable;
+            document.getElementById(portEnableSelectId).value = stepper.config.portEnable;
         }
-        if(document.getElementById(portEnableSelectId).value == data.config.portEnable)
+        if(document.getElementById(portEnableSelectId).value == stepper.config.portEnable)
         {
             document.getElementById(portEnableSaveId).disabled = true;
         }
@@ -1831,9 +1874,9 @@ function updateStepper(status)
         }
         if(document.getElementById(pinEnableSelectId).value == "")
         {
-            document.getElementById(pinEnableSelectId).value = data.config.pinEnable;
+            document.getElementById(pinEnableSelectId).value = stepper.config.pinEnable;
         }
-        if(document.getElementById(pinEnableSelectId).value == data.config.pinEnable)
+        if(document.getElementById(pinEnableSelectId).value == stepper.config.pinEnable)
         {
             document.getElementById(pinEnableSaveId).disabled = true;
         }
@@ -1842,16 +1885,16 @@ function updateStepper(status)
             document.getElementById(pinEnableSaveId).disabled = false;
         }
 
-        // Forward
+        // Forward signal
         let portForwardSelectId = `id_stepper_port_Forward_select_${stepperIndex}`;
         let portForwardSaveId = `id_stepper_port_Forward_save_${stepperIndex}`;
         let pinForwardSelectId = `id_stepper_pin_Forward_select_${stepperIndex}`;
         let pinForwardSaveId = `id_stepper_pin_Forward_save_${stepperIndex}`;
         if(document.getElementById(portForwardSelectId).value == "")
         {
-            document.getElementById(portForwardSelectId).value = data.config.portForward;
+            document.getElementById(portForwardSelectId).value = stepper.config.portForward;
         }
-        if(document.getElementById(portForwardSelectId).value == data.config.portForward)
+        if(document.getElementById(portForwardSelectId).value == stepper.config.portForward)
         {
             document.getElementById(portForwardSaveId).disabled = true;
         }
@@ -1861,9 +1904,9 @@ function updateStepper(status)
         }
         if(document.getElementById(pinForwardSelectId).value == "")
         {
-            document.getElementById(pinForwardSelectId).value = data.config.pinForward;
+            document.getElementById(pinForwardSelectId).value = stepper.config.pinForward;
         }
-        if(document.getElementById(pinForwardSelectId).value == data.config.pinForward)
+        if(document.getElementById(pinForwardSelectId).value == stepper.config.pinForward)
         {
             document.getElementById(pinForwardSaveId).disabled = true;
         }
@@ -1872,16 +1915,16 @@ function updateStepper(status)
             document.getElementById(pinForwardSaveId).disabled = false;
         }
 
-        // Clock
+        // Clock signal
         let portClockSelectId = `id_stepper_port_Clock_select_${stepperIndex}`;
         let portClockSaveId = `id_stepper_port_Clock_save_${stepperIndex}`;
         let pinClockSelectId = `id_stepper_pin_Clock_select_${stepperIndex}`;
         let pinClockSaveId = `id_stepper_pin_Clock_save_${stepperIndex}`;
         if(document.getElementById(portClockSelectId).value == "")
         {
-            document.getElementById(portClockSelectId).value = data.config.portClock;
+            document.getElementById(portClockSelectId).value = stepper.config.portClock;
         }
-        if(document.getElementById(portClockSelectId).value == data.config.portClock)
+        if(document.getElementById(portClockSelectId).value == stepper.config.portClock)
         {
             document.getElementById(portClockSaveId).disabled = true;
         }
@@ -1891,9 +1934,9 @@ function updateStepper(status)
         }
         if(document.getElementById(pinClockSelectId).value == "")
         {
-            document.getElementById(pinClockSelectId).value = data.config.pinClock;
+            document.getElementById(pinClockSelectId).value = stepper.config.pinClock;
         }
-        if(document.getElementById(pinClockSelectId).value == data.config.pinClock)
+        if(document.getElementById(pinClockSelectId).value == stepper.config.pinClock)
         {
             document.getElementById(pinClockSaveId).disabled = true;
         }
@@ -1902,6 +1945,8 @@ function updateStepper(status)
             document.getElementById(pinClockSaveId).disabled = false;
         }
 
+        document.getElementById(`id_stepper_control_enable_${stepperIndex}`).checked = stepper.status.isEnabled;
+        document.getElementById(`id_stepper_control_forward_${stepperIndex}`).checked = stepper.status.isForward;
     }
 }
 

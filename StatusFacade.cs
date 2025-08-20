@@ -561,7 +561,7 @@ namespace VirtualOperatorServer.Facade
 
                 for (int i = 0; i < Facade.FlexTimerCount; i++)
                 {
-                    facade.flexTimers[i].state = (Facade.Timer.EnumState)(status.timersData[i].state);
+                    facade.flexTimers[i].state = (Facade.Timer.EnumState)status.timersData[i].state;
                     facade.flexTimers[i].prescaler = status.timersData[i].prescaler;
                     facade.flexTimers[i].prescalerConfig = configs[i];
                 }
