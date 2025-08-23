@@ -62,4 +62,74 @@ namespace VirtualOperatorServer.CommandAndReply
             }
         }
     }
+
+    class CmdTestTimer : CommandAndReply
+    {
+        public const int TIMER_COUNT = 7;
+        private const int REPLY_LENGTH = 2;
+        static private byte[] CreateCommand(byte timerId, ushort pulseWidth, ushort totoalPulse, ushort logPeriod)
+        {
+            /**
+            * command format:
+            * 0: 	command id
+            * 1:	timer id
+            * 2: 	1/2 pulse width
+            * 3:	2/2 pulse width
+            * 4:	1/2 total pulse
+            * 5:	2/2 total pulse
+            * 6:	1/2 log interval
+            * 7:	2/2 log interval
+            */
+
+            if (timerId >= TIMER_COUNT)
+            {
+                throw new InvalidRequestBodyException($"Wrong length of prescalers: {timerId}");
+            }
+
+            byte[] cmd = new byte[8];
+
+            cmd[0] = (byte)CommandEnum.TEST_TIMER;
+            cmd[1] = timerId;
+            cmd[2] = (byte)pulseWidth;
+            cmd[3] = (byte)(pulseWidth >> 8);
+            cmd[4] = (byte)totoalPulse;
+            cmd[5] = (byte)(totoalPulse >> 8);
+            cmd[6] = (byte)logPeriod;
+            cmd[7] = (byte)(logPeriod >> 8);
+
+            return cmd;
+        }
+
+        public CmdTestTimer(byte timerId, ushort pulseWidth, ushort totoalPulse, ushort logPeriod) :
+            base(CreateCommand(timerId, pulseWidth, totoalPulse, logPeriod))
+        {
+        }
+
+        public override (bool result, string reason) ParseReply()
+        {
+            if (reply == null)
+            {
+                return (false, "No reply is received");
+            }
+            if (reply.Length != REPLY_LENGTH)
+            {
+                return (false, "Invalid reply");
+            }
+
+            byte errorCode = reply[1];
+
+            switch (errorCode)
+            {
+                case 0:
+                    return (true, "");
+                case 1:
+                    return (false, "invalid command length");
+                case 2:
+                    return (false, "timer_test failed");
+                default:
+                    return (false, $"unknown error code {errorCode}");
+            }
+        }
+    }
+
 }

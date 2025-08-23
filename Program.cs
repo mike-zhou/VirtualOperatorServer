@@ -702,6 +702,23 @@ app.MapPost("/post/{*command}", async (HttpRequest request, string command, Back
         {
             return await RunStepper(jsonRoot);
         }
+        else if (command == "testTimer")
+        {
+            byte timerId = jsonRoot.GetProperty("timerId").GetByte();
+            ushort pulseWidth = jsonRoot.GetProperty("pulseWidth").GetUInt16();
+            ushort totalPulse = jsonRoot.GetProperty("totalPulse").GetUInt16();
+            ushort logPeriod = jsonRoot.GetProperty("logPeriod").GetUInt16();
+
+            if (timerId >= (StatusFacade.Facade.FlexTimerCount + 1))
+            {
+                throw new InvalidRequestBodyException($"Invalid timer Id '{timerId}'");
+            }
+
+            var cmd = new CmdTestTimer(timerId, pulseWidth, totalPulse, logPeriod);
+            string result = await RunCommand(cmd);
+
+            return Results.Text(result, "text/html");
+        }
     }
     catch (InvalidRequestBodyException e)
     {

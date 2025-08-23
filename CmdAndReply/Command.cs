@@ -28,7 +28,8 @@ namespace VirtualOperatorServer.CommandAndReply
         RUN_STEPPER_PASSIVE,
         RUN_STEPPER_ACTIVE,
         SET_TIMER_PRESCALER,
-        SET_POSITION_DETECTORS
+        SET_POSITION_DETECTORS,
+        TEST_TIMER
     }
 
     public class CommandAndReply

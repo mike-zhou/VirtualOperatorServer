@@ -295,6 +295,8 @@ function createTimerTable()
     
     html.push("<div>");
     html.push("<h1>Timer</h1>");
+
+    html.push("<h2>Config</h2>");
     html.push("<table>")
 
     html.push("<thead>");
@@ -303,6 +305,9 @@ function createTimerTable()
     html.push("<th>State</th>");
     html.push("<th>Value</th>");
     html.push("<th>Config</th>");
+    html.push("<th></th>");
+    html.push("<th></th>");
+    html.push("<th>ClockWidth</th>");
     html.push("<th></th>");
     html.push("</tr>");
     html.push("</thead>");
@@ -335,6 +340,40 @@ function createTimerTable()
     
     html.push("</tbody>");
     html.push("</table>");
+
+    html.push("<h2>Test</h2>");
+    html.push("<table>");
+    html.push("<thead>");
+    html.push("<tr>");
+    html.push("<th>Name</th>");
+    html.push("<th>PulseWidth</th>");
+    html.push("<th>TotalPulse</th>");
+    html.push("<th>LogPeriod</th>");
+    html.push("<th></th>");
+    html.push("</tr>");
+    html.push("</thead>");
+
+    html.push("<tbody>");
+    for(let i=0; i<6; i++)
+    {
+        html.push("<tr>");
+        html.push(`<td>FLEX_TIMER_${i}:</td>`);
+        html.push(`<td><input type="number" id="id_flexTimer_test_pulseWidth_${i}" min="1" step="1" max="65536"></td>`);
+        html.push(`<td><input type="number" id="id_flexTimer_test_totalPulse_${i}" min="1" step="1" max="65536"></td>`);
+        html.push(`<td><input type="number" id="id_flexTimer_test_logPeriod_${i}" min="1" step="1" max="65536"></td>`);
+        html.push(`<td><input type="button" id="id_flexTimer_test_run_${i}" value="Run"></td>`);
+        html.push("</tr>");
+    }
+    html.push("<tr>");
+    html.push(`<td>FIX_TIMER:</td>`);
+    html.push(`<td><input type="number" id="id_fixTimer_test_pulseWidth" min="1" step="1" max="65536"></td>`);
+    html.push(`<td><input type="number" id="id_fixTimer_test_totalPulse" min="1" step="1" max="65536"></td>`);
+    html.push(`<td><input type="number" id="id_fixTimer_test_logPeriod" min="1" step="1" max="65536"></td>`);
+    html.push(`<td><input type="button" id="id_fixTimer_test_run" value="Run"></td>`);
+    html.push("</tr>");
+    html.push("</tbody>");
+    html.push("</table>");
+
     html.push("</div>");
 
     return html.join("");   
@@ -859,6 +898,52 @@ async function onClick_FlexTimerPrescaler(elementId)
     }
 }
 
+async function onClick_FlexTimerTest(elementId)
+{
+    let segments = elementId.split("_");
+    let action = segments[3];
+    let timerIndex = Number(segments[4]);
+
+    if(action == "run")
+    {
+        let pulseWidthId = `${segments[0]}_${segments[1]}_${segments[2]}_pulseWidth_${segments[4]}`;
+        let totalPulseId = `${segments[0]}_${segments[1]}_${segments[2]}_totalPulse_${segments[4]}`;
+        let logPeriodId = `${segments[0]}_${segments[1]}_${segments[2]}_logPeriod_${segments[4]}`;
+
+        let pulseWidth = document.getElementById(pulseWidthId).value;
+        let totalPulse = document.getElementById(totalPulseId).value;
+        let logPeriod = document.getElementById(logPeriodId).value;
+
+        let payload = {
+            timerId: timerIndex,
+            pulseWidth: Number(pulseWidth),
+            totalPulse: Number(totalPulse),
+            logPeriod: Number(logPeriod)
+        };
+
+        let data = await post('testTimer', payload);
+        if(data != "success")
+        {
+            alert(`Error: failed to test flex timer ${timerIndex}, info: ${data}`);
+        }
+    }
+}
+
+async function onClick_FlexTimer(elementId)
+{
+    let segments = elementId.split("_");
+    let classification = segments[2];
+
+    if(classification == "prescaler")
+    {
+        await onClick_FlexTimerPrescaler(elementId);
+    }
+    else if(classification == "test")
+    {
+        await onClick_FlexTimerTest(elementId);
+    }
+}
+
 async function onClick_FixTimerPrescaler(elementId)
 {
     let segments = elementId.split("_");
@@ -895,6 +980,51 @@ async function onClick_FixTimerPrescaler(elementId)
         {
             alert(`Error: failed to prescaler of fix timer, info: ${data}`);
         }
+    }
+}
+
+async function onClick_FixTimerTest(elementId)
+{
+    let segments = elementId.split("_");
+    let action = segments[3];
+
+    if(action == "run")
+    {
+        let pulseWidthId = `${segments[0]}_${segments[1]}_${segments[2]}_pulseWidth`;
+        let totalPulseId = `${segments[0]}_${segments[1]}_${segments[2]}_totalPulse`;
+        let logPeriodId = `${segments[0]}_${segments[1]}_${segments[2]}_logPeriod`;
+
+        let pulseWidth = document.getElementById(pulseWidthId).value;
+        let totalPulse = document.getElementById(totalPulseId).value;
+        let logPeriod = document.getElementById(logPeriodId).value;
+
+        let payload = {
+            timerId: 6,
+            pulseWidth: Number(pulseWidth),
+            totalPulse: Number(totalPulse),
+            logPeriod: Number(logPeriod)
+        };
+
+        let data = await post('testTimer', payload);
+        if(data != "success")
+        {
+            alert(`Error: failed to test flex timer ${timerIndex}, info: ${data}`);
+        }
+    }
+}
+
+async function onClick_FixTimer(elementId)
+{
+    let segments = elementId.split("_");
+    let classification = segments[2];
+
+    if(classification == "prescaler")
+    {
+        await onClick_FixTimerPrescaler(elementId);
+    }
+    else if(classification == "test")
+    {
+        await onClick_FixTimerTest(elementId);
     }
 }
 
@@ -1408,10 +1538,10 @@ async function onClick(event)
         await onClick_BDCPowerOutput(elementId);
     else if (elementId.startsWith("id_bdcControl_"))
         await onClick_BDCControl(elementId);
-    else if (elementId.startsWith("id_flexTimer_prescaler_"))
-        await onClick_FlexTimerPrescaler(elementId);
-    else if (elementId.startsWith("id_fixTimer_prescaler_"))
-        await onClick_FixTimerPrescaler(elementId);
+    else if (elementId.startsWith("id_flexTimer_"))
+        await onClick_FlexTimer(elementId);
+    else if (elementId.startsWith("id_fixTimer_"))
+        await onClick_FixTimer(elementId);
     else if (elementId.startsWith("id_stepper_"))
         await onClick_Stepper(elementId);
 
@@ -1607,7 +1737,7 @@ function updateTimer(status)
             config.value = status.flexTimers[i].prescalerConfig;
         }
 
-        document.getElementById(unitId).textContent = (status.flexTimers[i].prescaler * 4.16).toLocaleString('en-US'); 
+        document.getElementById(unitId).textContent = Math.round(status.flexTimers[i].prescaler * 4.16).toLocaleString('en-US'); 
     }
 
     document.getElementById("id_fixTimer_state").textContent = status.fixTimer.state;
@@ -1617,7 +1747,7 @@ function updateTimer(status)
         document.getElementById("id_fixTimer_prescaler_config").value = status.fixTimer.prescalerConfig;
     }
 
-    document.getElementById("id_fixTimer_prescaler_unit").textContent = (status.fixTimer.prescaler * 10).toLocaleString('en-US'); 
+    document.getElementById("id_fixTimer_prescaler_unit").textContent = Math.round(status.fixTimer.prescaler * 17).toLocaleString('en-US'); 
 }
 
 function updateStepper(status)
