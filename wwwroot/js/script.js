@@ -697,6 +697,16 @@ function createStepperTable()
             html.push("</div>");
         }
         html.push("</div>");
+
+        html.push(`<h3>Test</h3>`);
+        html.push("<div>");
+        {
+            html.push(`<div><label>Test Stepper Enable<input type="checkbox" id="id_stepper_test_enable_${stepperIndex}"></label></div>`);
+            html.push(`<div><label>Test Stepper Forward<input type="checkbox" id="id_stepper_test_forward_${stepperIndex}"></label></div>`);
+            html.push(`<div><label>Test Stepper Clock<input type="checkbox" id="id_stepper_test_clock_${stepperIndex}"></label></div>`);
+        }
+        html.push("</div>");
+
         html.push("</div>");
     }
 
@@ -1509,6 +1519,47 @@ async function onClick_Stepper(id)
             alert(`Error: failed to run stepper ${segments[4]}, info: ${data}`);
         }
     }
+    else if(classification == "test")
+    {
+        let action = segments[3];
+        let stepperIndex = Number(segments[4]);
+        let checked = document.getElementById(id).checked;
+
+        let payload = {
+            stepperId: stepperIndex
+        }
+
+        if(action == "enable")
+        {
+            payload.isEnable = checked;
+
+            let data = await post('testStepperEnable', payload);
+            if(data != "success")
+            {
+                alert(`Failed in testStepperEnable, info: ${data}`);
+            }
+        }
+        else if(action == "forward")
+        {
+            payload.isForward = checked;
+
+            let data = await post('testStepperForward', payload);
+            if(data != "success")
+            {
+                alert(`Failed in testStepperForward, info: ${data}`);
+            }
+        }
+        else if(action == "clock")
+        {
+            payload.isFirstHalf = checked;
+
+            let data = await post('testStepperClock', payload);
+            if(data != "success")
+            {
+                alert(`Failed in testStepperClock, info: ${data}`);
+            }
+        }
+    }
     else
     {
         alert(`Unsupported classification '${classification}' in '${id}'`);
@@ -2077,6 +2128,9 @@ function updateStepper(status)
 
         document.getElementById(`id_stepper_control_enable_${stepperIndex}`).checked = stepper.status.isEnabled;
         document.getElementById(`id_stepper_control_forward_${stepperIndex}`).checked = stepper.status.isForward;
+
+        document.getElementById(`id_stepper_test_enable_${stepperIndex}`).checked = stepper.status.isEnabled;
+        document.getElementById(`id_stepper_test_forward_${stepperIndex}`).checked = stepper.status.isForward;
     }
 }
 

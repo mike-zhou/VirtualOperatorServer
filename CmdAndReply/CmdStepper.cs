@@ -761,4 +761,154 @@ namespace VirtualOperatorServer.CommandAndReply
         }
     }
 
+    class CmdTestStepperEnable(byte stepperId, bool isEnable) :
+        CommandAndReply(CreateCommand(stepperId, isEnable))
+    {
+        private const int REPLY_LENGTH = 2;
+
+        static private byte[] CreateCommand(byte stepperId, bool isEnable)
+        {
+            /**
+            * command format:
+            * 0: 	command id
+            * 1:	stepper id
+            * 2: 	isEnable
+            */
+            byte[] cmd = new byte[3];
+
+            cmd[0] = (byte)CommandEnum.TEST_STEPPER_ENABLE;
+            cmd[1] = stepperId;
+            cmd[2] = (byte)(isEnable ? 1 : 0);
+
+            return cmd;
+        }
+
+        public override (bool result, string reason) ParseReply()
+        {
+            if (reply == null)
+            {
+                return (false, "No reply is received");
+            }
+            if (reply.Length != REPLY_LENGTH)
+            {
+                return (false, "Invalid reply");
+            }
+
+            byte errorCode = reply[1];
+
+            switch (errorCode)
+            {
+                case 0:
+                    return (true, "");
+                case 1:
+                    return (false, "invalid command length");
+                case 2:
+                    return (false, "stepper_test_enable() failed");
+                default:
+                    return (false, $"unknown error code {errorCode}");
+            }
+        }
+    }
+
+    class CmdTestStepperForward(byte stepperId, bool isForward) :
+        CommandAndReply(CreateCommand(stepperId, isForward))
+    {
+        private const int REPLY_LENGTH = 2;
+
+        static private byte[] CreateCommand(byte stepperId, bool isForward)
+        {
+            /**
+            * command format:
+            * 0: 	command id
+            * 1:	stepper id
+            * 2: 	isForward
+            */
+            byte[] cmd = new byte[3];
+
+            cmd[0] = (byte)CommandEnum.TEST_STEPPER_FORWARD;
+            cmd[1] = stepperId;
+            cmd[2] = (byte)(isForward ? 1 : 0);
+
+            return cmd;
+        }
+
+        public override (bool result, string reason) ParseReply()
+        {
+            if (reply == null)
+            {
+                return (false, "No reply is received");
+            }
+            if (reply.Length != REPLY_LENGTH)
+            {
+                return (false, "Invalid reply");
+            }
+
+            byte errorCode = reply[1];
+
+            switch (errorCode)
+            {
+                case 0:
+                    return (true, "");
+                case 1:
+                    return (false, "invalid command length");
+                case 2:
+                    return (false, "stepper_test_forward() failed");
+                default:
+                    return (false, $"unknown error code {errorCode}");
+            }
+        }
+    }
+
+    class CmdTestStepperClock(byte stepperId, bool isFirstHalf) :
+        CommandAndReply(CreateCommand(stepperId, isFirstHalf))
+    {
+        private const int REPLY_LENGTH = 2;
+
+        static private byte[] CreateCommand(byte stepperId, bool isFirstHalf)
+        {
+            /**
+            * command format:
+            * 0: 	command id
+            * 1:	stepper id
+            * 2: 	isFirstHalf
+            */
+            byte[] cmd = new byte[3];
+
+            cmd[0] = (byte)CommandEnum.TEST_STEPPER_CLOCK;
+            cmd[1] = stepperId;
+            cmd[2] = (byte)(isFirstHalf ? 1 : 0);
+
+            return cmd;
+        }
+
+        public override (bool result, string reason) ParseReply()
+        {
+            if (reply == null)
+            {
+                return (false, "No reply is received");
+            }
+            if (reply.Length != REPLY_LENGTH)
+            {
+                return (false, "Invalid reply");
+            }
+
+            byte errorCode = reply[1];
+
+            switch (errorCode)
+            {
+                case 0:
+                    return (true, "");
+                case 1:
+                    return (false, "invalid command length");
+                case 2:
+                    return (false, "stepper_test_clock() failed");
+                default:
+                    return (false, $"unknown error code {errorCode}");
+            }
+        }
+    }
+
+
+
+
 }

@@ -719,6 +719,51 @@ app.MapPost("/post/{*command}", async (HttpRequest request, string command, Back
 
             return Results.Text(result, "text/html");
         }
+        else if (command == "testStepperEnable")
+        {
+            byte stepperId = jsonRoot.GetProperty("stepperId").GetByte();
+            bool isEnable = jsonRoot.GetProperty("isEnable").GetBoolean();
+
+            if (stepperId >= StatusFacade.Facade.StepperCount)
+            {
+                throw new InvalidRequestBodyException($"Invalid stepper Id '{stepperId}'");
+            }
+
+            var cmd = new CmdTestStepperEnable(stepperId, isEnable);
+            string result = await RunCommand(cmd);
+
+            return Results.Text(result, "text/html");
+        }
+        else if (command == "testStepperForward")
+        {
+            byte stepperId = jsonRoot.GetProperty("stepperId").GetByte();
+            bool isForward = jsonRoot.GetProperty("isForward").GetBoolean();
+
+            if (stepperId >= StatusFacade.Facade.StepperCount)
+            {
+                throw new InvalidRequestBodyException($"Invalid stepper Id '{stepperId}'");
+            }
+
+            var cmd = new CmdTestStepperForward(stepperId, isForward);
+            string result = await RunCommand(cmd);
+
+            return Results.Text(result, "text/html");
+        }
+        else if (command == "testStepperClock")
+        {
+            byte stepperId = jsonRoot.GetProperty("stepperId").GetByte();
+            bool isFirstHalf = jsonRoot.GetProperty("isFirstHalf").GetBoolean();
+
+            if (stepperId >= StatusFacade.Facade.StepperCount)
+            {
+                throw new InvalidRequestBodyException($"Invalid stepper Id '{stepperId}'");
+            }
+
+            var cmd = new CmdTestStepperClock(stepperId, isFirstHalf);
+            string result = await RunCommand(cmd);
+
+            return Results.Text(result, "text/html");
+        }
     }
     catch (InvalidRequestBodyException e)
     {
