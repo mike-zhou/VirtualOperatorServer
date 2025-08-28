@@ -729,7 +729,7 @@ app.MapPost("/post/{*command}", async (HttpRequest request, string command, Back
                 throw new InvalidRequestBodyException($"Invalid stepper Id '{stepperId}'");
             }
 
-            var cmd = new CmdTestStepperEnable(stepperId, isEnable);
+            var cmd = new CmdTestStepperSignalEnable(stepperId, isEnable);
             string result = await RunCommand(cmd);
 
             return Results.Text(result, "text/html");
@@ -744,7 +744,7 @@ app.MapPost("/post/{*command}", async (HttpRequest request, string command, Back
                 throw new InvalidRequestBodyException($"Invalid stepper Id '{stepperId}'");
             }
 
-            var cmd = new CmdTestStepperForward(stepperId, isForward);
+            var cmd = new CmdTestStepperSignalForward(stepperId, isForward);
             string result = await RunCommand(cmd);
 
             return Results.Text(result, "text/html");
@@ -759,7 +759,37 @@ app.MapPost("/post/{*command}", async (HttpRequest request, string command, Back
                 throw new InvalidRequestBodyException($"Invalid stepper Id '{stepperId}'");
             }
 
-            var cmd = new CmdTestStepperClock(stepperId, isFirstHalf);
+            var cmd = new CmdTestStepperSignalClock(stepperId, isFirstHalf);
+            string result = await RunCommand(cmd);
+
+            return Results.Text(result, "text/html");
+        }
+        else if (command == "testStepperForce")
+        {
+            byte stepperId = jsonRoot.GetProperty("stepperId").GetByte();
+            ushort pulseWidth = jsonRoot.GetProperty("pulseWidth").GetUInt16();
+            ushort steps = jsonRoot.GetProperty("steps").GetUInt16();
+
+            if (stepperId >= StatusFacade.Facade.StepperCount)
+            {
+                throw new InvalidRequestBodyException($"Invalid stepper Id '{stepperId}'");
+            }
+
+            var cmd = new CmdTestStepperForce(stepperId, pulseWidth, steps);
+            string result = await RunCommand(cmd);
+
+            return Results.Text(result, "text/html");
+        }
+        else if (command == "testStepperPulseEnd")
+        {
+            byte stepperId = jsonRoot.GetProperty("stepperId").GetByte();
+
+            if (stepperId >= StatusFacade.Facade.StepperCount)
+            {
+                throw new InvalidRequestBodyException($"Invalid stepper Id '{stepperId}'");
+            }
+
+            var cmd = new CmdTestStepperPulseEnd(stepperId);
             string result = await RunCommand(cmd);
 
             return Results.Text(result, "text/html");

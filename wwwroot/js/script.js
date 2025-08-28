@@ -704,6 +704,15 @@ function createStepperTable()
             html.push(`<div><label>Test Stepper Enable<input type="checkbox" id="id_stepper_test_enable_${stepperIndex}"></label></div>`);
             html.push(`<div><label>Test Stepper Forward<input type="checkbox" id="id_stepper_test_forward_${stepperIndex}"></label></div>`);
             html.push(`<div><label>Test Stepper Clock<input type="checkbox" id="id_stepper_test_clock_${stepperIndex}"></label></div>`);
+            // test force
+            html.push('<div>');
+            html.push("<label>PulseWidth</label>");
+            html.push(`<input type="number" id="id_stepper_test_force_pulseWidth_${stepperIndex}" min="1" step="1" max="10240">`);
+            html.push("<label>Steps</label>");
+            html.push(`<input type="number" id="id_stepper_test_force_steps_${stepperIndex}" min="1" step="1" max="10240">`);
+            html.push(`<input type="button" id="id_stepper_test_force_set_${stepperIndex}" value="Set Force">`);
+            html.push(`<input type="button" id="id_stepper_test_force_pulseEnd_${stepperIndex}" value="PulseEnd">`)
+            html.push("</div>");
         }
         html.push("</div>");
 
@@ -1522,16 +1531,16 @@ async function onClick_Stepper(id)
     else if(classification == "test")
     {
         let action = segments[3];
-        let stepperIndex = Number(segments[4]);
-        let checked = document.getElementById(id).checked;
-
-        let payload = {
-            stepperId: stepperIndex
-        }
 
         if(action == "enable")
         {
-            payload.isEnable = checked;
+            let stepperIndex = Number(segments[4]);
+            let checked = document.getElementById(id).checked;
+
+            let payload = {
+                stepperId: stepperIndex,
+                isEnable: checked
+            }
 
             let data = await post('testStepperEnable', payload);
             if(data != "success")
@@ -1541,7 +1550,13 @@ async function onClick_Stepper(id)
         }
         else if(action == "forward")
         {
-            payload.isForward = checked;
+            let stepperIndex = Number(segments[4]);
+            let checked = document.getElementById(id).checked;
+
+            let payload = {
+                stepperId: stepperIndex,
+                isForward: checked
+            }
 
             let data = await post('testStepperForward', payload);
             if(data != "success")
@@ -1551,12 +1566,56 @@ async function onClick_Stepper(id)
         }
         else if(action == "clock")
         {
-            payload.isFirstHalf = checked;
+            let stepperIndex = Number(segments[4]);
+            let checked = document.getElementById(id).checked;
+
+            let payload = {
+                stepperId: stepperIndex,
+                isFirstHalf: checked
+            }
 
             let data = await post('testStepperClock', payload);
             if(data != "success")
             {
                 alert(`Failed in testStepperClock, info: ${data}`);
+            }
+        }
+        else if(action == "force")
+        {
+            let button = segments[4];
+            let stepperIndex = Number(segments[5]);
+
+            if(button == "set")
+            {
+                let pulseWidthId = `${segments[0]}_${segments[1]}_${segments[2]}_${segments[3]}_pulseWidth_${segments[5]}`;
+                let stepsId = `${segments[0]}_${segments[1]}_${segments[2]}_${segments[3]}_steps_${segments[5]}`;
+
+                let pulseWidth = document.getElementById(pulseWidthId).value;
+                let steps = document.getElementById(stepsId).value;
+
+                let payload = {
+                    stepperId: stepperIndex,
+                    pulseWidth: Number(pulseWidth),
+                    steps: Number(steps)
+                }
+
+                let data = await post('testStepperForce', payload);
+                if(data != "success")
+                {
+                    alert(`Failed in testStepperForce, info: ${data}`);
+                }
+            }
+            else if(button == "pulseEnd")
+            {
+                let payload = {
+                    stepperId: stepperIndex
+                }
+
+                let data = await post('testStepperPulseEnd', payload);
+                if(data != "success")
+                {
+                    alert(`Failed in testStepperPulseEnd, info: ${data}`);
+                }
             }
         }
     }

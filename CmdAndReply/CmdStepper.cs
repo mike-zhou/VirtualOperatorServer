@@ -761,7 +761,7 @@ namespace VirtualOperatorServer.CommandAndReply
         }
     }
 
-    class CmdTestStepperEnable(byte stepperId, bool isEnable) :
+    class CmdTestStepperSignalEnable(byte stepperId, bool isEnable) :
         CommandAndReply(CreateCommand(stepperId, isEnable))
     {
         private const int REPLY_LENGTH = 2;
@@ -776,7 +776,7 @@ namespace VirtualOperatorServer.CommandAndReply
             */
             byte[] cmd = new byte[3];
 
-            cmd[0] = (byte)CommandEnum.TEST_STEPPER_ENABLE;
+            cmd[0] = (byte)CommandEnum.TEST_STEPPER_SIGNAL_ENABLE;
             cmd[1] = stepperId;
             cmd[2] = (byte)(isEnable ? 1 : 0);
 
@@ -810,7 +810,7 @@ namespace VirtualOperatorServer.CommandAndReply
         }
     }
 
-    class CmdTestStepperForward(byte stepperId, bool isForward) :
+    class CmdTestStepperSignalForward(byte stepperId, bool isForward) :
         CommandAndReply(CreateCommand(stepperId, isForward))
     {
         private const int REPLY_LENGTH = 2;
@@ -825,7 +825,7 @@ namespace VirtualOperatorServer.CommandAndReply
             */
             byte[] cmd = new byte[3];
 
-            cmd[0] = (byte)CommandEnum.TEST_STEPPER_FORWARD;
+            cmd[0] = (byte)CommandEnum.TEST_STEPPER_SIGNAL_FORWARD;
             cmd[1] = stepperId;
             cmd[2] = (byte)(isForward ? 1 : 0);
 
@@ -859,7 +859,7 @@ namespace VirtualOperatorServer.CommandAndReply
         }
     }
 
-    class CmdTestStepperClock(byte stepperId, bool isFirstHalf) :
+    class CmdTestStepperSignalClock(byte stepperId, bool isFirstHalf) :
         CommandAndReply(CreateCommand(stepperId, isFirstHalf))
     {
         private const int REPLY_LENGTH = 2;
@@ -874,7 +874,7 @@ namespace VirtualOperatorServer.CommandAndReply
             */
             byte[] cmd = new byte[3];
 
-            cmd[0] = (byte)CommandEnum.TEST_STEPPER_CLOCK;
+            cmd[0] = (byte)CommandEnum.TEST_STEPPER_SIGNAL_CLOCK;
             cmd[1] = stepperId;
             cmd[2] = (byte)(isFirstHalf ? 1 : 0);
 
@@ -908,7 +908,129 @@ namespace VirtualOperatorServer.CommandAndReply
         }
     }
 
+    class CmdTestStepperPulseEnd(byte stepperId) :
+        CommandAndReply(CreateCommand(stepperId))
+    {
+        private const int REPLY_LENGTH = 5;
 
+        static private byte[] CreateCommand(byte stepperId)
+        {
+            /**
+            * command format:
+            * 0: 	command id
+            * 1:	stepper id
+            */
+            byte[] cmd = new byte[2];
+
+            cmd[0] = (byte)CommandEnum.TEST_STEPPER_PULSE_END;
+            cmd[1] = stepperId;
+
+            return cmd;
+        }
+
+        public override (bool result, string reason) ParseReply()
+        {
+            /**
+            * reply format:
+            * 0: 	command id
+            * 1:	error code
+            * 2:	StepperReturnCode
+            * 3:	1/2 next pulse width
+            * 4:	2/2 next pulse width
+            */
+            if (reply == null)
+            {
+                return (false, "No reply is received");
+            }
+            if (reply.Length != REPLY_LENGTH)
+            {
+                return (false, "Invalid reply");
+            }
+
+            byte errorCode = reply[1];
+
+            switch (errorCode)
+            {
+                case 0:
+                    StepperReturnCode = reply[2];
+                    NextPulseWidth = (ushort)(reply[4] * 256 + reply[3]);
+                    return (true, "");
+                case 1:
+                    return (false, "invalid command length");
+                case 2:
+                    StepperReturnCode = reply[2];
+                    NextPulseWidth = (ushort)(reply[4] * 256 + reply[3]);
+                    return (false, "on_interupt_stepper_pulse_end() failed");
+                default:
+                    return (false, $"unknown error code {errorCode}");
+            }
+        }
+
+        public byte? StepperReturnCode { get; private set; } = null;
+        public ushort? NextPulseWidth { get; private set; } = null;
+    }
+
+    class CmdTestStepperForce(byte stepperId, ushort pulseWidth, ushort steps) :
+        CommandAndReply(CreateCommand(stepperId, pulseWidth, steps))
+    {
+        private const int REPLY_LENGTH = 2;
+
+        static private byte[] CreateCommand(byte stepperId, ushort pulseWidth, ushort steps)
+        {
+            /**
+            * command format:
+            * 0: 	command id
+            * 1:	stepper id
+            * 2:	1/2 pulse width
+            * 3:	2/2 pulse width
+            * 4:	1/2 steps
+            * 5:	2/2 steps
+            */
+
+            /**
+            * reply format:
+            * 0: 	command id
+            * 1:	error code
+            */
+
+            byte[] cmd = new byte[6];
+
+            cmd[0] = (byte)CommandEnum.TEST_STEPPER_FORCE;
+            cmd[1] = stepperId;
+            cmd[2] = (byte)pulseWidth;
+            cmd[3] = (byte)(pulseWidth >> 8);
+            cmd[4] = (byte)steps;
+            cmd[5] = (byte)(steps >> 8);
+
+            return cmd;
+        }
+
+        public override (bool result, string reason) ParseReply()
+        {
+            if (reply == null)
+            {
+                return (false, "No reply is received");
+            }
+            if (reply.Length != REPLY_LENGTH)
+            {
+                return (false, "Invalid reply");
+            }
+
+            byte errorCode = reply[1];
+
+            switch (errorCode)
+            {
+                case 0:
+                    return (true, "");
+                case 1:
+                    return (false, "invalid command length");
+                case 2:
+                    return (false, "stepper_run_force() failed");
+                default:
+                    return (false, $"unknown error code {errorCode}");
+            }
+        }
+    }
 
 
 }

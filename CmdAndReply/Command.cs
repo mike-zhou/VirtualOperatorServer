@@ -30,9 +30,11 @@ namespace VirtualOperatorServer.CommandAndReply
         SET_TIMER_PRESCALER,
         SET_POSITION_DETECTORS,
         TEST_TIMER,
-        TEST_STEPPER_ENABLE,
-        TEST_STEPPER_FORWARD,
-        TEST_STEPPER_CLOCK
+        TEST_STEPPER_SIGNAL_ENABLE,
+        TEST_STEPPER_SIGNAL_FORWARD,
+        TEST_STEPPER_SIGNAL_CLOCK,
+        TEST_STEPPER_PULSE_END,
+        TEST_STEPPER_FORCE
     }
 
     public class CommandAndReply
