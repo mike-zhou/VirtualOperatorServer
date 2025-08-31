@@ -34,7 +34,9 @@ namespace VirtualOperatorServer.CommandAndReply
         TEST_STEPPER_SIGNAL_FORWARD,
         TEST_STEPPER_SIGNAL_CLOCK,
         TEST_STEPPER_PULSE_END,
-        TEST_STEPPER_FORCE
+        TEST_STEPPER_STATE_RUNNING_FORCE,
+        TEST_STEPPER_STATE_READY,
+        TEST_STEPPER_STATE_RUNNING_ACTIVE
     }
 
     public class CommandAndReply

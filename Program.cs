@@ -600,7 +600,7 @@ app.MapPost("/post/{*command}", async (HttpRequest request, string command, Back
 
                 for (int i = 0; i < deacceleratingPeriods.Length; i++)
                 {
-                    deacceleratingPeriods[i] = (ushort)Math.Round(config.activeModeConfig.cruisingPulseWidth + i * deacceleratingRate);
+                    deacceleratingPeriods[i] = (ushort)Math.Round(config.activeModeConfig.cruisingPulseWidth + (i + 1) * deacceleratingRate);
                 }
 
                 var totalBatches = (deacceleratingPeriods.Length + PERIODS_PER_BATCH - 1) / PERIODS_PER_BATCH;
@@ -775,7 +775,7 @@ app.MapPost("/post/{*command}", async (HttpRequest request, string command, Back
                 throw new InvalidRequestBodyException($"Invalid stepper Id '{stepperId}'");
             }
 
-            var cmd = new CmdTestStepperForce(stepperId, pulseWidth, steps);
+            var cmd = new CmdTestStepperStateRunningForce(stepperId, pulseWidth, steps);
             string result = await RunCommand(cmd);
 
             return Results.Text(result, "text/html");
@@ -794,6 +794,36 @@ app.MapPost("/post/{*command}", async (HttpRequest request, string command, Back
 
             return Results.Text(result, "text/html");
         }
+        else if (command == "testStepperStateReady")
+        {
+            byte stepperId = jsonRoot.GetProperty("stepperId").GetByte();
+
+            if (stepperId >= StatusFacade.Facade.StepperCount)
+            {
+                throw new InvalidRequestBodyException($"Invalid stepper Id '{stepperId}'");
+            }
+
+            var cmd = new CmdTestStepperStateReady(stepperId);
+            string result = await RunCommand(cmd);
+
+            return Results.Text(result, "text/html");
+        }
+        else if (command == "testStepperActive")
+        {
+            byte stepperId = jsonRoot.GetProperty("stepperId").GetByte();
+            uint steps = jsonRoot.GetProperty("steps").GetUInt32();
+
+            if (stepperId >= StatusFacade.Facade.StepperCount)
+            {
+                throw new InvalidRequestBodyException($"Invalid stepper Id '{stepperId}'");
+            }
+
+            var cmd = new CmdTestStepperStateRunningActive(stepperId, steps);
+            string result = await RunCommand(cmd);
+
+            return Results.Text(result, "text/html");
+        }
+        
     }
     catch (InvalidRequestBodyException e)
     {

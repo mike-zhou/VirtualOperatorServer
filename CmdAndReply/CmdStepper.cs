@@ -970,7 +970,7 @@ namespace VirtualOperatorServer.CommandAndReply
         public ushort? NextPulseWidth { get; private set; } = null;
     }
 
-    class CmdTestStepperForce(byte stepperId, ushort pulseWidth, ushort steps) :
+    class CmdTestStepperStateRunningForce(byte stepperId, ushort pulseWidth, ushort steps) :
         CommandAndReply(CreateCommand(stepperId, pulseWidth, steps))
     {
         private const int REPLY_LENGTH = 2;
@@ -995,7 +995,7 @@ namespace VirtualOperatorServer.CommandAndReply
 
             byte[] cmd = new byte[6];
 
-            cmd[0] = (byte)CommandEnum.TEST_STEPPER_FORCE;
+            cmd[0] = (byte)CommandEnum.TEST_STEPPER_STATE_RUNNING_FORCE;
             cmd[1] = stepperId;
             cmd[2] = (byte)pulseWidth;
             cmd[3] = (byte)(pulseWidth >> 8);
@@ -1032,5 +1032,120 @@ namespace VirtualOperatorServer.CommandAndReply
         }
     }
 
+    class CmdTestStepperStateReady(byte stepperId) :
+        CommandAndReply(CreateCommand(stepperId))
+    {
+        private const int REPLY_LENGTH = 2;
+
+        static private byte[] CreateCommand(byte stepperId)
+        {
+            /**
+            * command format:
+            * 0: 	command id
+            * 1:	stepper id
+            */
+
+            /**
+            * reply format:
+            * 0: 	command id
+            * 1:	error code
+            */
+
+            byte[] cmd = new byte[2];
+
+            cmd[0] = (byte)CommandEnum.TEST_STEPPER_STATE_READY;
+            cmd[1] = stepperId;
+
+            return cmd;
+        }
+
+        public override (bool result, string reason) ParseReply()
+        {
+            if (reply == null)
+            {
+                return (false, "No reply is received");
+            }
+            if (reply.Length != REPLY_LENGTH)
+            {
+                return (false, "Invalid reply");
+            }
+
+            byte errorCode = reply[1];
+
+            switch (errorCode)
+            {
+                case 0:
+                    return (true, "");
+                case 1:
+                    return (false, "invalid command length");
+                case 2:
+                    return (false, "stepper_test_state_ready() failed");
+                default:
+                    return (false, $"unknown error code {errorCode}");
+            }
+        }
+    }
+
+    class CmdTestStepperStateRunningActive(byte stepperId, uint steps) :
+        CommandAndReply(CreateCommand(stepperId, steps))
+    {
+        private const int REPLY_LENGTH = 2;
+
+        static private byte[] CreateCommand(byte stepperId, uint steps)
+        {
+            /**
+            * command format:
+            * 0: 	command id
+            * 1:	stepper id
+            * 2:	1/4 steps
+            * 3:	2/4 steps
+            * 4:	3/4 steps
+            * 5:	4/4 steps
+            */
+
+            /**
+            * reply format:
+            * 0: 	command id
+            * 1:	error code
+            */
+
+            byte[] cmd = new byte[6];
+
+            cmd[0] = (byte)CommandEnum.TEST_STEPPER_STATE_RUNNING_ACTIVE;
+            cmd[1] = stepperId;
+            cmd[2] = (byte)steps;
+            cmd[3] = (byte)(steps >> 8);
+            cmd[4] = (byte)(steps >> 16);
+            cmd[5] = (byte)(steps >> 24);
+
+            return cmd;
+        }
+
+        public override (bool result, string reason) ParseReply()
+        {
+            if (reply == null)
+            {
+                return (false, "No reply is received");
+            }
+            if (reply.Length != REPLY_LENGTH)
+            {
+                return (false, "Invalid reply");
+            }
+
+            byte errorCode = reply[1];
+
+            switch (errorCode)
+            {
+                case 0:
+                    return (true, "");
+                case 1:
+                    return (false, "invalid command length");
+                case 2:
+                    return (false, "stepper_run_active() failed");
+                default:
+                    return (false, $"unknown error code {errorCode}");
+            }
+        }
+    }
 
 }

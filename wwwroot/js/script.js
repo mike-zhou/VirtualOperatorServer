@@ -706,12 +706,20 @@ function createStepperTable()
             html.push(`<div><label>Test Stepper Clock<input type="checkbox" id="id_stepper_test_clock_${stepperIndex}"></label></div>`);
             // test force
             html.push('<div>');
-            html.push("<label>PulseWidth</label>");
+            html.push("<label>Force: PulseWidth</label>");
             html.push(`<input type="number" id="id_stepper_test_force_pulseWidth_${stepperIndex}" min="1" step="1" max="10240">`);
             html.push("<label>Steps</label>");
-            html.push(`<input type="number" id="id_stepper_test_force_steps_${stepperIndex}" min="1" step="1" max="10240">`);
+            html.push(`<input type="number" id="id_stepper_test_force_steps_${stepperIndex}" min="1" step="1" max="1024">`);
             html.push(`<input type="button" id="id_stepper_test_force_set_${stepperIndex}" value="Set Force">`);
             html.push(`<input type="button" id="id_stepper_test_force_pulseEnd_${stepperIndex}" value="PulseEnd">`)
+            html.push("</div>");
+            // state ready
+            html.push('<div>');
+            html.push("<label>Active: </label>");
+            html.push(`<input type="button" id="id_stepper_test_stateReady_${stepperIndex}" value="Set Ready">`)
+            html.push(`<input type="number" id="id_stepper_test_active_steps_${stepperIndex}" min="1" step="1" max="10240">`);
+            html.push(`<input type="button" id="id_stepper_test_active_set_${stepperIndex}" value="Set Active">`)
+            html.push(`<input type="button" id="id_stepper_test_active_pulseEnd_${stepperIndex}" value="PulseEnd">`)
             html.push("</div>");
         }
         html.push("</div>");
@@ -1603,6 +1611,54 @@ async function onClick_Stepper(id)
                 if(data != "success")
                 {
                     alert(`Failed in testStepperForce, info: ${data}`);
+                }
+            }
+            else if(button == "pulseEnd")
+            {
+                let payload = {
+                    stepperId: stepperIndex
+                }
+
+                let data = await post('testStepperPulseEnd', payload);
+                if(data != "success")
+                {
+                    alert(`Failed in testStepperPulseEnd, info: ${data}`);
+                }
+            }
+        }
+        else if(action == "stateReady")
+        {
+            let stepperIndex = Number(segments[4]);
+            let payload = {
+                stepperId: stepperIndex
+            }
+
+            let data = await post('testStepperStateReady', payload);
+            if(data != "success")
+            {
+                alert(`Failed in testStepperForce, info: ${data}`);
+            }
+        }
+        else if(action == "active")
+        {
+            let button = segments[4];
+            let stepperIndex = Number(segments[5]);
+
+            if(button == "set")
+            {
+                let stepsId = `${segments[0]}_${segments[1]}_${segments[2]}_${segments[3]}_steps_${segments[5]}`;
+
+                let steps = document.getElementById(stepsId).value;
+
+                let payload = {
+                    stepperId: stepperIndex,
+                    steps: Number(steps)
+                }
+
+                let data = await post('testStepperActive', payload);
+                if(data != "success")
+                {
+                    alert(`Failed in testStepperActive, info: ${data}`);
                 }
             }
             else if(button == "pulseEnd")
