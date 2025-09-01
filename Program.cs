@@ -127,9 +127,14 @@ async Task<IResult> RunStepperActive(byte stepperId, uint steps)
         throw new Exception($"Timer must be selected in RunStepperActive");
     }
 
-    var activeModeConfig = stepperConfig.activeModeConfig;
+    var cmd = new CmdRunStepperActive(stepperId, (byte)stepperConfig.timer, steps);
+    string result = await RunCommand(cmd);
+    if (result != "success")
+    {
+        return Results.Text($"failure: RunStepperActive: {result}", "text/html");
+    }
 
-    return Results.Text($"failure: RunStepperPassive: not implemented", "text/html");
+    return Results.Text(result, "text/html");
 }
 
 async Task<IResult> RunStepperPassive(byte stepperId, uint steps, byte activeStepperId)
