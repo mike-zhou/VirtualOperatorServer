@@ -26,7 +26,7 @@ namespace VirtualOperatorServer.CommandAndReply
         START_STEPPER_HOME_POSITIONING,
         RUN_STEPPER_FORCE,
         RUN_STEPPER_PASSIVE,
-        RUN_STEPPER_ACTIVE,
+        SET_STEPPER_ACTIVE,
         SET_TIMER_PRESCALER,
         SET_POSITION_DETECTORS,
         TEST_TIMER,
@@ -36,7 +36,8 @@ namespace VirtualOperatorServer.CommandAndReply
         TEST_STEPPER_PULSE_END,
         TEST_STEPPER_STATE_RUNNING_FORCE,
         TEST_STEPPER_STATE_READY,
-        TEST_STEPPER_STATE_RUNNING_ACTIVE
+        TEST_STEPPER_STATE_RUNNING_ACTIVE,
+        RUN_STEPPER_ACTIVE
     }
 
     public class CommandAndReply

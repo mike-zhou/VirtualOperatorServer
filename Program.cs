@@ -127,8 +127,15 @@ async Task<IResult> RunStepperActive(byte stepperId, uint steps)
         throw new Exception($"Timer must be selected in RunStepperActive");
     }
 
-    var cmd = new CmdRunStepperActive(stepperId, (byte)stepperConfig.timer, steps);
-    string result = await RunCommand(cmd);
+    var cmdSetActive = new CmdSetStepperActive(stepperId, steps);
+    string result = await RunCommand(cmdSetActive);
+    if (result != "success")
+    {
+        return Results.Text($"failure: CmdSetStepperActive: {result}", "text/html");
+    }
+
+    var cmdRunActive = new CmdRunStepperActive(stepperId, (byte)stepperConfig.timer);
+    result = await RunCommand(cmdRunActive);
     if (result != "success")
     {
         return Results.Text($"failure: RunStepperActive: {result}", "text/html");

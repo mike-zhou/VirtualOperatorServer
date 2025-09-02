@@ -700,32 +700,30 @@ namespace VirtualOperatorServer.CommandAndReply
         }
     }
 
-    class CmdRunStepperActive(byte stepperId, byte timerId, uint steps) :
-        CommandAndReply(CreateCommand(stepperId, timerId, steps))
+    class CmdSetStepperActive(byte stepperId, uint steps) :
+        CommandAndReply(CreateCommand(stepperId, steps))
     {
         private const int REPLY_LENGTH = 2;
 
-        static private byte[] CreateCommand(byte stepperId, byte timerId, uint steps)
+        static private byte[] CreateCommand(byte stepperId, uint steps)
         {
             /**
             * command format:
             * 0:	command id
             * 1:	stepper id
-            * 2:	timer id
-            * 3:	1/4 steps
-            * 4:	2/4 steps
-            * 5:	3/4 steps
-            * 6:	4/4 steps
+            * 2:	1/4 steps
+            * 3:	2/4 steps
+            * 4:	3/4 steps
+            * 5:	4/4 steps
             */
-            byte[] cmd = new byte[7];
+            byte[] cmd = new byte[6];
 
-            cmd[0] = (byte)CommandEnum.RUN_STEPPER_ACTIVE;
+            cmd[0] = (byte)CommandEnum.SET_STEPPER_ACTIVE;
             cmd[1] = stepperId;
-            cmd[2] = timerId;
-            cmd[3] = (byte)steps;
-            cmd[4] = (byte)(steps >> 8);
-            cmd[5] = (byte)(steps >> 16);
-            cmd[6] = (byte)(steps >> 24);
+            cmd[2] = (byte)steps;
+            cmd[3] = (byte)(steps >> 8);
+            cmd[4] = (byte)(steps >> 16);
+            cmd[5] = (byte)(steps >> 24);
 
             return cmd;
         }
@@ -751,10 +749,6 @@ namespace VirtualOperatorServer.CommandAndReply
                     return (false, "invalid command length");
                 case 2:
                     return (false, "stepper_run_active() failed");
-                case 3:
-                    return (false, "stepper_get_startup_pulse_width() failed");
-                case 4:
-                    return (false, "timer_start() failed");
                 default:
                     return (false, $"unknown error code {errorCode}");
             }
@@ -969,7 +963,13 @@ namespace VirtualOperatorServer.CommandAndReply
         public byte? StepperReturnCode { get; private set; } = null;
         public ushort? NextPulseWidth { get; private set; } = null;
     }
-
+    
+    /// <summary>
+    /// Set stepper to STEPPER_STATE_RUNNING_FORCED for testing
+    /// </summary>
+    /// <param name="stepperId">stepper id</param>
+    /// <param name="pulseWidth">pulse width</param>
+    /// <param name="steps">steps to run</param>
     class CmdTestStepperStateRunningForce(byte stepperId, ushort pulseWidth, ushort steps) :
         CommandAndReply(CreateCommand(stepperId, pulseWidth, steps))
     {
@@ -1032,6 +1032,10 @@ namespace VirtualOperatorServer.CommandAndReply
         }
     }
 
+    /// <summary>
+    /// Set stepper to STEPPER_STATE_READY for testing
+    /// </summary>
+    /// <param name="stepperId">stepper id</param>
     class CmdTestStepperStateReady(byte stepperId) :
         CommandAndReply(CreateCommand(stepperId))
     {
@@ -1086,6 +1090,11 @@ namespace VirtualOperatorServer.CommandAndReply
         }
     }
 
+    /// <summary>
+    /// Set stepper to STEPPER_STATE_RUNNING_ACTIVE for testing
+    /// </summary>
+    /// <param name="stepperId"></param>
+    /// <param name="steps"></param>
     class CmdTestStepperStateRunningActive(byte stepperId, uint steps) :
         CommandAndReply(CreateCommand(stepperId, steps))
     {
@@ -1142,6 +1151,65 @@ namespace VirtualOperatorServer.CommandAndReply
                     return (false, "invalid command length");
                 case 2:
                     return (false, "stepper_run_active() failed");
+                default:
+                    return (false, $"unknown error code {errorCode}");
+            }
+        }
+    }
+
+    class CmdRunStepperActive(byte stepperId, byte timerId) :
+        CommandAndReply(CreateCommand(stepperId, timerId))
+    {
+        private const int REPLY_LENGTH = 2;
+
+        static private byte[] CreateCommand(byte stepperId, byte timerId)
+        {
+            /**
+            * command format:
+            * 0:	command id
+            * 1:	stepper id
+            * 2:	timer id
+            */
+            byte[] cmd = new byte[3];
+
+            cmd[0] = (byte)CommandEnum.RUN_STEPPER_ACTIVE;
+            cmd[1] = stepperId;
+            cmd[2] = timerId;
+
+            return cmd;
+        }
+
+        public override (bool result, string reason) ParseReply()
+        {
+            if (reply == null)
+            {
+                return (false, "No reply is received");
+            }
+            if (reply.Length != REPLY_LENGTH)
+            {
+                return (false, "Invalid reply");
+            }
+
+            byte errorCode = reply[1];
+
+            switch (errorCode)
+            {
+                case 0:
+                    return (true, "");
+                case 1:
+                    return (false, "invalid command length");
+                case 2:
+                    return (false, "invalid stepper id");
+                case 3:
+                    return (false, "invalid timer id");
+                case 4:
+                    return (false, "stepper_get_state() failure:");
+                case 5:
+                    return (false, "wrong stepper state");
+                case 6:
+                    return (false, "stepper_get_startup_pulse_width() failure");
+                case 7:
+                    return (false, "timer_start() failure");
                 default:
                     return (false, $"unknown error code {errorCode}");
             }
