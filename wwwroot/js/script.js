@@ -537,6 +537,10 @@ function createStepperTable()
             html.push("<label>State: </label>");
             html.push(`<label id='id_stepper_state_${stepperIndex}'></label>`)
             html.push("</div>");
+            html.push("<div>");
+            html.push("<label> Offset: </label>");
+            html.push(`<label id='id_stepper_offset_${stepperIndex}'></label>`)
+            html.push("</div>");
             // alarm
             html.push("<div>");
             html.push("<label>Alarm:</label>");
@@ -1924,6 +1928,9 @@ function updateStepper(status)
 
         // state
         document.getElementById(`id_stepper_state_${stepperIndex}`).textContent = stepper.status.state;
+
+        //offset
+        document.getElementById(`id_stepper_offset_${stepperIndex}`).textContent = stepper.status.offset;
 
         // alarm
         let alarmId = `id_stepperAlarm_state_${stepperIndex}`;
