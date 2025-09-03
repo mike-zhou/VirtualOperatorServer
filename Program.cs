@@ -46,31 +46,8 @@ string ProcessGetCommand(string command)
     CommandAndReply cmd = new([]);
 
     string[] cmdSegments = command.Split('/');
-    if (cmdSegments[0] == "Version")
-    {
-        return ViewFactory.CreateVersion();
-    }
-    else if (cmdSegments[0] == "GPIO")
-    {
-        return ViewFactory.CreateGpioTable();
-    }
-    else if (cmdSegments[0] == "PeripharalStatus")
-    {
-        return ViewFactory.CreatePeripheralStatus();
-    }
-    else if (cmdSegments[0] == "Encoders")
-    {
-        return ViewFactory.CreateEncoders();
-    }
-    else if (cmdSegments[0] == "DynamicStatus")
-    {
-        return ViewFactory.CreateDynamicStatus();
-    }
-    else if (cmdSegments[0] == "HtmlSteppers")
-    {
-        return ViewFactory.CreateSteppers();
-    }
-    else if (cmdSegments[0] == "Status")
+
+    if (cmdSegments[0] == "Status")
     {
         return StatusFacade.CreateStatusJsonString();
     }
