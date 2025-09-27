@@ -687,6 +687,27 @@ app.MapPost("/post/{*command}", async (HttpRequest request, string command, Back
 
             return Results.Text(result, "text/html");
         }
+        else if (command == "startStepperHomePositioning")
+        {
+            byte stepperId = jsonRoot.GetProperty("stepperId").GetByte();
+
+            if (stepperId >= StatusFacade.Facade.StepperCount)
+            {
+                throw new InvalidRequestBodyException($"Invalid stepper index '{stepperId}'");
+            }
+
+            var stepperConfig = StaticConfig.Instance.StepperConfigs[stepperId];
+
+            if (stepperConfig.timer == StatusFacade.Facade.Stepper.Configuration.EnumTimer.NOT_SELECTED)
+            {
+                throw new Exception($"Timer must be selected in startStepperHomePositioning");
+            }
+
+            var cmd = new CmdStartStepperHomePositioning(stepperId, (byte)stepperConfig.timer);
+            string result = await RunCommand(cmd);
+
+            return Results.Text(result, "text/html");
+        }
         else if (command == "runStepper")
         {
             return await RunStepper(jsonRoot);

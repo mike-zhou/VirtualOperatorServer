@@ -687,6 +687,10 @@ function createStepperTable()
             html.push(`<td><label>Enable<input type="checkbox" id="id_stepper_control_enable_${stepperIndex}"></label></td>`);
             html.push(`<td><label>Forward<input type="checkbox" id="id_stepper_control_forward_${stepperIndex}"></label></td>`);
             html.push("</tr></table></div>");
+            // home positioning
+            html.push('<div>');
+            html.push(`<button id="id_stepper_startHomePositioning_${stepperIndex}">Start Home Positioning</button>`);
+            html.push('</div>');
             // buttons
             html.push("<div>");
             html.push(`<button id="id_stepper_go_1_${stepperIndex}">1</button>`);
@@ -1459,6 +1463,19 @@ async function onClick_Stepper(id)
         else
         {
             alert(`Unsupported action '${action}' in '${id}'`);
+        }
+    }
+    else if(classification == "startHomePositioning")
+    {
+        let stepperIndex = parseInt(segments[3], 10);
+        let payload = {
+            stepperId: stepperIndex
+        }
+
+        let data = await post('startStepperHomePositioning', payload);
+        if(data != "success")
+        {
+            alert(`Error: failed to start stepper home positioning, info: ${data}`);
         }
     }
     else if(classification == "steps")
