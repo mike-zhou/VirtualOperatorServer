@@ -702,6 +702,7 @@ function createStepperTable()
             html.push(`<button id="id_stepper_go_64_${stepperIndex}">64</button>`);
             html.push(`<input type="number" id="id_stepper_steps_${stepperIndex}" min="1" step="1" max="1024">`);
             html.push(`<button id="id_stepper_go_steps_${stepperIndex}">go</button>`);
+            html.push(`<button id="id_stepper_setActiveSteps_${stepperIndex}">set active steps</button>`);
             html.push("</div>");
         }
         html.push("</div>");
@@ -1508,7 +1509,7 @@ async function onClick_Stepper(id)
             return;
         }
 
-        var mode = "";
+        let mode = "";
 
         if(document.getElementById(`id_stepper_mode_forced_${stepperIndex}`).checked)
         {
@@ -1529,7 +1530,7 @@ async function onClick_Stepper(id)
             return;
         }
 
-        var forward = document.getElementById(`id_stepper_control_forward_${stepperIndex}`).checked;
+        let forward = document.getElementById(`id_stepper_control_forward_${stepperIndex}`).checked;
 
         let payload = {
             stepperId: Number(stepperIndex),
@@ -1540,21 +1541,60 @@ async function onClick_Stepper(id)
 
         if(mode == "passive")
         {
-            var activeStepper = document.getElementById(`id_stepper_passive_activeStepper_select_${stepperIndex}`).value;
+            let activeStepper = document.getElementById(`id_stepper_passive_activeStepper_select_${stepperIndex}`).value;
             
             if(activeStepper == "NOT_SELECTED")
             {
                 alert(`Error: active stepper is not selected in passive mode`);
                 return;
             }
-
             payload.activeStepperId = Number(activeStepper.split('_')[1]);
+
+            let activeStepperStepsId = `id_stepper_steps_${payload.activeStepperId}`;
+            let activeSteps = document.getElementById(activeStepperStepsId).value;
+            if(Number.isNaN(activeSteps))
+            {
+                alert(`Error: No valid number in id_stepper_steps_${payload.activeStepperId}`);
+                return;
+            }
+            activeSteps = parseInt(activeSteps, 10);
+            payload.activeSteps = activeSteps;
         }
 
         let data = await post('runStepper', payload);
         if(data != "success")
         {
             alert(`Error: failed to run stepper ${segments[4]}, info: ${data}`);
+        }
+    }
+    else if(classification == "setActiveSteps")
+    {
+        let stepperIndex = segments[3];
+        let inputId = `id_stepper_steps_${stepperIndex}`;
+        let steps = document.getElementById(inputId).value;
+
+        if(Number.isNaN(steps))
+        {
+            alert(`Error: No valid number in id_stepper_steps_${stepperIndex}`);
+            return;
+        }
+        steps = parseInt(steps, 10);
+
+        if(!document.getElementById(`id_stepper_mode_active_${stepperIndex}`).checked)
+        {
+            alert(`Error: mode of stepper ${stepperIndex} is not active`);
+            return;
+        }
+
+        let payload = {
+            stepperId: Number(stepperIndex),
+            steps: steps
+        }
+
+        let data = await post('setActiveSteps', payload);
+        if(data != "success")
+        {
+            alert(`Error: failed to set active steps on stepper ${stepperIndex}, info: ${data}`);
         }
     }
     else if(classification == "test")

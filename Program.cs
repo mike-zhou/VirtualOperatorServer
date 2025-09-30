@@ -121,9 +121,105 @@ async Task<IResult> RunStepperActive(byte stepperId, uint steps)
     return Results.Text(result, "text/html");
 }
 
-async Task<IResult> RunStepperPassive(byte stepperId, uint steps, byte activeStepperId)
+async Task<IResult> RunStepperPassive(byte stepperId, uint steps, byte activeStepperId, uint activeSteps)
 {
-    return Results.Text($"failure: RunStepperPassive: not implemented", "text/html");
+
+    if (activeSteps >= ushort.MaxValue)
+    {
+        return Results.Text($"failure: RunStepperPassive: too many active steps: {activeSteps}", "text/html");
+    }
+
+    // calculate passive indexes
+    var indexes = new ushort[steps];
+
+    if (steps == 1)
+    {
+        indexes[0] = (ushort)(activeSteps / 2);
+    }
+    else if (steps == activeSteps)
+    {
+        for (uint i = 0; i < steps; i++)
+        {
+            indexes[i] = (ushort)i;
+        }
+    }
+    else
+    {
+        double ratio = (double)activeSteps / (double)steps;
+
+        for (uint i = 0; i < steps; i++)
+        {
+            // consider these situations:
+            //     activeSteps == 10, steps == 3
+            //     activeSteps == 10, steps == 5
+
+            ushort index = (ushort)Math.Floor((i + 1) * ratio);
+            if (index == (i + 1) * ratio)
+            {
+                index -= 1;    
+            }
+
+            indexes[i] = index;
+        }
+    }
+
+    // transfer passive indexes 
+    var indexList = new List<ushort>();
+    const byte indexesPerBatch = 200;
+    byte batchIndex = 0;
+    byte totalBatches = (byte)(indexes.Length / indexesPerBatch + 1);
+    CommandAndReply cmd;
+    string result;
+
+    for (uint i = 0; i < indexes.Length; i++)
+    {
+        indexList.Add(indexes[i]);
+        if (indexList.Count == indexesPerBatch)
+        {
+            cmd = new CmdSetStepperPassiveStepIndexes(stepperId, batchIndex, totalBatches, indexList.ToArray());
+            result = await RunCommand(cmd);
+            if (result != "success")
+            {
+                return Results.Text($"failure: RunStepperPassive: failed to set passive steps: batchIndex: {batchIndex}, totalBatches: {totalBatches}, result: {result}", "text/html");
+            }
+
+            indexList.Clear();
+            batchIndex++;
+        }
+    }
+    if (indexList.Count > 0)
+    {
+        cmd = new CmdSetStepperPassiveStepIndexes(stepperId, batchIndex, totalBatches, indexList.ToArray());
+        result = await RunCommand(cmd);
+        if (result != "success")
+        {
+            return Results.Text($"failure: RunStepperPassive: failed to set passive steps: batchIndex: {batchIndex}, totalBatches: {totalBatches}, result: {result}", "text/html");
+        }
+    }
+
+    // couple active and passive steppers
+    cmd = new CmdRunStepperPasive(stepperId, activeStepperId);
+    result = await RunCommand(cmd);
+    if (result != "success")
+    {
+        return Results.Text($"failure: RunStepperPassive: failed to couple active stepper: {result}", "text/html");
+    }
+
+    var activeStepperConfig = StaticConfig.Instance.StepperConfigs[activeStepperId];
+    if (activeStepperConfig.timer == StatusFacade.Facade.Stepper.Configuration.EnumTimer.NOT_SELECTED)
+    {
+        throw new Exception($"Timer in active stepper must be selected in RunStepperPassive");
+    }
+
+    // start clocking active stepper
+    cmd = new CmdRunStepperActive(activeStepperId, (byte)activeStepperConfig.timer);
+    result = await RunCommand(cmd);
+    if (result != "success")
+    {
+        return Results.Text($"failure: RunStepperPassive: failed to couple active stepper: {result}", "text/html");
+    }
+
+    return Results.Text(result, "text/html");
 }
 
 async Task<IResult> RunStepper(JsonElement payload)
@@ -135,6 +231,10 @@ async Task<IResult> RunStepper(JsonElement payload)
     if (stepperId >= StatusFacade.Facade.StepperCount)
     {
         return Results.Text($"failure: invalid stepperId '{stepperId}'", "text/html");
+    }
+    if (steps == 0)
+    {
+        return Results.Text($"failure: invalid steps '{steps}'", "text/html");
     }
 
     switch (mode)
@@ -153,7 +253,13 @@ async Task<IResult> RunStepper(JsonElement payload)
                     return Results.Text($"failure: invalid activeStepperId '{activeStepperId}'", "text/html");
                 }
 
-                return await RunStepperPassive(stepperId, steps, activeStepperId);
+                uint activeSteps = payload.GetProperty("activeSteps").GetUInt32();
+                if (steps > activeSteps)
+                {
+                    return Results.Text($"failure: invalid steps '{steps}'", "text/html");
+                }
+
+                return await RunStepperPassive(stepperId, steps, activeStepperId, activeSteps);
             }
         default:
             return Results.Text($"failure: unknown mode '{mode}'", "text/html");
@@ -704,6 +810,21 @@ app.MapPost("/post/{*command}", async (HttpRequest request, string command, Back
             }
 
             var cmd = new CmdStartStepperHomePositioning(stepperId, (byte)stepperConfig.timer);
+            string result = await RunCommand(cmd);
+
+            return Results.Text(result, "text/html");
+        }
+        else if (command == "setActiveSteps")
+        {
+            byte stepperId = jsonRoot.GetProperty("stepperId").GetByte();
+            if (stepperId >= StatusFacade.Facade.StepperCount)
+            {
+                throw new InvalidRequestBodyException($"Invalid stepper index '{stepperId}'");
+            }
+
+            uint steps = jsonRoot.GetProperty("steps").GetUInt32();
+
+            var cmd = new CmdSetStepperActive(stepperId, steps);
             string result = await RunCommand(cmd);
 
             return Results.Text(result, "text/html");

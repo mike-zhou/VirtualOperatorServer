@@ -35,7 +35,7 @@
     "timer": 1,
     "encoder": 255,
     "mode": 0,
-    "forcedModeConfig": { "pulseWidth": 1460 },
+    "forcedModeConfig": { "pulseWidth": 2000 },
     "activeModeConfig": {
       "startingPulseWidth": 50000,
       "acceleratingSteps": 20,
