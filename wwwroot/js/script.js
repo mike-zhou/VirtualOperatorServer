@@ -677,6 +677,22 @@ function createStepperTable()
                 html.push("</table></div>");
             }
 
+            // cross boundary
+            html.push('<div>');
+            html.push(`<label>CrossBoundaryEnable<input type="checkbox" id="id_stepper_crossBoundary_enable_${stepperIndex}"></label>`);
+            html.push(`<td><input type="button" id="id_stepper_crossBoundary_save_${stepperIndex}" value="Save"></td>`);
+            html.push("<div><table>");
+            for(let boundaryIndex = 0; boundaryIndex < 4; boundaryIndex++)
+            {
+                html.push("<tr>");
+                html.push(`<td><label>BoundaryEnable_${boundaryIndex}<input type="checkbox" id="id_stepper_boundary_enable_${boundaryIndex}_${stepperIndex}"></label></td>`);
+                html.push(`<td><input type="number" id="id_stepper_boundary_value_${boundaryIndex}_${stepperIndex}" step="1"></td>`);
+                html.push(`<td><input type="button" id="id_stepper_boundary_save_${boundaryIndex}_${stepperIndex}" value="Save">`);
+                html.push("</tr>");
+            }
+            html.push("</table></div>");
+            html.push('</div>');
+
             // set controls
             html.push('<div>');
             html.push(`<button id="id_stepper_setActivePeriods_${stepperIndex}">Set Active Periods</button>`);
@@ -1399,6 +1415,42 @@ async function onClick_Stepper(id)
             {
                 alert(`${errString}, info: ${data}`);
             }
+        }
+    }
+    else if(classification == "crossBoundary")
+    {
+        let stepperIndex = segments[4];
+        let isEnabled = document.getElementById(`id_stepper_crossBoundary_enable_${stepperIndex}`).checked;
+
+        for(let boundaryIndex = 0; boundaryIndex < 4; boundaryIndex++)
+        {
+            let boundaryEnable = document.getElementById(`id_stepper_boundary_enable_${boundaryIndex}_${stepperIndex}`);
+            let boundaryValue = document.getElementById(`id_stepper_boundary_value_${boundaryIndex}_${stepperIndex}`);
+            let boundarySave = document.getElementById(`id_stepper_boundary_save_${boundaryIndex}_${stepperIndex}`);
+            let boundaryLabel = boundaryEnable.closest("label");
+            let isBoundaryEnabled = isEnabled && boundaryEnable.checked;
+
+            boundaryEnable.disabled = !isEnabled;
+            boundaryValue.disabled = !isBoundaryEnabled;
+            boundarySave.disabled = !isBoundaryEnabled;
+            if(boundaryLabel)
+            {
+                boundaryLabel.className = isEnabled ? "" : "disabled-label";
+            }
+        }
+    }
+    else if(classification == "boundary")
+    {
+        let action = segments[3];
+
+        if(action == "enable")
+        {
+            let boundaryIndex = segments[4];
+            let stepperIndex = segments[5];
+            let isBoundaryEnabled = document.getElementById(`id_stepper_boundary_enable_${boundaryIndex}_${stepperIndex}`).checked;
+
+            document.getElementById(`id_stepper_boundary_value_${boundaryIndex}_${stepperIndex}`).disabled = !isBoundaryEnabled;
+            document.getElementById(`id_stepper_boundary_save_${boundaryIndex}_${stepperIndex}`).disabled = !isBoundaryEnabled;
         }
     }
     else if(classification == "setActivePeriods")
@@ -2368,4 +2420,3 @@ document.addEventListener('input', (e) => {
 });
 
 let intervalId = setInterval(updateUI, 1000);
-
