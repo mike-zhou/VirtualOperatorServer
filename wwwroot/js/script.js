@@ -687,6 +687,8 @@ function createStepperTable()
                 html.push("<tr>");
                 html.push(`<td><label>BoundaryEnable_${boundaryIndex}<input type="checkbox" id="id_stepper_boundary_enable_${boundaryIndex}_${stepperIndex}"></label></td>`);
                 html.push(`<td><input type="number" id="id_stepper_boundary_value_${boundaryIndex}_${stepperIndex}" step="1"></td>`);
+                html.push(`<td><label id="id_stepper_boundary_errorLabel_${boundaryIndex}_${stepperIndex}"> error:</label></td>`);
+                html.push(`<td><input type="number" id="id_stepper_boundary_error_${boundaryIndex}_${stepperIndex}"></td>`);
                 html.push(`<td><input type="button" id="id_stepper_boundary_save_${boundaryIndex}_${stepperIndex}" value="Save">`);
                 html.push("</tr>");
             }
@@ -1426,16 +1428,23 @@ async function onClick_Stepper(id)
         {
             let boundaryEnable = document.getElementById(`id_stepper_boundary_enable_${boundaryIndex}_${stepperIndex}`);
             let boundaryValue = document.getElementById(`id_stepper_boundary_value_${boundaryIndex}_${stepperIndex}`);
+            let boundaryError = document.getElementById(`id_stepper_boundary_error_${boundaryIndex}_${stepperIndex}`);
             let boundarySave = document.getElementById(`id_stepper_boundary_save_${boundaryIndex}_${stepperIndex}`);
             let boundaryLabel = boundaryEnable.closest("label");
+            let boundaryErrorLabel = document.getElementById(`id_stepper_boundary_errorLabel_${boundaryIndex}_${stepperIndex}`);
             let isBoundaryEnabled = isEnabled && boundaryEnable.checked;
 
             boundaryEnable.disabled = !isEnabled;
             boundaryValue.disabled = !isBoundaryEnabled;
+            boundaryError.disabled = !isBoundaryEnabled;
             boundarySave.disabled = !isBoundaryEnabled;
             if(boundaryLabel)
             {
                 boundaryLabel.className = isEnabled ? "" : "disabled-label";
+            }
+            if(boundaryErrorLabel)
+            {
+                boundaryErrorLabel.className = isBoundaryEnabled ? "" : "disabled-label";
             }
         }
     }
@@ -1450,7 +1459,9 @@ async function onClick_Stepper(id)
             let isBoundaryEnabled = document.getElementById(`id_stepper_boundary_enable_${boundaryIndex}_${stepperIndex}`).checked;
 
             document.getElementById(`id_stepper_boundary_value_${boundaryIndex}_${stepperIndex}`).disabled = !isBoundaryEnabled;
+            document.getElementById(`id_stepper_boundary_error_${boundaryIndex}_${stepperIndex}`).disabled = !isBoundaryEnabled;
             document.getElementById(`id_stepper_boundary_save_${boundaryIndex}_${stepperIndex}`).disabled = !isBoundaryEnabled;
+            document.getElementById(`id_stepper_boundary_errorLabel_${boundaryIndex}_${stepperIndex}`).className = isBoundaryEnabled ? "" : "disabled-label";
         }
     }
     else if(classification == "setActivePeriods")

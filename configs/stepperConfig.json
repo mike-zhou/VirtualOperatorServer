@@ -29,7 +29,16 @@
     "range": 3000,
     "stepsPerRotation": 200,
     "encoderCountsPerRotation": 2000,
-    "encoderOffsetErrorThreshold": 10
+    "encoderOffsetErrorThreshold": 10,
+    "crossBoundary": {
+      "enabled": false,
+      "boundaries": [
+        { "enabled": false, "value": 0, "error": 0},
+        { "enabled": false, "value": 0, "error": 0},
+        { "enabled": false, "value": 0, "error": 0},
+        { "enabled": false, "value": 0, "error": 0}
+      ]
+    }
   },
   {
     "timer": 1,
@@ -61,7 +70,16 @@
     "range": 3000,
     "stepsPerRotation": 200,
     "encoderCountsPerRotation": 2000,
-    "encoderOffsetErrorThreshold": 10
+    "encoderOffsetErrorThreshold": 10,
+    "crossBoundary": {
+      "enabled": false,
+      "boundaries": [
+        { "enabled": false, "value": 0, "error": 0},
+        { "enabled": false, "value": 0, "error": 0},
+        { "enabled": false, "value": 0, "error": 0},
+        { "enabled": false, "value": 0, "error": 0}
+      ]
+    }
   },
   {
     "timer": 2,
@@ -93,7 +111,16 @@
     "range": 30000,
     "stepsPerRotation": 200,
     "encoderCountsPerRotation": 100,
-    "encoderOffsetErrorThreshold": 2
+    "encoderOffsetErrorThreshold": 2,
+    "crossBoundary": {
+      "enabled": false,
+      "boundaries": [
+        { "enabled": false, "value": 0, "error": 0},
+        { "enabled": false, "value": 0, "error": 0},
+        { "enabled": false, "value": 0, "error": 0},
+        { "enabled": false, "value": 0, "error": 0}
+      ]
+    }
   },
   {
     "timer": 3,
@@ -125,7 +152,16 @@
     "range": 30000,
     "stepsPerRotation": 200,
     "encoderCountsPerRotation": 100,
-    "encoderOffsetErrorThreshold": 2
+    "encoderOffsetErrorThreshold": 2,
+    "crossBoundary": {
+      "enabled": false,
+      "boundaries": [
+        { "enabled": false, "value": 0, "error": 0},
+        { "enabled": false, "value": 0, "error": 0},
+        { "enabled": false, "value": 0, "error": 0},
+        { "enabled": false, "value": 0, "error": 0}
+      ]
+    }
   },
   {
     "timer": 4,
@@ -157,7 +193,16 @@
     "range": 30000,
     "stepsPerRotation": 200,
     "encoderCountsPerRotation": 100,
-    "encoderOffsetErrorThreshold": 2
+    "encoderOffsetErrorThreshold": 2,
+    "crossBoundary": {
+      "enabled": false,
+      "boundaries": [
+        { "enabled": false, "value": 0, "error": 0},
+        { "enabled": false, "value": 0, "error": 0},
+        { "enabled": false, "value": 0, "error": 0},
+        { "enabled": false, "value": 0, "error": 0}
+      ]
+    }
   },
   {
     "timer": 5,
@@ -189,7 +234,16 @@
     "range": 30000,
     "stepsPerRotation": 200,
     "encoderCountsPerRotation": 100,
-    "encoderOffsetErrorThreshold": 2
+    "encoderOffsetErrorThreshold": 2,
+    "crossBoundary": {
+      "enabled": false,
+      "boundaries": [
+        { "enabled": false, "value": 0, "error": 0},
+        { "enabled": false, "value": 0, "error": 0},
+        { "enabled": false, "value": 0, "error": 0},
+        { "enabled": false, "value": 0, "error": 0}
+      ]
+    }
   },
   {
     "timer": 5,
@@ -221,7 +275,16 @@
     "range": 30000,
     "stepsPerRotation": 200,
     "encoderCountsPerRotation": 100,
-    "encoderOffsetErrorThreshold": 2
+    "encoderOffsetErrorThreshold": 2,
+    "crossBoundary": {
+      "enabled": false,
+      "boundaries": [
+        { "enabled": false, "value": 0, "error": 0},
+        { "enabled": false, "value": 0, "error": 0},
+        { "enabled": false, "value": 0, "error": 0},
+        { "enabled": false, "value": 0, "error": 0}
+      ]
+    }
   },
   {
     "timer": 3,
@@ -253,7 +316,16 @@
     "range": 3000,
     "stepsPerRotation": 200,
     "encoderCountsPerRotation": 1000,
-    "encoderOffsetErrorThreshold": 2
+    "encoderOffsetErrorThreshold": 2,
+    "crossBoundary": {
+      "enabled": false,
+      "boundaries": [
+        { "enabled": false, "value": 0, "error": 0},
+        { "enabled": false, "value": 0, "error": 0},
+        { "enabled": false, "value": 0, "error": 0},
+        { "enabled": false, "value": 0, "error": 0}
+      ]
+    }
   },
   {
     "timer": 3,
@@ -285,7 +357,16 @@
     "range": 3000,
     "stepsPerRotation": 200,
     "encoderCountsPerRotation": 100,
-    "encoderOffsetErrorThreshold": 2
+    "encoderOffsetErrorThreshold": 2,
+    "crossBoundary": {
+      "enabled": false,
+      "boundaries": [
+        { "enabled": false, "value": 0, "error": 0},
+        { "enabled": false, "value": 0, "error": 0},
+        { "enabled": false, "value": 0, "error": 0},
+        { "enabled": false, "value": 0, "error": 0}
+      ]
+    }
   },
   {
     "timer": 3,
@@ -317,6 +398,15 @@
     "range": 3000,
     "stepsPerRotation": 200,
     "encoderCountsPerRotation": 100,
-    "encoderOffsetErrorThreshold": 2
+    "encoderOffsetErrorThreshold": 2,
+    "crossBoundary": {
+      "enabled": false,
+      "boundaries": [
+        { "enabled": false, "value": 0, "error": 0},
+        { "enabled": false, "value": 0, "error": 0},
+        { "enabled": false, "value": 0, "error": 0},
+        { "enabled": false, "value": 0, "error": 0}
+      ]
+    }
   }
 ]
