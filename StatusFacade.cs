@@ -235,7 +235,7 @@ namespace VirtualOperatorServer.Facade
                     public class CrossBoundaryItem
                     {
                         public bool enabled { get; set; }
-                        public uint value { get; set; }
+                        public int value { get; set; }
                         public ushort error { get; set; }
                     }
 

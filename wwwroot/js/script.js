@@ -666,11 +666,11 @@ function createStepperTable()
             for(let boundaryIndex = 0; boundaryIndex < 4; boundaryIndex++)
             {
                 html.push("<tr>");
-                html.push(`<td><label>BoundaryEnable_${boundaryIndex}<input type="checkbox" id="id_stepper_boundary_enable_${boundaryIndex}_${stepperIndex}"></label></td>`);
-                html.push(`<td><input type="number" id="id_stepper_boundary_value_${boundaryIndex}_${stepperIndex}" step="1"></td>`);
-                html.push(`<td><label id="id_stepper_boundary_errorLabel_${boundaryIndex}_${stepperIndex}"> error:</label></td>`);
-                html.push(`<td><input type="number" id="id_stepper_boundary_error_${boundaryIndex}_${stepperIndex}"></td>`);
-                html.push(`<td><input type="button" id="id_stepper_boundary_save_${boundaryIndex}_${stepperIndex}" value="Save">`);
+                html.push(`<td><label>BoundaryEnable_${boundaryIndex}<input type="checkbox" id="id_stepper_crossBoundaryItem_enable_${boundaryIndex}_${stepperIndex}"></label></td>`);
+                html.push(`<td><input type="number" id="id_stepper_crossBoundaryItem_value_${boundaryIndex}_${stepperIndex}" step="1"></td>`);
+                html.push(`<td><label id="id_stepper_crossBoundaryItem_errorLabel_${boundaryIndex}_${stepperIndex}"> error:</label></td>`);
+                html.push(`<td><input type="number" id="id_stepper_crossBoundaryItem_error_${boundaryIndex}_${stepperIndex}"></td>`);
+                html.push(`<td><input type="button" id="id_stepper_crossBoundaryItem_save_${boundaryIndex}_${stepperIndex}" value="Save">`);
                 html.push("</tr>");
             }
             html.push("</table></div>");
@@ -836,9 +836,9 @@ function initConfigWidgetsSteppers(status)
         for(let boundaryIndex = 0; boundaryIndex < config.crossBoundary.boundaries.length; boundaryIndex++)
         {
             let boundaryConfig = config.crossBoundary.boundaries[boundaryIndex];
-            let boundaryEnable = document.getElementById(`id_stepper_boundary_enable_${boundaryIndex}_${stepperIndex}`);
-            let boundaryValue = document.getElementById(`id_stepper_boundary_value_${boundaryIndex}_${stepperIndex}`);
-            let boundaryError = document.getElementById(`id_stepper_boundary_error_${boundaryIndex}_${stepperIndex}`);
+            let boundaryEnable = document.getElementById(`id_stepper_crossBoundaryItem_enable_${boundaryIndex}_${stepperIndex}`);
+            let boundaryValue = document.getElementById(`id_stepper_crossBoundaryItem_value_${boundaryIndex}_${stepperIndex}`);
+            let boundaryError = document.getElementById(`id_stepper_crossBoundaryItem_error_${boundaryIndex}_${stepperIndex}`);
 
             boundaryEnable.checked = boundaryConfig.enabled;
             boundaryValue.valueAsNumber = boundaryConfig.value;
@@ -1427,7 +1427,7 @@ async function onClick_Stepper(id)
             let data = await post('saveStepperConfig', payload);
             if(data != "success")
             {
-                alert(`${errString}, info: ${data}`);
+                alert(`Error: failed to save ${classification}, info: ${data}`);
             }
         }
     }
@@ -1454,7 +1454,7 @@ async function onClick_Stepper(id)
             let data = await post('saveStepperConfig', payload);
             if(data != "success")
             {
-                alert(`${errString}, info: ${data}`);
+                alert(`Error: failed to save ${classification}, info: ${data}`);
             }
         }
     }
@@ -1481,53 +1481,58 @@ async function onClick_Stepper(id)
             let data = await post('saveStepperConfig', payload);
             if(data != "success")
             {
-                alert(`${errString}, info: ${data}`);
+                alert(`Error: failed to save ${classification}, info: ${data}`);
             }
         }
     }
     else if(classification == "crossBoundary")
     {
-        let stepperIndex = segments[4];
-        let isEnabled = document.getElementById(`id_stepper_crossBoundary_enable_${stepperIndex}`).checked;
+        let action = segments[3];
 
-        for(let boundaryIndex = 0; boundaryIndex < 4; boundaryIndex++)
+        if(action == "save")
         {
-            let boundaryEnable = document.getElementById(`id_stepper_boundary_enable_${boundaryIndex}_${stepperIndex}`);
-            let boundaryValue = document.getElementById(`id_stepper_boundary_value_${boundaryIndex}_${stepperIndex}`);
-            let boundaryError = document.getElementById(`id_stepper_boundary_error_${boundaryIndex}_${stepperIndex}`);
-            let boundarySave = document.getElementById(`id_stepper_boundary_save_${boundaryIndex}_${stepperIndex}`);
-            let boundaryLabel = boundaryEnable.closest("label");
-            let boundaryErrorLabel = document.getElementById(`id_stepper_boundary_errorLabel_${boundaryIndex}_${stepperIndex}`);
-            let isBoundaryEnabled = isEnabled && boundaryEnable.checked;
-
-            boundaryEnable.disabled = !isEnabled;
-            boundaryValue.disabled = !isBoundaryEnabled;
-            boundaryError.disabled = !isBoundaryEnabled;
-            boundarySave.disabled = !isBoundaryEnabled;
-            if(boundaryLabel)
-            {
-                boundaryLabel.className = isEnabled ? "" : "disabled-label";
+            let stepperIndex = segments[4];
+            let isEnabled = document.getElementById(`id_stepper_crossBoundary_enable_${stepperIndex}`).checked;
+            let payload = {
+                stepperId: Number(stepperIndex),
+                classification: classification,
+                value: isEnabled
             }
-            if(boundaryErrorLabel)
+
+            let data = await post('saveStepperConfig', payload);
+            if(data != "success")
             {
-                boundaryErrorLabel.className = isBoundaryEnabled ? "" : "disabled-label";
+                alert(`Error: failed to save ${classification}, info: ${data}`);
             }
         }
     }
-    else if(classification == "boundary")
+    else if(classification == "crossBoundaryItem")
     {
         let action = segments[3];
 
-        if(action == "enable")
+        if(action == "save")
         {
-            let boundaryIndex = segments[4];
+            let itemIndex = segments[4];
             let stepperIndex = segments[5];
-            let isBoundaryEnabled = document.getElementById(`id_stepper_boundary_enable_${boundaryIndex}_${stepperIndex}`).checked;
 
-            document.getElementById(`id_stepper_boundary_value_${boundaryIndex}_${stepperIndex}`).disabled = !isBoundaryEnabled;
-            document.getElementById(`id_stepper_boundary_error_${boundaryIndex}_${stepperIndex}`).disabled = !isBoundaryEnabled;
-            document.getElementById(`id_stepper_boundary_save_${boundaryIndex}_${stepperIndex}`).disabled = !isBoundaryEnabled;
-            document.getElementById(`id_stepper_boundary_errorLabel_${boundaryIndex}_${stepperIndex}`).className = isBoundaryEnabled ? "" : "disabled-label";
+            let isEnabled = document.getElementById(`id_stepper_crossBoundaryItem_enable_${itemIndex}_${stepperIndex}`).checked;
+            let value = document.getElementById(`id_stepper_crossBoundaryItem_value_${itemIndex}_${stepperIndex}`).value;
+            let error = document.getElementById(`id_stepper_crossBoundaryItem_error_${itemIndex}_${stepperIndex}`).value;
+
+            let payload = {
+                stepperId: Number(stepperIndex),
+                classification: classification,
+                itemIndex: Number(itemIndex),
+                isEnabled: isEnabled,
+                boundaryValue: Number(value),
+                boundaryError: Number(error)
+            }
+
+            let data = await post('saveStepperConfig', payload);
+            if(data != "success")
+            {
+                alert(`Error: failed to save ${classification}, info: ${data}`);
+            }
         }
     }
     else if(classification == "setActivePeriods")
@@ -2438,12 +2443,12 @@ function updateStepper(status)
         {
             let boundaryConfig = stepper.config.crossBoundary.boundaries[boundaryIndex];
 
-            let boundaryEnable = document.getElementById(`id_stepper_boundary_enable_${boundaryIndex}_${stepperIndex}`);
-            let boundaryValue = document.getElementById(`id_stepper_boundary_value_${boundaryIndex}_${stepperIndex}`);
-            let boundaryError = document.getElementById(`id_stepper_boundary_error_${boundaryIndex}_${stepperIndex}`);
-            let boundarySave = document.getElementById(`id_stepper_boundary_save_${boundaryIndex}_${stepperIndex}`);
+            let boundaryEnable = document.getElementById(`id_stepper_crossBoundaryItem_enable_${boundaryIndex}_${stepperIndex}`);
+            let boundaryValue = document.getElementById(`id_stepper_crossBoundaryItem_value_${boundaryIndex}_${stepperIndex}`);
+            let boundaryError = document.getElementById(`id_stepper_crossBoundaryItem_error_${boundaryIndex}_${stepperIndex}`);
+            let boundarySave = document.getElementById(`id_stepper_crossBoundaryItem_save_${boundaryIndex}_${stepperIndex}`);
             let boundaryLabel = boundaryEnable.closest("label");
-            let boundaryErrorLabel = document.getElementById(`id_stepper_boundary_errorLabel_${boundaryIndex}_${stepperIndex}`);
+            let boundaryErrorLabel = document.getElementById(`id_stepper_crossBoundaryItem_errorLabel_${boundaryIndex}_${stepperIndex}`);
 
             if(crossBoundaryEnable.checked == true)
             {
@@ -2457,8 +2462,8 @@ function updateStepper(status)
                     boundaryError.disabled = false;
                     boundarySave.disabled = 
                         (boundaryEnable.checked == boundaryConfig.enabled) &&
-                        (boundaryValue.value == boundaryConfig.value) &&
-                        (boundaryEnable.value == boundaryConfig.error);
+                        (Number(boundaryValue.value) == boundaryConfig.value) &&
+                        (Number(boundaryError.value) == boundaryConfig.error);
                 }
                 else 
                 {

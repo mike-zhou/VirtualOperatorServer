@@ -602,6 +602,25 @@ app.MapPost("/post/{*command}", async (HttpRequest request, string command, Back
                         }
                     }
                     break;
+                case "crossBoundary":
+                    {
+                        var isEnabled = jsonRoot.GetProperty("value").GetBoolean();
+                        configs[stepperIndex].crossBoundary.enabled = isEnabled;
+                    }
+                    break;
+                case "crossBoundaryItem":
+                    {
+                        var itemIndex = jsonRoot.GetProperty("itemIndex").GetUInt32();
+                        var isEnabled = jsonRoot.GetProperty("isEnabled").GetBoolean();
+                        var boundaryValue = jsonRoot.GetProperty("boundaryValue").GetInt32();
+                        var boundaryError = jsonRoot.GetProperty("boundaryError").GetUInt16();
+                        
+                        var boundaryItem = configs[stepperIndex].crossBoundary.boundaries[itemIndex];
+                        boundaryItem.enabled = isEnabled;
+                        boundaryItem.value = boundaryValue;
+                        boundaryItem.error = boundaryError;
+                    }
+                    break;
                 default:
                     throw new Exception($"Invalid classification '{classification}' in POST command '{command}'");
             }
