@@ -397,9 +397,7 @@ function createStepperMode(stepperIndex)
         html.push("<td>");
         html.push(`<div id='id_stepper_group_forced_${stepperIndex}'>`);
         html.push(`<label id="id_stepper_period_forced_name_${stepperIndex}">Pulse period: </label>`);
-        html.push(`<label id="id_stepper_period_forced_value_${stepperIndex}" ></label>`);
         html.push(`<input type="number" id="id_stepper_period_forced_config_${stepperIndex}" min="1" step="1" max="65536">`);
-        html.push(`<input type="button" id="id_stepper_period_forced_set_${stepperIndex}" value="Set">`);
         html.push(`<input type="button" id="id_stepper_period_forced_save_${stepperIndex}" value="Save">`);
         html.push("</div>");
         html.push("</td>");
@@ -418,33 +416,23 @@ function createStepperMode(stepperIndex)
         html.push(`<div id='id_stepper_group_active_${stepperIndex}'>`);
 
         html.push(`<label id="id_stepper_period_active_starting_name_${stepperIndex}">Starting pulse period: </label>`);
-        html.push(`<label id="id_stepper_period_active_starting_value_${stepperIndex}"></label>`);
         html.push(`<input type="number" id="id_stepper_period_active_starting_config_${stepperIndex}" min="1" step="1" max="65536">`);
-        html.push(`<input type="button" id="id_stepper_period_active_starting_set_${stepperIndex}" value="Set">`);
         html.push(`<input type="button" id="id_stepper_period_active_starting_save_${stepperIndex}" value="Save">`);
         html.push(`<label id="id_stepper_period_active_accelerationSteps_name_${stepperIndex}">Acceleration steps: </label>`);
-        html.push(`<label id="id_stepper_period_active_accelerationSteps_value_${stepperIndex}"></label>`);
         html.push(`<input type="numbe\" id="id_stepper_period_active_accelerationSteps_config_${stepperIndex}" min="1" step="1" max="1024">`);
-        html.push(`<input type="button" id="id_stepper_period_active_accelerationSteps_set_${stepperIndex}" value="Set">`);
         html.push(`<input type="button" id="id_stepper_period_active_accelerationSteps_save_${stepperIndex}" value="Save">`);
         html.push("<br>");
 
         html.push(`<label id="id_stepper_period_active_cruising_name_${stepperIndex}">Cruising period: </label>`);
-        html.push(`<label id="id_stepper_period_active_cruising_value_${stepperIndex}"></label>`);
         html.push(`<input type="number" id="id_stepper_period_active_cruising_config_${stepperIndex}" min="1" step="1" max="65536">`);
-        html.push(`<input type="button" id="id_stepper_period_active_cruising_set_${stepperIndex}" value="Set">`);
         html.push(`<input type="button" id="id_stepper_period_active_cruising_save_${stepperIndex}" value="Save">`);
         html.push("<br>");
 
         html.push(`<label id="id_stepper_period_active_ending_name_${stepperIndex}">Ending pulse period: </label>`);
-        html.push(`<label id="id_stepper_period_active_ending_value_${stepperIndex}"></label>`);
         html.push(`<input type="number" id="id_stepper_period_active_ending_config_${stepperIndex}" min="1" step="1" max="65536">`);
-        html.push(`<input type="button" id="id_stepper_period_active_ending_set_${stepperIndex}" value="Set">`);
         html.push(`<input type="button" id="id_stepper_period_active_ending_save_${stepperIndex}" value="Save">`);
         html.push(`<label id="id_stepper_period_active_deaccelerationSteps_name_${stepperIndex}">Deacceleration steps: </label>`);
-        html.push(`<label id="id_stepper_period_active_deaccelerationSteps_value_${stepperIndex}"></label>`);
         html.push(`<input type="number" id="id_stepper_period_active_deaccelerationSteps_config_${stepperIndex}" min="1" step="1" max="1024">`);
-        html.push(`<input type="button" id="id_stepper_period_active_deaccelerationSteps_set_${stepperIndex}" value="Set">`);
         html.push(`<input type="button" id="id_stepper_period_active_deaccelerationSteps_save_${stepperIndex}" value="Save">`);
         
         html.push("</div>")
@@ -555,7 +543,6 @@ function createStepperTable()
             // timer
             html.push("<div>");
             html.push(`<label>Timer: </label>`);
-            html.push(`<label id='id_stepper_timer_value_${stepperIndex}'></label>`)
             html.push(`<select id="id_stepper_timer_select_${stepperIndex}">`);
             for(let i=0; i<timerOptionList.length - 1; i++)
             {
@@ -563,13 +550,11 @@ function createStepperTable()
             }
             html.push(`<option value="${timerOptionList.at(-1)}" selected>${timerOptionList.at(-1)}</option>`);
             html.push("</select>");
-            html.push(`<td><input type="button" id="id_stepper_timer_set_${stepperIndex}" value="Set"></td>`);
             html.push(`<td><input type="button" id="id_stepper_timer_save_${stepperIndex}" value="Save"></td>`);
             html.push("</div>");
             // encoder
             html.push("<div>");
             html.push(`<label>Encoder: </label>`);
-            html.push(`<label id='id_stepper_encoder_value_${stepperIndex}'></label>`);
             html.push(`<select id="id_stepper_encoder_select_${stepperIndex}">`);
             for(let i=0; i<encoderOptionList.length - 1; i++)
             {
@@ -577,7 +562,6 @@ function createStepperTable()
             }
             html.push(`<option value="${encoderOptionList.at(-1)}" selected>${encoderOptionList.at(-1)}</option>`);
             html.push("</select>");
-            html.push(`<td><input type="button" id="id_stepper_encoder_set_${stepperIndex}" value="Set"></td>`);
             html.push(`<td><input type="button" id="id_stepper_encoder_save_${stepperIndex}" value="Save"></td>`);
             html.push("</div>");
             // mode
@@ -586,17 +570,14 @@ function createStepperTable()
             html.push("<div><table>");
             html.push(`<tr>`);
             html.push(`<td><label>isEnableHigh<input type="checkbox" id="id_stepper_isEnableHigh_value_${stepperIndex}"></label></td>`);
-            html.push(`<td><input type="button" id="id_stepper_isEnableHigh_set_${stepperIndex}" value="Set"></td>`);
             html.push(`<td><input type="button" id="id_stepper_isEnableHigh_save_${stepperIndex}" value="Save"></td>`);
             html.push(`</tr>`);
             html.push(`<tr>`);
             html.push(`<td><label>IsForwardHigh<input type="checkbox" id="id_stepper_isForwardHigh_value_${stepperIndex}"></label></td>`);
-            html.push(`<td><input type="button" id="id_stepper_isForwardHigh_set_${stepperIndex}" value="Set"></td>`);
             html.push(`<td><input type="button" id="id_stepper_isForwardHigh_save_${stepperIndex}" value="Save"></td>`);
             html.push(`</tr>`);
             html.push(`<tr>`);
             html.push(`<td><label>IsRisingEdgeDriven<input type="checkbox" id="id_stepper_isRisingEdgeDriven_value_${stepperIndex}"></label></td>`);
-            html.push(`<td><input type="button" id="id_stepper_isRisingEdgeDriven_set_${stepperIndex}" value="Set"></td>`);
             html.push(`<td><input type="button" id="id_stepper_isRisingEdgeDriven_save_${stepperIndex}" value="Save"></td>`);
             html.push(`</tr>`);
             html.push("</table></div>");
@@ -854,14 +835,14 @@ function initConfigWidgetsSteppers(status)
         document.getElementById(`id_stepper_crossBoundary_enable_${stepperIndex}`).checked = config.crossBoundary.enabled;
         for(let boundaryIndex = 0; boundaryIndex < config.crossBoundary.boundaries.length; boundaryIndex++)
         {
-            let boundary = config.crossBoundary.boundaries[boundaryIndex];
+            let boundaryConfig = config.crossBoundary.boundaries[boundaryIndex];
             let boundaryEnable = document.getElementById(`id_stepper_boundary_enable_${boundaryIndex}_${stepperIndex}`);
             let boundaryValue = document.getElementById(`id_stepper_boundary_value_${boundaryIndex}_${stepperIndex}`);
             let boundaryError = document.getElementById(`id_stepper_boundary_error_${boundaryIndex}_${stepperIndex}`);
 
-            boundaryEnable.checked = boundary.enabled;
-            boundaryValue.valueAsNumber = boundary.value;
-            boundaryError.valueAsNumber = boundary.error;
+            boundaryEnable.checked = boundaryConfig.enabled;
+            boundaryValue.valueAsNumber = boundaryConfig.value;
+            boundaryError.valueAsNumber = boundaryConfig.error;
         }
     }
 }
@@ -2150,34 +2131,28 @@ function updateStepper(status)
         document.getElementById(gpioClockId).checked = stepper.gpios.isClockHigh;
 
         // timer
-        let timerId = `id_stepper_timer_value_${stepperIndex}`;
-        document.getElementById(timerId).textContent = stepper.config.timer;
+        document.getElementById(`id_stepper_timer_save_${stepperIndex}`).disabled = 
+            (document.getElementById(`id_stepper_timer_select_${stepperIndex}`).value == stepper.config.timer)
 
         // encoder
-        let encoderId = `id_stepper_encoder_value_${stepperIndex}`;
-        document.getElementById(encoderId).textContent = stepper.config.encoder;
+        document.getElementById(`id_stepper_encoder_save_${stepperIndex}`).disabled = 
+            (document.getElementById(`id_stepper_encoder_select_${stepperIndex}`).value == stepper.config.encoder);
 
         // forced mode
-        let forcedModePeriodValueId = `id_stepper_period_forced_value_${stepperIndex}`;
-        document.getElementById(forcedModePeriodValueId).textContent = 
-            String(stepper.config.forcedModeConfig.pulseWidth);
+        document.getElementById(`id_stepper_period_forced_save_${stepperIndex}`).disabled = 
+            (document.getElementById(`id_stepper_period_forced_config_${stepperIndex}`).value == stepper.config.forcedModeConfig.pulseWidth);
 
         // active mode
-        let activeModeStartingPeriodValueId = `id_stepper_period_active_starting_value_${stepperIndex}`;
-        let activeModeAccelerationStepsValueId = `id_stepper_period_active_accelerationSteps_value_${stepperIndex}`;
-        let activeModeCruisePeriodValueId = `id_stepper_period_active_cruising_value_${stepperIndex}`;
-        let activeModeEndingPeriodValueId = `id_stepper_period_active_ending_value_${stepperIndex}`;
-        let activeModeDeaccelerationStepsValueId = `id_stepper_period_active_deaccelerationSteps_value_${stepperIndex}`;
-        document.getElementById(activeModeStartingPeriodValueId).textContent =
-            String(stepper.config.activeModeConfig.startingPulseWidth);
-        document.getElementById(activeModeAccelerationStepsValueId).textContent =
-            String(stepper.config.activeModeConfig.acceleratingSteps);
-        document.getElementById(activeModeCruisePeriodValueId).textContent =
-            String(stepper.config.activeModeConfig.cruisingPulseWidth);
-        document.getElementById(activeModeEndingPeriodValueId).textContent =
-            String(stepper.config.activeModeConfig.endingPulseWidth);
-        document.getElementById(activeModeDeaccelerationStepsValueId).textContent =
-            String(stepper.config.activeModeConfig.deacceleratingSteps);
+        document.getElementById(`id_stepper_period_active_starting_save_${stepperIndex}`).disabled = 
+            (document.getElementById(`id_stepper_period_active_starting_config_${stepperIndex}`).value == stepper.config.activeModeConfig.startingPulseWidth);
+        document.getElementById(`id_stepper_period_active_accelerationSteps_save_${stepperIndex}`).disabled =
+            (document.getElementById(`id_stepper_period_active_accelerationSteps_config_${stepperIndex}`).value == stepper.config.activeModeConfig.acceleratingSteps);
+        document.getElementById(`id_stepper_period_active_cruising_save_${stepperIndex}`).disabled =
+            (document.getElementById(`id_stepper_period_active_cruising_config_${stepperIndex}`).value == stepper.config.activeModeConfig.cruisingPulseWidth);
+        document.getElementById(`id_stepper_period_active_ending_save_${stepperIndex}`).disabled =
+            (document.getElementById(`id_stepper_period_active_ending_config_${stepperIndex}`).value == stepper.config.activeModeConfig.endingPulseWidth);
+        document.getElementById(`id_stepper_period_active_deaccelerationSteps_save_${stepperIndex}`).disabled =
+            (document.getElementById(`id_stepper_period_active_deaccelerationSteps_config_${stepperIndex}`).value == stepper.config.activeModeConfig.deacceleratingSteps);
 
         // isEnableHigh
         let isEnableHighValueId = `id_stepper_isEnableHigh_value_${stepperIndex}`;
@@ -2457,35 +2432,51 @@ function updateStepper(status)
         let crossBoundarySaveId = `id_stepper_crossBoundary_save_${stepperIndex}`;
         let crossBoundaryEnabled = stepper.config.crossBoundary.enabled;
         let crossBoundaryEnable = document.getElementById(crossBoundaryEnableId);
-        crossBoundaryEnable.checked = crossBoundaryEnabled;
-        document.getElementById(crossBoundarySaveId).disabled = true;
+        document.getElementById(crossBoundarySaveId).disabled = crossBoundaryEnable.checked == crossBoundaryEnabled;
 
         for(let boundaryIndex = 0; boundaryIndex < stepper.config.crossBoundary.boundaries.length; boundaryIndex++)
         {
-            let boundary = stepper.config.crossBoundary.boundaries[boundaryIndex];
+            let boundaryConfig = stepper.config.crossBoundary.boundaries[boundaryIndex];
+
             let boundaryEnable = document.getElementById(`id_stepper_boundary_enable_${boundaryIndex}_${stepperIndex}`);
             let boundaryValue = document.getElementById(`id_stepper_boundary_value_${boundaryIndex}_${stepperIndex}`);
             let boundaryError = document.getElementById(`id_stepper_boundary_error_${boundaryIndex}_${stepperIndex}`);
             let boundarySave = document.getElementById(`id_stepper_boundary_save_${boundaryIndex}_${stepperIndex}`);
             let boundaryLabel = boundaryEnable.closest("label");
             let boundaryErrorLabel = document.getElementById(`id_stepper_boundary_errorLabel_${boundaryIndex}_${stepperIndex}`);
-            let isBoundaryEnabled = crossBoundaryEnabled && boundary.enabled;
 
-            boundaryEnable.checked = boundary.enabled;
-            boundaryEnable.disabled = !crossBoundaryEnabled;
-            boundaryValue.valueAsNumber = boundary.value;
-            boundaryValue.disabled = !isBoundaryEnabled;
-            boundaryError.valueAsNumber = boundary.error;
-            boundaryError.disabled = !isBoundaryEnabled;
-            boundarySave.disabled = true;
-
-            if(boundaryLabel)
+            if(crossBoundaryEnable.checked == true)
             {
-                boundaryLabel.className = crossBoundaryEnabled ? "" : "disabled-label";
+                boundaryLabel.className = "";
+                boundaryEnable.disabled = false;
+
+                if(boundaryEnable.checked) 
+                {
+                    boundaryValue.disabled = false;
+                    boundaryErrorLabel.className = "";
+                    boundaryError.disabled = false;
+                    boundarySave.disabled = 
+                        (boundaryEnable.checked == boundaryConfig.enabled) &&
+                        (boundaryValue.value == boundaryConfig.value) &&
+                        (boundaryEnable.value == boundaryConfig.error);
+                }
+                else 
+                {
+                    boundaryValue.disabled = true;
+                    boundaryErrorLabel.className = "disabled-label";
+                    boundaryError.disabled = true;
+                    boundarySave.disabled = true;
+                }
             }
-            if(boundaryErrorLabel)
+            else
             {
-                boundaryErrorLabel.className = isBoundaryEnabled ? "" : "disabled-label";
+                // disable all boundaries.
+                boundaryLabel.className = "disabled-label";
+                boundaryEnable.disabled = true;
+                boundaryValue.disabled = true;
+                boundaryErrorLabel.className = "disabled-label";
+                boundaryError.disabled = true;
+                boundarySave.disabled = true;
             }
         }
 
