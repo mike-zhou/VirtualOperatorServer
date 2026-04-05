@@ -232,6 +232,25 @@ namespace VirtualOperatorServer.Facade
                         public EnumStepper activeStepper { get; set; } = EnumStepper.NOT_SELECTED;
                     }
 
+                    public class CrossBoundaryItem
+                    {
+                        public bool enabled { get; set; }
+                        public uint value { get; set; }
+                        public ushort error { get; set; }
+                    }
+
+                    public class CrossBoundary
+                    {
+                        public bool enabled { get; set; }
+                        public CrossBoundaryItem[] boundaries { get; set; } =
+                        [
+                            new(),
+                            new(),
+                            new(),
+                            new()
+                        ];
+                    }
+
                     public EnumTimer timer { get; set; }
                     public EnumEncoder encoder { get; set; }
                     public EnumMode mode { get; set; }
@@ -259,6 +278,7 @@ namespace VirtualOperatorServer.Facade
                     public ushort stepsPerRotation { get; set; }
                     public ushort encoderCountsPerRotation { get; set; }
                     public ushort encoderOffsetErrorThreshold { get; set; }
+                    public CrossBoundary crossBoundary { get; set; } = new();
                 }
 
                 public bool isAlarmTriggered;

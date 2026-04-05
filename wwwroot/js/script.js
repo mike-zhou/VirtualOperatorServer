@@ -788,6 +788,20 @@ async function get(endpoint)
     return data;
 }
 
+function getSync(endpoint)
+{
+    let request = new XMLHttpRequest();
+    request.open('GET', `/get/${endpoint}`, false);
+    request.send();
+
+    if(request.status < 200 || request.status >= 300)
+    {
+        throw new Error(`Request failed with status ${request.status}`);
+    }
+
+    return request.responseText;
+}
+
 async function post(endpoint, payload)
 {
     response = await fetch(`/post/${endpoint}`, {
@@ -802,6 +816,77 @@ async function post(endpoint, payload)
     return data;
 }
 
+function initConfigWidgetsSteppers(status)
+{
+    for(let stepperIndex=0; stepperIndex<status.steppers.length; stepperIndex++)
+    {
+        let config = status.steppers[stepperIndex].config;
+
+        document.getElementById(`id_stepper_timer_select_${stepperIndex}`).value = config.timer;
+        document.getElementById(`id_stepper_encoder_select_${stepperIndex}`).value = config.encoder;
+        
+        document.getElementById(`id_stepper_period_forced_config_${stepperIndex}`).value = config.forcedModeConfig.pulseWidth;
+        document.getElementById(`id_stepper_period_active_starting_config_${stepperIndex}`).value = config.activeModeConfig.startingPulseWidth;
+        document.getElementById(`id_stepper_period_active_accelerationSteps_config_${stepperIndex}`).value = config.activeModeConfig.acceleratingSteps;
+        document.getElementById(`id_stepper_period_active_cruising_config_${stepperIndex}`).value = config.activeModeConfig.cruisingPulseWidth;
+        document.getElementById(`id_stepper_period_active_ending_config_${stepperIndex}`).value = config.activeModeConfig.endingPulseWidth;
+        document.getElementById(`id_stepper_period_active_deaccelerationSteps_config_${stepperIndex}`).value = config.activeModeConfig.deacceleratingSteps;
+        document.getElementById(`id_stepper_passive_activeStepper_select_${stepperIndex}`).value = config.passiveModeConfig.activeStepper;
+        document.getElementById(`id_stepper_isEnableHigh_value_${stepperIndex}`).checked = config.isEnableHigh;
+        document.getElementById(`id_stepper_isForwardHigh_value_${stepperIndex}`).checked = config.isForwardHigh;
+        document.getElementById(`id_stepper_isRisingEdgeDriven_value_${stepperIndex}`).checked = config.isRisingEdgeDriven;
+        document.getElementById(`id_stepper_homeBoundaryToReadySteps_value_${stepperIndex}`).valueAsNumber = config.homeBoundaryToReadySteps;
+        document.getElementById(`id_stepper_range_value_${stepperIndex}`).valueAsNumber = config.range;
+        document.getElementById(`id_stepper_stepsPerRotation_value_${stepperIndex}`).valueAsNumber = config.stepsPerRotation;
+        document.getElementById(`id_stepper_encoderCountsPerRotation_value_${stepperIndex}`).valueAsNumber = config.encoderCountsPerRotation;
+        document.getElementById(`id_stepper_encoderOffsetErrorThreshold_value_${stepperIndex}`).valueAsNumber = config.encoderOffsetErrorThreshold;
+        document.getElementById(`id_stepper_port_HomeBoundary_select_${stepperIndex}`).value = config.portHomeBoundary;
+        document.getElementById(`id_stepper_pin_HomeBoundary_select_${stepperIndex}`).value = config.pinHomeBoundary;
+        document.getElementById(`id_stepper_port_EndBoundary_select_${stepperIndex}`).value = config.portEndBoundary;
+        document.getElementById(`id_stepper_pin_EndBoundary_select_${stepperIndex}`).value = config.pinEndBoundary;
+        document.getElementById(`id_stepper_port_Enable_select_${stepperIndex}`).value = config.portEnable;
+        document.getElementById(`id_stepper_pin_Enable_select_${stepperIndex}`).value = config.pinEnable;
+        document.getElementById(`id_stepper_port_Forward_select_${stepperIndex}`).value =  config.portForward;
+        document.getElementById(`id_stepper_pin_Forward_select_${stepperIndex}`).value = config.pinForward;
+        document.getElementById(`id_stepper_port_Clock_select_${stepperIndex}`).value = config.portClock;
+        document.getElementById(`id_stepper_pin_Clock_select_${stepperIndex}`).value = config.pinClock;
+
+        document.getElementById(`id_stepper_crossBoundary_enable_${stepperIndex}`).checked = config.crossBoundary.enabled;
+        for(let boundaryIndex = 0; boundaryIndex < config.crossBoundary.boundaries.length; boundaryIndex++)
+        {
+            let boundary = config.crossBoundary.boundaries[boundaryIndex];
+            let boundaryEnable = document.getElementById(`id_stepper_boundary_enable_${boundaryIndex}_${stepperIndex}`);
+            let boundaryValue = document.getElementById(`id_stepper_boundary_value_${boundaryIndex}_${stepperIndex}`);
+            let boundaryError = document.getElementById(`id_stepper_boundary_error_${boundaryIndex}_${stepperIndex}`);
+
+            boundaryEnable.checked = boundary.enabled;
+            boundaryValue.valueAsNumber = boundary.value;
+            boundaryError.valueAsNumber = boundary.error;
+        }
+    }
+}
+
+function initConfigWidgetsTimers(status)
+{
+
+}
+
+function initConfigWidgets()
+{
+    let status;
+
+    try {
+        let data = getSync('Status');
+        status = JSON.parse(data);
+        VO.status = status;
+    } catch (error) {
+        console.error("Error: failure in getting configurations: ", error);
+        return;
+    }
+
+    initConfigWidgetsSteppers(status);
+    initConfigWidgetsTimers(status);
+}
 
 async function getGPIOMode()
 {
@@ -2218,7 +2303,7 @@ function updateStepper(status)
             document.getElementById(encoderOffsetErrorThresholdSaveId).disabled = false;
         }
 
-        // HomeBoundary
+        // PortHomeBoundary
         let portHomeBoundarySelectId = `id_stepper_port_HomeBoundary_select_${stepperIndex}`;
         let portHomeBoundarySaveId = `id_stepper_port_HomeBoundary_save_${stepperIndex}`;
         let pinHomeBoundarySelectId = `id_stepper_pin_HomeBoundary_select_${stepperIndex}`;
@@ -2248,7 +2333,7 @@ function updateStepper(status)
             document.getElementById(pinHomeBoundarySaveId).disabled = false;
         }
 
-        // EndBoundary
+        // PortEndBoundary
         let portEndBoundarySelectId = `id_stepper_port_EndBoundary_select_${stepperIndex}`;
         let portEndBoundarySaveId = `id_stepper_port_EndBoundary_save_${stepperIndex}`;
         let pinEndBoundarySelectId = `id_stepper_pin_EndBoundary_select_${stepperIndex}`;
@@ -2278,7 +2363,7 @@ function updateStepper(status)
             document.getElementById(pinEndBoundarySaveId).disabled = false;
         }
 
-        // Enable signal
+        // PortEnable
         let portEnableSelectId = `id_stepper_port_Enable_select_${stepperIndex}`;
         let portEnableSaveId = `id_stepper_port_Enable_save_${stepperIndex}`;
         let pinEnableSelectId = `id_stepper_pin_Enable_select_${stepperIndex}`;
@@ -2308,7 +2393,7 @@ function updateStepper(status)
             document.getElementById(pinEnableSaveId).disabled = false;
         }
 
-        // Forward signal
+        // PortForward 
         let portForwardSelectId = `id_stepper_port_Forward_select_${stepperIndex}`;
         let portForwardSaveId = `id_stepper_port_Forward_save_${stepperIndex}`;
         let pinForwardSelectId = `id_stepper_pin_Forward_select_${stepperIndex}`;
@@ -2338,7 +2423,7 @@ function updateStepper(status)
             document.getElementById(pinForwardSaveId).disabled = false;
         }
 
-        // Clock signal
+        // PortClock 
         let portClockSelectId = `id_stepper_port_Clock_select_${stepperIndex}`;
         let portClockSaveId = `id_stepper_port_Clock_save_${stepperIndex}`;
         let pinClockSelectId = `id_stepper_pin_Clock_select_${stepperIndex}`;
@@ -2366,6 +2451,42 @@ function updateStepper(status)
         else
         {
             document.getElementById(pinClockSaveId).disabled = false;
+        }
+
+        let crossBoundaryEnableId = `id_stepper_crossBoundary_enable_${stepperIndex}`;
+        let crossBoundarySaveId = `id_stepper_crossBoundary_save_${stepperIndex}`;
+        let crossBoundaryEnabled = stepper.config.crossBoundary.enabled;
+        let crossBoundaryEnable = document.getElementById(crossBoundaryEnableId);
+        crossBoundaryEnable.checked = crossBoundaryEnabled;
+        document.getElementById(crossBoundarySaveId).disabled = true;
+
+        for(let boundaryIndex = 0; boundaryIndex < stepper.config.crossBoundary.boundaries.length; boundaryIndex++)
+        {
+            let boundary = stepper.config.crossBoundary.boundaries[boundaryIndex];
+            let boundaryEnable = document.getElementById(`id_stepper_boundary_enable_${boundaryIndex}_${stepperIndex}`);
+            let boundaryValue = document.getElementById(`id_stepper_boundary_value_${boundaryIndex}_${stepperIndex}`);
+            let boundaryError = document.getElementById(`id_stepper_boundary_error_${boundaryIndex}_${stepperIndex}`);
+            let boundarySave = document.getElementById(`id_stepper_boundary_save_${boundaryIndex}_${stepperIndex}`);
+            let boundaryLabel = boundaryEnable.closest("label");
+            let boundaryErrorLabel = document.getElementById(`id_stepper_boundary_errorLabel_${boundaryIndex}_${stepperIndex}`);
+            let isBoundaryEnabled = crossBoundaryEnabled && boundary.enabled;
+
+            boundaryEnable.checked = boundary.enabled;
+            boundaryEnable.disabled = !crossBoundaryEnabled;
+            boundaryValue.valueAsNumber = boundary.value;
+            boundaryValue.disabled = !isBoundaryEnabled;
+            boundaryError.valueAsNumber = boundary.error;
+            boundaryError.disabled = !isBoundaryEnabled;
+            boundarySave.disabled = true;
+
+            if(boundaryLabel)
+            {
+                boundaryLabel.className = crossBoundaryEnabled ? "" : "disabled-label";
+            }
+            if(boundaryErrorLabel)
+            {
+                boundaryErrorLabel.className = isBoundaryEnabled ? "" : "disabled-label";
+            }
         }
 
         document.getElementById(`id_stepper_control_enable_${stepperIndex}`).checked = stepper.status.isEnabled;
@@ -2420,6 +2541,8 @@ async function updateUI()
 const VO = {};
 
 document.body.innerHTML = createBody();
+
+initConfigWidgets();
 
 document.addEventListener('click', async function(event) { onClick(event); } );
 document.addEventListener('input', (e) => {
