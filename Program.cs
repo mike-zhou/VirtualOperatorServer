@@ -604,8 +604,11 @@ app.MapPost("/post/{*command}", async (HttpRequest request, string command, Back
                     break;
                 case "crossBoundary":
                     {
-                        var isEnabled = jsonRoot.GetProperty("value").GetBoolean();
+                        var isEnabled = jsonRoot.GetProperty("enabled").GetBoolean();
+                        var negativeRange = jsonRoot.GetProperty("negativeRange").GetInt32();
+                        
                         configs[stepperIndex].crossBoundary.enabled = isEnabled;
+                        configs[stepperIndex].crossBoundary.negativeRange = negativeRange;
                     }
                     break;
                 case "crossBoundaryItem":

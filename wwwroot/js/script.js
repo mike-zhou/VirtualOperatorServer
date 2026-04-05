@@ -661,16 +661,19 @@ function createStepperTable()
             // cross boundary
             html.push('<div>');
             html.push(`<label>CrossBoundaryEnable<input type="checkbox" id="id_stepper_crossBoundary_enable_${stepperIndex}"></label>`);
-            html.push(`<td><input type="button" id="id_stepper_crossBoundary_save_${stepperIndex}" value="Save"></td>`);
+            html.push(`<label id="id_stepper_crossBoundary_negativeRangeLabel_${stepperIndex}"> NegativeRange:</label>`);
+            html.push(`<input type="number" id="id_stepper_crossBoundary_negativeRangeValue_${stepperIndex}" min="-32768" step="1" max="0">`);
+            html.push(`<input type="button" id="id_stepper_crossBoundary_save_${stepperIndex}" value="Save">`);
+            // boundary items
             html.push("<div><table>");
-            for(let boundaryIndex = 0; boundaryIndex < 4; boundaryIndex++)
+            for(let boundaryItemIndex = 0; boundaryItemIndex < 4; boundaryItemIndex++)
             {
                 html.push("<tr>");
-                html.push(`<td><label>BoundaryEnable_${boundaryIndex}<input type="checkbox" id="id_stepper_crossBoundaryItem_enable_${boundaryIndex}_${stepperIndex}"></label></td>`);
-                html.push(`<td><input type="number" id="id_stepper_crossBoundaryItem_value_${boundaryIndex}_${stepperIndex}" step="1"></td>`);
-                html.push(`<td><label id="id_stepper_crossBoundaryItem_errorLabel_${boundaryIndex}_${stepperIndex}"> error:</label></td>`);
-                html.push(`<td><input type="number" id="id_stepper_crossBoundaryItem_error_${boundaryIndex}_${stepperIndex}"></td>`);
-                html.push(`<td><input type="button" id="id_stepper_crossBoundaryItem_save_${boundaryIndex}_${stepperIndex}" value="Save">`);
+                html.push(`<td><label>BoundaryEnable_${boundaryItemIndex}<input type="checkbox" id="id_stepper_crossBoundaryItem_enable_${boundaryItemIndex}_${stepperIndex}"></label></td>`);
+                html.push(`<td><input type="number" id="id_stepper_crossBoundaryItem_value_${boundaryItemIndex}_${stepperIndex}" step="1"></td>`);
+                html.push(`<td><label id="id_stepper_crossBoundaryItem_errorLabel_${boundaryItemIndex}_${stepperIndex}"> error:</label></td>`);
+                html.push(`<td><input type="number" id="id_stepper_crossBoundaryItem_error_${boundaryItemIndex}_${stepperIndex}"></td>`);
+                html.push(`<td><input type="button" id="id_stepper_crossBoundaryItem_save_${boundaryItemIndex}_${stepperIndex}" value="Save">`);
                 html.push("</tr>");
             }
             html.push("</table></div>");
@@ -833,6 +836,7 @@ function initConfigWidgetsSteppers(status)
         document.getElementById(`id_stepper_pin_Clock_select_${stepperIndex}`).value = config.pinClock;
 
         document.getElementById(`id_stepper_crossBoundary_enable_${stepperIndex}`).checked = config.crossBoundary.enabled;
+        document.getElementById(`id_stepper_crossBoundary_negativeRangeValue_${stepperIndex}`).value = config.crossBoundary.negativeRange;
         for(let boundaryIndex = 0; boundaryIndex < config.crossBoundary.boundaries.length; boundaryIndex++)
         {
             let boundaryConfig = config.crossBoundary.boundaries[boundaryIndex];
@@ -1493,10 +1497,12 @@ async function onClick_Stepper(id)
         {
             let stepperIndex = segments[4];
             let isEnabled = document.getElementById(`id_stepper_crossBoundary_enable_${stepperIndex}`).checked;
+            let negativeRange = document.getElementById(`id_stepper_crossBoundary_negativeRangeValue_${stepperIndex}`).value;
             let payload = {
                 stepperId: Number(stepperIndex),
                 classification: classification,
-                value: isEnabled
+                enabled: isEnabled,
+                negativeRange: Number(negativeRange)
             }
 
             let data = await post('saveStepperConfig', payload);
@@ -2433,12 +2439,26 @@ function updateStepper(status)
             document.getElementById(pinClockSaveId).disabled = false;
         }
 
+        //  crossBoundary
         let crossBoundaryEnableId = `id_stepper_crossBoundary_enable_${stepperIndex}`;
         let crossBoundarySaveId = `id_stepper_crossBoundary_save_${stepperIndex}`;
-        let crossBoundaryEnabled = stepper.config.crossBoundary.enabled;
         let crossBoundaryEnable = document.getElementById(crossBoundaryEnableId);
-        document.getElementById(crossBoundarySaveId).disabled = crossBoundaryEnable.checked == crossBoundaryEnabled;
-
+        let negativeRangeLabel = document.getElementById(`id_stepper_crossBoundary_negativeRangeLabel_${stepperIndex}`);
+        let negativeRangeValue = document.getElementById(`id_stepper_crossBoundary_negativeRangeValue_${stepperIndex}`);
+        document.getElementById(crossBoundarySaveId).disabled = 
+            (crossBoundaryEnable.checked == stepper.config.crossBoundary.enabled) &&
+            (Number(negativeRangeValue.value) == stepper.config.crossBoundary.negativeRange);
+        if(crossBoundaryEnable.checked ) 
+        {
+            negativeRangeLabel.className = "";
+            negativeRangeValue.disabled = false;
+        }
+        else
+        {
+            negativeRangeLabel.className = "disabled-label";
+            negativeRangeValue.disabled = true;
+        }
+        // crossBoundaryItems
         for(let boundaryIndex = 0; boundaryIndex < stepper.config.crossBoundary.boundaries.length; boundaryIndex++)
         {
             let boundaryConfig = stepper.config.crossBoundary.boundaries[boundaryIndex];

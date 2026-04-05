@@ -242,6 +242,7 @@ namespace VirtualOperatorServer.Facade
                     public class CrossBoundary
                     {
                         public bool enabled { get; set; }
+                        public int negativeRange { get; set;}
                         public CrossBoundaryItem[] boundaries { get; set; } =
                         [
                             new(),
