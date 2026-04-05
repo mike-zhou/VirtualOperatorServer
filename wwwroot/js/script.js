@@ -383,7 +383,7 @@ function createStepperMode(stepperIndex)
 {
     let html = [];
 
-    html.push("<div><table>");
+    html.push("<div><table style=\"box-shadow:2px 2px 4px rgba(0,0,0,0.25);\" onmouseenter=\"this.style.border='4px solid green';this.style.borderCollapse='collapse';for(const r of this.rows){for(const c of r.cells){c.style.border='1px solid green';}}\" onmouseleave=\"this.style.border='';this.style.borderCollapse='separate';for(const r of this.rows){for(const c of r.cells){c.style.border='';}}\">");
 
     // forced
     html.push("<tr>");
@@ -516,7 +516,7 @@ function createStepperTable()
     
     for(let stepperIndex=0; stepperIndex<10; stepperIndex++)
     {
-        html.push("<div>");
+        html.push("<div onmouseenter=\"this.style.backgroundColor='lightgreen'\" onmouseleave=\"this.style.backgroundColor=''\">");
         html.push(`<h2>Stepper ${stepperIndex}</h2>`);
         html.push("<div>");
         {
