@@ -143,8 +143,8 @@ namespace VirtualOperatorServer.Facade
                     public bool isRampdownPopulated;
                     public bool isCruisePopulated;
                     public bool isRampupPopulated;
-                    public uint offset;
-                    public uint encoderOffset;
+                    public int offset;
+                    public int encoderOffset;
                     public byte maxEncoderOffsetError;
                 }
 

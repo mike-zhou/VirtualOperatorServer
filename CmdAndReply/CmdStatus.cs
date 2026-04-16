@@ -29,8 +29,8 @@ namespace VirtualOperatorServer.CommandAndReply
             public bool isRampdownPopulated;
             public bool isCruisePopulated;
             public bool isRampupPopulated;
-            public uint offset;
-            public uint encoderOffset;
+            public int offset;
+            public int encoderOffset;
             public byte maxEncoderOffsetError;
         }
 
@@ -187,7 +187,7 @@ namespace VirtualOperatorServer.CommandAndReply
                 status.steppersData[i].isCruisePopulated = (b0 & 0x04) != 0;
                 status.steppersData[i].isRampupPopulated = (b0 & 0x08) != 0;
 
-                uint tmpInt = reply[offset + 6];
+                int tmpInt = reply[offset + 6];
                 tmpInt <<= 8;
                 tmpInt += reply[offset + 5];
                 tmpInt <<= 8;

@@ -265,7 +265,7 @@ namespace VirtualOperatorServer.CommandAndReply
     }
 
 
-    class CmdSetSteppeControls(byte stepperId,
+    class CmdSetStepperControls(byte stepperId,
                                 bool isRisingEdgeDriven,
                                 bool isForwardHigh,
                                 bool isEnableHigh,
@@ -484,6 +484,132 @@ namespace VirtualOperatorServer.CommandAndReply
                     return (true, "");
                 case 1:
                     return (false, "stepper_set_enable() failed");
+                default:
+                    return (false, $"unknown error code {errorCode}");
+            }
+        }
+    }
+
+    class CmdSetStepperCrossBoundary(byte stepperId, CmdSetStepperCrossBoundary.CrossBoudanry crossBoundary) :
+        CommandAndReply(CreateCommand(stepperId, crossBoundary))
+    {
+        private const int REPLY_LENGTH = 2;
+
+        public struct CrossBoundaryItem
+        {
+            public bool enabled;
+            public int offset;
+            public ushort error;
+
+            public CrossBoundaryItem()
+            {
+                enabled = false;
+                offset = 0;
+                error = 0;
+            }  
+        }
+
+        public struct CrossBoudanry
+        {
+            public bool enabled;
+            public int negativeRange;
+            public CrossBoundaryItem[] items;
+
+            public CrossBoudanry()
+            {
+                enabled = false;
+                negativeRange = 0;
+                items = new CrossBoundaryItem[4];
+            }
+        }
+
+        static private byte[] CreateCommand(byte stepperId, CmdSetStepperCrossBoundary.CrossBoudanry crossBoundary)
+        {
+            /**
+            * command format:
+            * 0: command id
+            * 1: stepper id
+            * 2: crossBoundaryEnabled
+            * 3: 1/4 negativeRange
+            * 4: 2/4 negativeRange
+            * 5: 3/4 negativeRange
+            * 6: 4/4 negativeRange
+            * 7: item0 enabled
+            * 8: item0 1/4 offset
+            * 9: item0 2/4 offset
+            * 10: item0 3/4 offset
+            * 11: item0 4/4 offset
+            * 12: item0 1/2 error
+            * 13: item0 2/2 error
+            * 14: item1 enabled
+            * 15: item1 1/4 offset
+            * 16: item1 2/4 offset
+            * 17: item1 3/4 offset
+            * 18: item1 4/4 offset
+            * 19: item1 1/2 error
+            * 20: item1 2/2 error
+            * 21: item2 enabled
+            * 22: item2 1/4 offset
+            * 23: item2 2/4 offset
+            * 24: item2 3/4 offset
+            * 25: item2 4/4 offset
+            * 26: item2 1/2 error
+            * 27: item2 2/2 error
+            * 28: item3 enabled
+            * 29: item3 1/4 offset
+            * 30: item3 2/4 offset
+            * 31: item3 3/4 offset
+            * 32: item3 4/4 offset
+            * 33: item3 1/2 error
+            * 34: item3 2/2 error
+            */
+
+            byte[] cmd = new byte[35];
+
+            cmd[0] = (byte)CommandEnum.SET_STEPPER_CROSS_BOUNDARY;
+            cmd[1] = stepperId;
+            cmd[2] = (byte)(crossBoundary.enabled ? 1 : 0);
+            cmd[3] = (byte)crossBoundary.negativeRange;
+            cmd[4] = (byte)(crossBoundary.negativeRange >> 8);
+            cmd[5] = (byte)(crossBoundary.negativeRange >> 16);
+            cmd[6] = (byte)(crossBoundary.negativeRange >> 24);
+
+            for (int i = 0; i < 4; i++)
+            {
+                CrossBoundaryItem item = crossBoundary.items[i];
+                int baseIndex = 7 + i * 7;
+
+                cmd[baseIndex] = (byte)(item.enabled ? 1 : 0);
+                cmd[baseIndex + 1] = (byte)item.offset;
+                cmd[baseIndex + 2] = (byte)(item.offset >> 8);
+                cmd[baseIndex + 3] = (byte)(item.offset >> 16);
+                cmd[baseIndex + 4] = (byte)(item.offset >> 24);
+                cmd[baseIndex + 5] = (byte)item.error;
+                cmd[baseIndex + 6] = (byte)(item.error >> 8);
+            }
+
+            return cmd;
+        }
+
+        public override (bool result, string reason) ParseReply()
+        {
+            if (reply == null)
+            {
+                return (false, "No reply is received");
+            }
+            if (reply.Length != REPLY_LENGTH)
+            {
+                return (false, "Invalid reply");
+            }
+
+            byte errorCode = reply[1];
+
+            switch (errorCode)
+            {
+                case 0:
+                    return (true, "");
+                case 1:
+                    return (false, "stepper_set_crossBoundary() failed");
                 default:
                     return (false, $"unknown error code {errorCode}");
             }

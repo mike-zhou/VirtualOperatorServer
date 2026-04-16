@@ -2480,18 +2480,18 @@ function updateStepper(status)
                     boundaryValue.disabled = false;
                     boundaryErrorLabel.className = "";
                     boundaryError.disabled = false;
-                    boundarySave.disabled = 
-                        (boundaryEnable.checked == boundaryConfig.enabled) &&
-                        (Number(boundaryValue.value) == boundaryConfig.value) &&
-                        (Number(boundaryError.value) == boundaryConfig.error);
                 }
                 else 
                 {
                     boundaryValue.disabled = true;
                     boundaryErrorLabel.className = "disabled-label";
                     boundaryError.disabled = true;
-                    boundarySave.disabled = true;
                 }
+                
+                boundarySave.disabled = 
+                    (boundaryEnable.checked == boundaryConfig.enabled) &&
+                    (Number(boundaryValue.value) == boundaryConfig.value) &&
+                    (Number(boundaryError.value) == boundaryConfig.error);
             }
             else
             {

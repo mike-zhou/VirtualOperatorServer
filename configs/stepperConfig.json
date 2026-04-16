@@ -31,12 +31,13 @@
     "encoderCountsPerRotation": 2000,
     "encoderOffsetErrorThreshold": 10,
     "crossBoundary": {
-      "enabled": false,
+      "enabled": true,
+      "negativeRange": -10,
       "boundaries": [
-        { "enabled": false, "value": 0, "error": 0},
-        { "enabled": false, "value": 0, "error": 0},
-        { "enabled": false, "value": 0, "error": 0},
-        { "enabled": false, "value": 0, "error": 0}
+        { "enabled": true, "value": 0, "error": 1 },
+        { "enabled": false, "value": 0, "error": 2 },
+        { "enabled": false, "value": 0, "error": 3 },
+        { "enabled": false, "value": 0, "error": 4 }
       ]
     }
   },
@@ -73,11 +74,12 @@
     "encoderOffsetErrorThreshold": 10,
     "crossBoundary": {
       "enabled": false,
+      "negativeRange": 0,
       "boundaries": [
-        { "enabled": false, "value": 0, "error": 0},
-        { "enabled": false, "value": 0, "error": 0},
-        { "enabled": false, "value": 0, "error": 0},
-        { "enabled": false, "value": 0, "error": 0}
+        { "enabled": false, "value": 0, "error": 0 },
+        { "enabled": true, "value": 10, "error": 2 },
+        { "enabled": false, "value": 0, "error": 0 },
+        { "enabled": false, "value": 0, "error": 0 }
       ]
     }
   },
@@ -114,11 +116,12 @@
     "encoderOffsetErrorThreshold": 2,
     "crossBoundary": {
       "enabled": false,
+      "negativeRange": 0,
       "boundaries": [
-        { "enabled": false, "value": 0, "error": 0},
-        { "enabled": false, "value": 0, "error": 0},
-        { "enabled": false, "value": 0, "error": 0},
-        { "enabled": false, "value": 0, "error": 0}
+        { "enabled": false, "value": 0, "error": 0 },
+        { "enabled": false, "value": 0, "error": 0 },
+        { "enabled": false, "value": 0, "error": 0 },
+        { "enabled": false, "value": 0, "error": 0 }
       ]
     }
   },
@@ -155,11 +158,12 @@
     "encoderOffsetErrorThreshold": 2,
     "crossBoundary": {
       "enabled": false,
+      "negativeRange": 0,
       "boundaries": [
-        { "enabled": false, "value": 0, "error": 0},
-        { "enabled": false, "value": 0, "error": 0},
-        { "enabled": false, "value": 0, "error": 0},
-        { "enabled": false, "value": 0, "error": 0}
+        { "enabled": false, "value": 0, "error": 0 },
+        { "enabled": false, "value": 0, "error": 0 },
+        { "enabled": false, "value": 0, "error": 0 },
+        { "enabled": false, "value": 0, "error": 0 }
       ]
     }
   },
@@ -196,34 +200,35 @@
     "encoderOffsetErrorThreshold": 2,
     "crossBoundary": {
       "enabled": false,
+      "negativeRange": 0,
       "boundaries": [
-        { "enabled": false, "value": 0, "error": 0},
-        { "enabled": false, "value": 0, "error": 0},
-        { "enabled": false, "value": 0, "error": 0},
-        { "enabled": false, "value": 0, "error": 0}
+        { "enabled": false, "value": 0, "error": 0 },
+        { "enabled": false, "value": 0, "error": 0 },
+        { "enabled": false, "value": 0, "error": 0 },
+        { "enabled": false, "value": 0, "error": 0 }
       ]
     }
   },
   {
     "timer": 5,
-    "encoder": 0,
+    "encoder": 255,
     "mode": 0,
-    "forcedModeConfig": { "pulseWidth": 5000 },
+    "forcedModeConfig": { "pulseWidth": 1000 },
     "activeModeConfig": {
-      "startingPulseWidth": 2000,
-      "acceleratingSteps": 20,
-      "cruisingPulseWidth": 1000,
-      "deacceleratingSteps": 20,
-      "endingPulseWidth": 2000
+      "startingPulseWidth": 1000,
+      "acceleratingSteps": 10,
+      "cruisingPulseWidth": 100,
+      "deacceleratingSteps": 10,
+      "endingPulseWidth": 1000
     },
     "passiveModeConfig": { "activeStepper": 255 },
     "isEnableHigh": false,
     "isForwardHigh": false,
     "isRisingEdgeDriven": false,
     "portHomeBoundary": 0,
-    "pinHomeBoundary": 0,
+    "pinHomeBoundary": 2,
     "portEndBoundary": 0,
-    "pinEndBoundary": 0,
+    "pinEndBoundary": 2,
     "portEnable": 9,
     "pinEnable": 9,
     "portForward": 9,
@@ -231,17 +236,18 @@
     "portClock": 7,
     "pinClock": 6,
     "homeBoundaryToReadySteps": 10,
-    "range": 30000,
+    "range": 1000,
     "stepsPerRotation": 200,
     "encoderCountsPerRotation": 100,
     "encoderOffsetErrorThreshold": 2,
     "crossBoundary": {
-      "enabled": false,
+      "enabled": true,
+      "negativeRange": -1200,
       "boundaries": [
-        { "enabled": false, "value": 0, "error": 0},
-        { "enabled": false, "value": 0, "error": 0},
-        { "enabled": false, "value": 0, "error": 0},
-        { "enabled": false, "value": 0, "error": 0}
+        { "enabled": true, "value": -10, "error": 5 },
+        { "enabled": true, "value": -271, "error": 5 },
+        { "enabled": false, "value": 0, "error": 0 },
+        { "enabled": false, "value": 0, "error": 0 }
       ]
     }
   },
@@ -278,11 +284,12 @@
     "encoderOffsetErrorThreshold": 2,
     "crossBoundary": {
       "enabled": false,
+      "negativeRange": 0,
       "boundaries": [
-        { "enabled": false, "value": 0, "error": 0},
-        { "enabled": false, "value": 0, "error": 0},
-        { "enabled": false, "value": 0, "error": 0},
-        { "enabled": false, "value": 0, "error": 0}
+        { "enabled": false, "value": 0, "error": 0 },
+        { "enabled": false, "value": 0, "error": 0 },
+        { "enabled": false, "value": 0, "error": 0 },
+        { "enabled": false, "value": 0, "error": 0 }
       ]
     }
   },
@@ -319,11 +326,12 @@
     "encoderOffsetErrorThreshold": 2,
     "crossBoundary": {
       "enabled": false,
+      "negativeRange": 0,
       "boundaries": [
-        { "enabled": false, "value": 0, "error": 0},
-        { "enabled": false, "value": 0, "error": 0},
-        { "enabled": false, "value": 0, "error": 0},
-        { "enabled": false, "value": 0, "error": 0}
+        { "enabled": false, "value": 0, "error": 0 },
+        { "enabled": false, "value": 0, "error": 0 },
+        { "enabled": false, "value": 0, "error": 0 },
+        { "enabled": false, "value": 0, "error": 0 }
       ]
     }
   },
@@ -360,11 +368,12 @@
     "encoderOffsetErrorThreshold": 2,
     "crossBoundary": {
       "enabled": false,
+      "negativeRange": 0,
       "boundaries": [
-        { "enabled": false, "value": 0, "error": 0},
-        { "enabled": false, "value": 0, "error": 0},
-        { "enabled": false, "value": 0, "error": 0},
-        { "enabled": false, "value": 0, "error": 0}
+        { "enabled": false, "value": 0, "error": 0 },
+        { "enabled": false, "value": 0, "error": 0 },
+        { "enabled": false, "value": 0, "error": 0 },
+        { "enabled": false, "value": 0, "error": 0 }
       ]
     }
   },
@@ -401,11 +410,12 @@
     "encoderOffsetErrorThreshold": 2,
     "crossBoundary": {
       "enabled": false,
+      "negativeRange": 0,
       "boundaries": [
-        { "enabled": false, "value": 0, "error": 0},
-        { "enabled": false, "value": 0, "error": 0},
-        { "enabled": false, "value": 0, "error": 0},
-        { "enabled": false, "value": 0, "error": 0}
+        { "enabled": false, "value": 0, "error": 0 },
+        { "enabled": false, "value": 0, "error": 0 },
+        { "enabled": false, "value": 0, "error": 0 },
+        { "enabled": false, "value": 0, "error": 0 }
       ]
     }
   }

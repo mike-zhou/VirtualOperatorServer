@@ -37,7 +37,8 @@ namespace VirtualOperatorServer.CommandAndReply
         TEST_STEPPER_STATE_RUNNING_FORCE,
         TEST_STEPPER_STATE_READY,
         TEST_STEPPER_STATE_RUNNING_ACTIVE,
-        RUN_STEPPER_ACTIVE
+        RUN_STEPPER_ACTIVE,
+        SET_STEPPER_CROSS_BOUNDARY
     }
 
     public class CommandAndReply

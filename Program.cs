@@ -90,6 +90,36 @@ async Task<IResult> RunStepperForced(byte stepperId, uint steps)
     return Results.Text(result, "text/html");
 }
 
+async Task<string> SetStepperCrossBoudnary(byte stepperId)
+{
+    var stepperConfig = StaticConfig.Instance.StepperConfigs[stepperId];
+
+    CmdSetStepperCrossBoundary.CrossBoudanry crossBoudanry = new CmdSetStepperCrossBoundary.CrossBoudanry();
+
+    if(crossBoudanry.items.Length != stepperConfig.crossBoundary.boundaries.Length) {
+        throw new Exception($"CrossBoudnary items account are different between command and configuration");
+    }
+
+    crossBoudanry.enabled = stepperConfig.crossBoundary.enabled;
+    crossBoudanry.negativeRange = stepperConfig.crossBoundary.negativeRange;
+    for(int i=0; i<crossBoudanry.items.Length; i++)
+    {
+        crossBoudanry.items[i].enabled = stepperConfig.crossBoundary.boundaries[i].enabled;
+        crossBoudanry.items[i].offset = stepperConfig.crossBoundary.boundaries[i].value;
+        crossBoudanry.items[i].error = stepperConfig.crossBoundary.boundaries[i].error;
+    }
+    
+    var cmdSetCrossBoundary = new CmdSetStepperCrossBoundary(stepperId, crossBoudanry);
+    string result = await RunCommand(cmdSetCrossBoundary);
+
+    if(result != "success")
+    {
+        return $"failure: CmdSetStepperCrossBoundary: {result}";
+    }
+
+    return "success";
+}
+
 async Task<IResult> RunStepperActive(byte stepperId, uint steps)
 {
     if (stepperId >= StatusFacade.Facade.StepperCount)
@@ -104,8 +134,14 @@ async Task<IResult> RunStepperActive(byte stepperId, uint steps)
         throw new Exception($"Timer must be selected in RunStepperActive");
     }
 
+    string result = await SetStepperCrossBoudnary(stepperId);
+    if(result != "success")
+    {
+        return Results.Text($"{result}", "text/html");
+    }
+
     var cmdSetActive = new CmdSetStepperActive(stepperId, steps);
-    string result = await RunCommand(cmdSetActive);
+    result = await RunCommand(cmdSetActive);
     if (result != "success")
     {
         return Results.Text($"failure: CmdSetStepperActive: {result}", "text/html");
@@ -127,6 +163,14 @@ async Task<IResult> RunStepperPassive(byte stepperId, uint steps, byte activeSte
     if (activeSteps >= ushort.MaxValue)
     {
         return Results.Text($"failure: RunStepperPassive: too many active steps: {activeSteps}", "text/html");
+    }
+
+    string result;
+    
+    result = await SetStepperCrossBoudnary(stepperId);
+    if(result != "success")
+    {
+        return Results.Text($"{result}", "text/html");
     }
 
     // calculate passive indexes
@@ -169,7 +213,6 @@ async Task<IResult> RunStepperPassive(byte stepperId, uint steps, byte activeSte
     byte batchIndex = 0;
     byte totalBatches = (byte)(indexes.Length / indexesPerBatch + 1);
     CommandAndReply cmd;
-    string result;
 
     for (uint i = 0; i < indexes.Length; i++)
     {
@@ -761,7 +804,7 @@ app.MapPost("/post/{*command}", async (HttpRequest request, string command, Back
             }
 
             var config = configs[stepperIndex];
-            var cmd = new CmdSetSteppeControls(stepperIndex,
+            var cmd = new CmdSetStepperControls(stepperIndex,
                                                 config.isRisingEdgeDriven,
                                                 config.isForwardHigh,
                                                 config.isEnableHigh,
