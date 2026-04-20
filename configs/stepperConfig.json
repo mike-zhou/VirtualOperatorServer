@@ -87,13 +87,13 @@
     "timer": 2,
     "encoder": 255,
     "mode": 0,
-    "forcedModeConfig": { "pulseWidth": 5000 },
+    "forcedModeConfig": { "pulseWidth": 1000 },
     "activeModeConfig": {
-      "startingPulseWidth": 2000,
-      "acceleratingSteps": 100,
-      "cruisingPulseWidth": 1000,
-      "deacceleratingSteps": 100,
-      "endingPulseWidth": 2000
+      "startingPulseWidth": 1000,
+      "acceleratingSteps": 2,
+      "cruisingPulseWidth": 500,
+      "deacceleratingSteps": 2,
+      "endingPulseWidth": 1000
     },
     "passiveModeConfig": { "activeStepper": 255 },
     "isEnableHigh": false,
@@ -110,7 +110,7 @@
     "portClock": 5,
     "pinClock": 7,
     "homeBoundaryToReadySteps": 10,
-    "range": 30000,
+    "range": 2380,
     "stepsPerRotation": 200,
     "encoderCountsPerRotation": 100,
     "encoderOffsetErrorThreshold": 2,
