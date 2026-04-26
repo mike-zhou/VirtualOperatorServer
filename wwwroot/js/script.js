@@ -1643,7 +1643,7 @@ async function onClick_Stepper(id)
             stepsNum = parseInt(steps, 10);
         }
 
-        if((stepsNum < 0) || (stepsNum > 1024))
+        if((stepsNum < 0) || (stepsNum > 2048))
         {
             alert(`Error: Out of range of steps: ${stepsNum}`);
             return;
