@@ -738,7 +738,7 @@ internal static class ClientHandlers
 
     private static async Task<IResult> SetActivePeriods(JsonElement jsonRoot, BackSocket backSocket)
     {
-        const byte PERIODS_PER_BATCH = 100;
+        const byte MAX_AMOUNT_OF_PULSE_IN_BATCH = 100;
         byte stepperIndex = jsonRoot.GetProperty("stepperId").GetByte();
         var configs = StaticConfig.Instance.StepperConfigs;
         var status = CmdGetStatus.Status;
@@ -776,26 +776,29 @@ internal static class ClientHandlers
         }
         else
         {
-            var stepsBuilder = new SCurvePulsesBuilder(config.activeModeConfig.acceleratingSteps, config.activeModeConfig.cruisingPulseWidth, timerClockPeriodNs);
+            var stepsBuilder = new SCurvePulsesBuilder(config.activeModeConfig.startingPulseWidth,
+                                                        config.activeModeConfig.acceleratingSteps,
+                                                        config.activeModeConfig.cruisingPulseWidth,
+                                                        timerClockPeriodNs);
             ushort[] acceleratingPeriods = stepsBuilder.GetAcceleratingPulses();
 
-            var totalBatches = (acceleratingPeriods.Length + PERIODS_PER_BATCH - 1) / PERIODS_PER_BATCH;
+            var totalBatches = (acceleratingPeriods.Length + MAX_AMOUNT_OF_PULSE_IN_BATCH - 1) / MAX_AMOUNT_OF_PULSE_IN_BATCH;
             for (int batchIndex = 0; batchIndex < totalBatches; batchIndex++)
             {
                 ushort[] batch;
 
-                if ((batchIndex + 1) * PERIODS_PER_BATCH > acceleratingPeriods.Length)
+                if ((batchIndex + 1) * MAX_AMOUNT_OF_PULSE_IN_BATCH > acceleratingPeriods.Length)
                 {
-                    batch = new ushort[acceleratingPeriods.Length - batchIndex * PERIODS_PER_BATCH];
+                    batch = new ushort[acceleratingPeriods.Length - batchIndex * MAX_AMOUNT_OF_PULSE_IN_BATCH];
                 }
                 else
                 {
-                    batch = new ushort[PERIODS_PER_BATCH];
+                    batch = new ushort[MAX_AMOUNT_OF_PULSE_IN_BATCH];
                 }
 
                 for (int i = 0; i < batch.Length; i++)
                 {
-                    batch[i] = acceleratingPeriods[batchIndex * PERIODS_PER_BATCH + i];
+                    batch[i] = acceleratingPeriods[batchIndex * MAX_AMOUNT_OF_PULSE_IN_BATCH + i];
                 }
 
                 var cmd = new CmdSetStepperActiveRampupPulseWidth(stepperIndex, (byte)batchIndex, (byte)totalBatches, batch);
@@ -822,26 +825,29 @@ internal static class ClientHandlers
         }
         else
         {
-            var stepsBuilder = new SCurvePulsesBuilder(config.activeModeConfig.deacceleratingSteps, config.activeModeConfig.cruisingPulseWidth, timerClockPeriodNs);
+            var stepsBuilder = new SCurvePulsesBuilder(config.activeModeConfig.endingPulseWidth,
+                                                        config.activeModeConfig.deacceleratingSteps,
+                                                        config.activeModeConfig.cruisingPulseWidth,
+                                                        timerClockPeriodNs);
             ushort[] deacceleratingPeriods = stepsBuilder.GetDeacceleratingPulses();
 
-            var totalBatches = (deacceleratingPeriods.Length + PERIODS_PER_BATCH - 1) / PERIODS_PER_BATCH;
+            var totalBatches = (deacceleratingPeriods.Length + MAX_AMOUNT_OF_PULSE_IN_BATCH - 1) / MAX_AMOUNT_OF_PULSE_IN_BATCH;
             for (int batchIndex = 0; batchIndex < totalBatches; batchIndex++)
             {
                 ushort[] batch;
 
-                if ((batchIndex + 1) * PERIODS_PER_BATCH > deacceleratingPeriods.Length)
+                if ((batchIndex + 1) * MAX_AMOUNT_OF_PULSE_IN_BATCH > deacceleratingPeriods.Length)
                 {
-                    batch = new ushort[deacceleratingPeriods.Length - batchIndex * PERIODS_PER_BATCH];
+                    batch = new ushort[deacceleratingPeriods.Length - batchIndex * MAX_AMOUNT_OF_PULSE_IN_BATCH];
                 }
                 else
                 {
-                    batch = new ushort[PERIODS_PER_BATCH];
+                    batch = new ushort[MAX_AMOUNT_OF_PULSE_IN_BATCH];
                 }
 
                 for (int i = 0; i < batch.Length; i++)
                 {
-                    batch[i] = deacceleratingPeriods[batchIndex * PERIODS_PER_BATCH + i];
+                    batch[i] = deacceleratingPeriods[batchIndex * MAX_AMOUNT_OF_PULSE_IN_BATCH + i];
                 }
 
                 var cmd = new CmdSetStepperActiveRampdownPulseWidth(stepperIndex, (byte)batchIndex, (byte)totalBatches, batch);

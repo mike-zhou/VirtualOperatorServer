@@ -11,17 +11,19 @@ namespace VirtualOperatorServer.StepsBuilder
         private readonly int _N;        // total steps
         private readonly double _V;     // final speed (steps/sec)
         private readonly double _T;     // total motion time
+        private readonly ushort _startingPulseWidth;
         private readonly uint _timerClockNs;
 
         private readonly List<ushort> pulses;
 
-        public SCurvePulsesBuilder(ushort stepCount, ushort finalPulseWidth, uint timerClockNs)
+        public SCurvePulsesBuilder(ushort startingPulseWidth, ushort stepCount, ushort finalPulseWidth, uint timerClockNs)
         {
-            if (stepCount < 1 || finalPulseWidth < 1 || timerClockNs < 1) 
+            if (startingPulseWidth < 1 || stepCount < 1 || finalPulseWidth < 1 || timerClockNs < 1) 
                 throw new ArgumentException("steps must be > 0");
 
             _N = stepCount;
             _V = 1000000000 / 2 / finalPulseWidth / timerClockNs; // steps per second
+            _startingPulseWidth = startingPulseWidth;
             _timerClockNs = timerClockNs;
 
             // total time derived from motion constraint
@@ -71,6 +73,10 @@ namespace VirtualOperatorServer.StepsBuilder
                 if(pulse > ushort.MaxValue)
                 {
                     throw new OverflowException($"Pulse value at index {i} is too large: {pulse}");
+                }
+                if(pulse > _startingPulseWidth)
+                {
+                    continue; // ingore pulse longer than the startingPulseWidth
                 }
 
                 pulses.Add((ushort)pulse);
