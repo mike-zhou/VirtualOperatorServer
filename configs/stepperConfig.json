@@ -69,9 +69,9 @@
     "pinClock": 6,
     "homeBoundaryToReadySteps": 10,
     "range": 2890,
-    "stepsPerRotation": 200,
-    "encoderCountsPerRotation": 2000,
-    "encoderOffsetErrorThreshold": 10,
+    "stepsPerRotation": 400,
+    "encoderCountsPerRotation": 400,
+    "encoderOffsetErrorThreshold": 5,
     "crossBoundary": {
       "enabled": false,
       "negativeRange": 0,
