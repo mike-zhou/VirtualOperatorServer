@@ -43,7 +43,7 @@
   },
   {
     "timer": 1,
-    "encoder": 255,
+    "encoder": 3,
     "mode": 0,
     "forcedModeConfig": { "pulseWidth": 2000 },
     "activeModeConfig": {
@@ -71,7 +71,7 @@
     "range": 2890,
     "stepsPerRotation": 400,
     "encoderCountsPerRotation": 400,
-    "encoderOffsetErrorThreshold": 5,
+    "encoderOffsetErrorThreshold": 10,
     "crossBoundary": {
       "enabled": false,
       "negativeRange": 0,
