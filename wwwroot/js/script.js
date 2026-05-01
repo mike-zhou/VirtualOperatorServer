@@ -529,17 +529,20 @@ function createStepperTable()
             html.push("<label> Offset: </label>");
             html.push(`<label id='id_stepper_offset_${stepperIndex}'></label>`)
             html.push("</div>");
+
             // alarm
             html.push("<div>");
             html.push("<label>Alarm:</label>");
             html.push(`<div class="unknown-dot" id="id_stepperAlarm_state_${stepperIndex}"></div>`);
             html.push("</div>");
+
             // GPIO: disable, forward, clock
             html.push("<div><table><tr>");
             html.push(`<td><label>GpioDisable<input type="checkbox" id="id_stepper_gpio_disable_${stepperIndex}"></label></td>`);
             html.push(`<td><label>GpioForward<input type="checkbox" id="id_stepper_gpio_forward_${stepperIndex}"></label></td>`);
             html.push(`<td><label>GpioClock<input type="checkbox" id="id_stepper_gpio_clock_${stepperIndex}"></label></td>`);
             html.push("</tr></table></div>");
+
             // timer
             html.push("<div>");
             html.push(`<label>Timer: </label>`);
@@ -552,6 +555,7 @@ function createStepperTable()
             html.push("</select>");
             html.push(`<td><input type="button" id="id_stepper_timer_save_${stepperIndex}" value="Save"></td>`);
             html.push("</div>");
+
             // encoder
             html.push("<div>");
             html.push(`<label>Encoder: </label>`);
@@ -563,9 +567,13 @@ function createStepperTable()
             html.push(`<option value="${encoderOptionList.at(-1)}" selected>${encoderOptionList.at(-1)}</option>`);
             html.push("</select>");
             html.push(`<td><input type="button" id="id_stepper_encoder_save_${stepperIndex}" value="Save"></td>`);
+            html.push(`<label id="id_stepper_encoder_offset_${stepperIndex}"></label>`);
+            html.push(`<label id="id_stepper_encoder_maxOffsetError_${stepperIndex}"></label>`);
             html.push("</div>");
+
             // mode
             html.push(createStepperMode(stepperIndex));
+
             // isEnableHigh, IsForwardHigh, IsRisingEdgeDriven
             html.push("<div><table>");
             html.push(`<tr>`);
@@ -581,6 +589,7 @@ function createStepperTable()
             html.push(`<td><input type="button" id="id_stepper_isRisingEdgeDriven_save_${stepperIndex}" value="Save"></td>`);
             html.push(`</tr>`);
             html.push("</table></div>");
+
             //
             html.push(`<div><table>`);
             html.push(`<tr>`);
@@ -2148,6 +2157,16 @@ function updateStepper(status)
         // encoder
         document.getElementById(`id_stepper_encoder_save_${stepperIndex}`).disabled = 
             (document.getElementById(`id_stepper_encoder_select_${stepperIndex}`).value == stepper.config.encoder);
+        if(stepper.config.encoder == "NOT_SELECTED")
+        {
+            document.getElementById(`id_stepper_encoder_offset_${stepperIndex}`).textContent = "";
+            document.getElementById(`id_stepper_encoder_maxOffsetError_${stepperIndex}`).textContent = "";
+        }
+        else
+        {
+            document.getElementById(`id_stepper_encoder_offset_${stepperIndex}`).textContent = ` Offset: ${stepper.status.encoderOffset}`;
+            document.getElementById(`id_stepper_encoder_maxOffsetError_${stepperIndex}`).textContent = ` MaxOffsetError: ${stepper.status.maxEncoderOffsetError}`;
+        }
 
         // forced mode
         document.getElementById(`id_stepper_period_forced_save_${stepperIndex}`).disabled = 
