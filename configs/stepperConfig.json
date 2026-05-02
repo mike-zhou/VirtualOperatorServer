@@ -1,7 +1,7 @@
 [
   {
     "timer": 0,
-    "encoder": 255,
+    "encoder": 2,
     "mode": 0,
     "forcedModeConfig": { "pulseWidth": 2000 },
     "activeModeConfig": {
@@ -27,9 +27,9 @@
     "pinClock": 5,
     "homeBoundaryToReadySteps": 10,
     "range": 5680,
-    "stepsPerRotation": 200,
-    "encoderCountsPerRotation": 2000,
-    "encoderOffsetErrorThreshold": 10,
+    "stepsPerRotation": 400,
+    "encoderCountsPerRotation": 400,
+    "encoderOffsetErrorThreshold": 11,
     "crossBoundary": {
       "enabled": false,
       "negativeRange": -10,
@@ -71,7 +71,7 @@
     "range": 2890,
     "stepsPerRotation": 400,
     "encoderCountsPerRotation": 400,
-    "encoderOffsetErrorThreshold": 10,
+    "encoderOffsetErrorThreshold": 8,
     "crossBoundary": {
       "enabled": false,
       "negativeRange": 0,
@@ -85,7 +85,7 @@
   },
   {
     "timer": 2,
-    "encoder": 255,
+    "encoder": 0,
     "mode": 0,
     "forcedModeConfig": { "pulseWidth": 1000 },
     "activeModeConfig": {
@@ -111,9 +111,9 @@
     "pinClock": 7,
     "homeBoundaryToReadySteps": 10,
     "range": 2380,
-    "stepsPerRotation": 200,
-    "encoderCountsPerRotation": 100,
-    "encoderOffsetErrorThreshold": 2,
+    "stepsPerRotation": 500,
+    "encoderCountsPerRotation": 200,
+    "encoderOffsetErrorThreshold": 5,
     "crossBoundary": {
       "enabled": false,
       "negativeRange": 0,
@@ -127,7 +127,7 @@
   },
   {
     "timer": 3,
-    "encoder": 255,
+    "encoder": 7,
     "mode": 0,
     "forcedModeConfig": { "pulseWidth": 2000 },
     "activeModeConfig": {
@@ -153,23 +153,23 @@
     "pinClock": 6,
     "homeBoundaryToReadySteps": 20,
     "range": 1500,
-    "stepsPerRotation": 200,
-    "encoderCountsPerRotation": 100,
-    "encoderOffsetErrorThreshold": 2,
+    "stepsPerRotation": 800,
+    "encoderCountsPerRotation": 2000,
+    "encoderOffsetErrorThreshold": 10,
     "crossBoundary": {
       "enabled": true,
       "negativeRange": -16,
       "boundaries": [
-        { "enabled": true, "value": -7, "error": 9 },
-        { "enabled": true, "value": 928, "error": 9 },
-        { "enabled": true, "value": 1010, "error": 6 },
+        { "enabled": false, "value": -7, "error": 9 },
+        { "enabled": false, "value": 928, "error": 9 },
+        { "enabled": false, "value": 1001, "error": 9 },
         { "enabled": false, "value": 0, "error": 0 }
       ]
     }
   },
   {
     "timer": 4,
-    "encoder": 255,
+    "encoder": 6,
     "mode": 0,
     "forcedModeConfig": { "pulseWidth": 1200 },
     "activeModeConfig": {
@@ -181,7 +181,7 @@
     },
     "passiveModeConfig": { "activeStepper": 255 },
     "isEnableHigh": false,
-    "isForwardHigh": true,
+    "isForwardHigh": false,
     "isRisingEdgeDriven": false,
     "portHomeBoundary": 2,
     "pinHomeBoundary": 2,
@@ -194,18 +194,18 @@
     "portClock": 0,
     "pinClock": 7,
     "homeBoundaryToReadySteps": 10,
-    "range": 225,
-    "stepsPerRotation": 200,
-    "encoderCountsPerRotation": 100,
-    "encoderOffsetErrorThreshold": 2,
+    "range": 80,
+    "stepsPerRotation": 800,
+    "encoderCountsPerRotation": 2000,
+    "encoderOffsetErrorThreshold": 6,
     "crossBoundary": {
       "enabled": true,
-      "negativeRange": -95,
+      "negativeRange": -260,
       "boundaries": [
-        { "enabled": true, "value": -10, "error": 2 },
-        { "enabled": true, "value": -17, "error": 2 },
-        { "enabled": true, "value": 199, "error": 2 },
-        { "enabled": true, "value": 205, "error": 2 }
+        { "enabled": true, "value": -11, "error": 2 },
+        { "enabled": true, "value": -16, "error": 2 },
+        { "enabled": true, "value": -227, "error": 2 },
+        { "enabled": true, "value": -232, "error": 2 }
       ]
     }
   },

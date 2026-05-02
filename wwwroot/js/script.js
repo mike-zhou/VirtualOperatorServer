@@ -517,7 +517,33 @@ function createStepperTable()
     for(let stepperIndex=0; stepperIndex<10; stepperIndex++)
     {
         html.push("<div onmouseenter=\"this.style.backgroundColor='lightgreen'\" onmouseleave=\"this.style.backgroundColor=''\">");
-        html.push(`<h2>Stepper ${stepperIndex}</h2>`);
+        let stepperName = "";
+        switch(stepperIndex)
+        {
+            case 0:
+                stepperName = `${stepperIndex}: X`;
+                break;
+            case 1:
+                stepperName = `${stepperIndex}: Y`;
+                break;
+            case 2:
+                stepperName = `${stepperIndex}: Z`;
+                break;
+            case 3:
+                stepperName = `${stepperIndex}: U`;
+                break;
+            case 4:
+                stepperName = `${stepperIndex}: V`;
+                break;
+            case 5:
+                stepperName = `${stepperIndex}: Clicker`;
+                break;
+            default:
+                stepperName = `${stepperIndex}`;
+                break;
+        }
+        html.push(`<h2>Stepper ${stepperName}</h2>`);
+        
         html.push("<div>");
         {
             // state
@@ -567,8 +593,7 @@ function createStepperTable()
             html.push(`<option value="${encoderOptionList.at(-1)}" selected>${encoderOptionList.at(-1)}</option>`);
             html.push("</select>");
             html.push(`<td><input type="button" id="id_stepper_encoder_save_${stepperIndex}" value="Save"></td>`);
-            html.push(`<label id="id_stepper_encoder_offset_${stepperIndex}"></label>`);
-            html.push(`<label id="id_stepper_encoder_maxOffsetError_${stepperIndex}"></label>`);
+            html.push(`<label id="id_stepper_encoder_info_${stepperIndex}"></label>`);
             html.push("</div>");
 
             // mode
@@ -2159,13 +2184,12 @@ function updateStepper(status)
             (document.getElementById(`id_stepper_encoder_select_${stepperIndex}`).value == stepper.config.encoder);
         if(stepper.config.encoder == "NOT_SELECTED")
         {
-            document.getElementById(`id_stepper_encoder_offset_${stepperIndex}`).textContent = "";
-            document.getElementById(`id_stepper_encoder_maxOffsetError_${stepperIndex}`).textContent = "";
+            document.getElementById(`id_stepper_encoder_info_${stepperIndex}`).textContent = "";
         }
         else
         {
-            document.getElementById(`id_stepper_encoder_offset_${stepperIndex}`).textContent = ` Offset: ${stepper.status.encoderOffset}`;
-            document.getElementById(`id_stepper_encoder_maxOffsetError_${stepperIndex}`).textContent = ` MaxOffsetError: ${stepper.status.maxEncoderOffsetError}`;
+            document.getElementById(`id_stepper_encoder_info_${stepperIndex}`).textContent = 
+                ` Offset: ${stepper.status.encoderOffset} MaxOffsetError: ${stepper.status.maxEncoderOffsetError}`;
         }
 
         // forced mode
