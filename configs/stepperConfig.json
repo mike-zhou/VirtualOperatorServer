@@ -68,7 +68,7 @@
     "portClock": 5,
     "pinClock": 6,
     "homeBoundaryToReadySteps": 10,
-    "range": 2890,
+    "range": 2500,
     "stepsPerRotation": 400,
     "encoderCountsPerRotation": 400,
     "encoderOffsetErrorThreshold": 8,
