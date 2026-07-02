@@ -3,7 +3,6 @@ using VirtualOperatorServer.CommandAndReply;
 using VirtualOperatorServer.Configuration;
 using VirtualOperatorServer.Facade;
 using VirtualOperatorServer.Services;
-using VirtualOperatorServer.StepsBuilder;
 
 internal static class ClientHandlers
 {
@@ -776,11 +775,20 @@ internal static class ClientHandlers
         }
         else
         {
-            var stepsBuilder = new SCurvePulsesBuilder(config.activeModeConfig.startingPulseWidth,
-                                                        config.activeModeConfig.acceleratingSteps,
-                                                        config.activeModeConfig.cruisingPulseWidth,
-                                                        timerClockPeriodNs);
-            ushort[] acceleratingPeriods = stepsBuilder.GetAcceleratingPulses();
+            IStepperPulses stepsBuilder;
+            try
+            {
+                stepsBuilder = StepperPulsesFactory.Create(config.activeModeConfig.startingPulseWidth,
+                                                           config.activeModeConfig.acceleratingSteps,
+                                                           config.activeModeConfig.cruisingPulseWidth,
+                                                           timerClockPeriodNs);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidRequestBodyException($"Invalid rampup pulse configuration: {ex.Message}");
+            }
+
+            ushort[] acceleratingPeriods = stepsBuilder.SCurvePulsesRampup.ToArray();
 
             var totalBatches = (acceleratingPeriods.Length + MAX_AMOUNT_OF_PULSE_IN_BATCH - 1) / MAX_AMOUNT_OF_PULSE_IN_BATCH;
             for (int batchIndex = 0; batchIndex < totalBatches; batchIndex++)
@@ -825,11 +833,20 @@ internal static class ClientHandlers
         }
         else
         {
-            var stepsBuilder = new SCurvePulsesBuilder(config.activeModeConfig.endingPulseWidth,
-                                                        config.activeModeConfig.deacceleratingSteps,
-                                                        config.activeModeConfig.cruisingPulseWidth,
-                                                        timerClockPeriodNs);
-            ushort[] deacceleratingPeriods = stepsBuilder.GetDeacceleratingPulses();
+            IStepperPulses stepsBuilder;
+            try
+            {
+                stepsBuilder = StepperPulsesFactory.Create(config.activeModeConfig.endingPulseWidth,
+                                                           config.activeModeConfig.deacceleratingSteps,
+                                                           config.activeModeConfig.cruisingPulseWidth,
+                                                           timerClockPeriodNs);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidRequestBodyException($"Invalid rampdown pulse configuration: {ex.Message}");
+            }
+
+            ushort[] deacceleratingPeriods = stepsBuilder.SCurvePulsesRampdown.ToArray();
 
             var totalBatches = (deacceleratingPeriods.Length + MAX_AMOUNT_OF_PULSE_IN_BATCH - 1) / MAX_AMOUNT_OF_PULSE_IN_BATCH;
             for (int batchIndex = 0; batchIndex < totalBatches; batchIndex++)
