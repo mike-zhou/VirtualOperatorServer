@@ -6,6 +6,8 @@ using VirtualOperatorServer.Services;
 
 internal static class ClientHandlers
 {
+    private const byte MaxAmountOfPulseInBatch = 100;
+
     public static IResult GetCommandHandler(string command)
     {
         if (command == "Status" || command.StartsWith("Status/", StringComparison.Ordinal))
@@ -56,6 +58,10 @@ internal static class ClientHandlers
             else if (command == "setActivePeriods")
             {
                 return await SetActivePeriods(jsonRoot, backSocket);
+            }
+            else if (command == "setShortMoveActivePeriods")
+            {
+                return await SetShortMoveActivePeriods(jsonRoot, backSocket);
             }
             else if (command == "setStepperControls")
             {
@@ -737,7 +743,6 @@ internal static class ClientHandlers
 
     private static async Task<IResult> SetActivePeriods(JsonElement jsonRoot, BackSocket backSocket)
     {
-        const byte MAX_AMOUNT_OF_PULSE_IN_BATCH = 100;
         byte stepperIndex = jsonRoot.GetProperty("stepperId").GetByte();
         var configs = StaticConfig.Instance.StepperConfigs;
         var status = CmdGetStatus.Status;
@@ -788,42 +793,18 @@ internal static class ClientHandlers
                 throw new InvalidRequestBodyException($"Invalid rampup pulse configuration: {ex.Message}");
             }
 
-            ushort[] acceleratingPeriods = stepsBuilder.SCurvePulsesRampup.ToArray();
-
-            var totalBatches = (acceleratingPeriods.Length + MAX_AMOUNT_OF_PULSE_IN_BATCH - 1) / MAX_AMOUNT_OF_PULSE_IN_BATCH;
-            for (int batchIndex = 0; batchIndex < totalBatches; batchIndex++)
+            var result = await SendActiveAccelerationPeriods(stepperIndex, stepsBuilder.SCurvePulsesRampup, backSocket);
+            if (result != null)
             {
-                ushort[] batch;
-
-                if ((batchIndex + 1) * MAX_AMOUNT_OF_PULSE_IN_BATCH > acceleratingPeriods.Length)
-                {
-                    batch = new ushort[acceleratingPeriods.Length - batchIndex * MAX_AMOUNT_OF_PULSE_IN_BATCH];
-                }
-                else
-                {
-                    batch = new ushort[MAX_AMOUNT_OF_PULSE_IN_BATCH];
-                }
-
-                for (int i = 0; i < batch.Length; i++)
-                {
-                    batch[i] = acceleratingPeriods[batchIndex * MAX_AMOUNT_OF_PULSE_IN_BATCH + i];
-                }
-
-                var cmd = new CmdSetStepperActiveRampupPulseWidth(stepperIndex, (byte)batchIndex, (byte)totalBatches, batch);
-                var result = await RunCommand(cmd, backSocket);
-                if (result != "success")
-                {
-                    return Results.Text($"Failed in set rampup periods: '{result}'", "text/html");
-                }
+                return result;
             }
         }
 
         {
-            var cmd = new CmdSetStepperActiveCruisePulseWidth(stepperIndex, config.activeModeConfig.cruisingPulseWidth);
-            var result = await RunCommand(cmd, backSocket);
-            if (result != "success")
+            var result = await SendActiveCruisingPeriod(stepperIndex, config.activeModeConfig.cruisingPulseWidth, backSocket);
+            if (result != null)
             {
-                return Results.Text($"Failed in set cruising period: '{result}'", "text/html");
+                return result;
             }
         }
 
@@ -846,37 +827,197 @@ internal static class ClientHandlers
                 throw new InvalidRequestBodyException($"Invalid rampdown pulse configuration: {ex.Message}");
             }
 
-            ushort[] deacceleratingPeriods = stepsBuilder.SCurvePulsesRampdown.ToArray();
-
-            var totalBatches = (deacceleratingPeriods.Length + MAX_AMOUNT_OF_PULSE_IN_BATCH - 1) / MAX_AMOUNT_OF_PULSE_IN_BATCH;
-            for (int batchIndex = 0; batchIndex < totalBatches; batchIndex++)
+            var result = await SendActiveDeaccelerationPeriods(stepperIndex, stepsBuilder.SCurvePulsesRampdown, backSocket);
+            if (result != null)
             {
-                ushort[] batch;
-
-                if ((batchIndex + 1) * MAX_AMOUNT_OF_PULSE_IN_BATCH > deacceleratingPeriods.Length)
-                {
-                    batch = new ushort[deacceleratingPeriods.Length - batchIndex * MAX_AMOUNT_OF_PULSE_IN_BATCH];
-                }
-                else
-                {
-                    batch = new ushort[MAX_AMOUNT_OF_PULSE_IN_BATCH];
-                }
-
-                for (int i = 0; i < batch.Length; i++)
-                {
-                    batch[i] = deacceleratingPeriods[batchIndex * MAX_AMOUNT_OF_PULSE_IN_BATCH + i];
-                }
-
-                var cmd = new CmdSetStepperActiveRampdownPulseWidth(stepperIndex, (byte)batchIndex, (byte)totalBatches, batch);
-                var result = await RunCommand(cmd, backSocket);
-                if (result != "success")
-                {
-                    return Results.Text($"Failed in set rampdown periods: '{result}'", "text/html");
-                }
+                return result;
             }
         }
 
         return Results.Text("success", "text/html");
+    }
+
+    private static async Task<IResult> SetShortMoveActivePeriods(JsonElement jsonRoot, BackSocket backSocket)
+    {
+        byte stepperIndex = jsonRoot.GetProperty("stepperId").GetByte();
+        int steps = jsonRoot.GetProperty("steps").GetInt32();
+        var configs = StaticConfig.Instance.StepperConfigs;
+        var status = CmdGetStatus.Status;
+
+        if (stepperIndex >= configs.Length)
+        {
+            throw new InvalidRequestBodyException($"Invalid stepper index '{stepperIndex}'");
+        }
+        if (steps < 1)
+        {
+            throw new InvalidRequestBodyException($"Invalid short move steps: {steps}");
+        }
+        if (status == null)
+        {
+            throw new InvalidRequestBodyException("CmdGetStatus.Status is not ready");
+        }
+
+        var config = configs[stepperIndex];
+
+        var timerId = config.timer;
+        if (timerId == StatusFacade.Facade.Stepper.Configuration.EnumTimer.NOT_SELECTED)
+        {
+            throw new InvalidRequestBodyException($"Timer is not selected for stepper: {stepperIndex}");
+        }
+
+        uint timerClockPeriodNs;
+        if (timerId == StatusFacade.Facade.Stepper.Configuration.EnumTimer.FIX_TIMER)
+        {
+            timerClockPeriodNs = status.timersData[(int)timerId].prescaler * (uint)17;
+        }
+        else
+        {
+            timerClockPeriodNs = (uint)(status.timersData[(int)timerId].prescaler * 4.16);
+        }
+
+        if (config.activeModeConfig.acceleratingSteps < 1)
+        {
+            throw new InvalidRequestBodyException($"Invalid count of rampup periods: {config.activeModeConfig.acceleratingSteps}");
+        }
+
+        IStepperPulses stepsBuilder;
+        try
+        {
+            stepsBuilder = StepperPulsesFactory.Create(config.activeModeConfig.startingPulseWidth,
+                                                       config.activeModeConfig.acceleratingSteps,
+                                                       config.activeModeConfig.cruisingPulseWidth,
+                                                       timerClockPeriodNs);
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidRequestBodyException($"Invalid short move pulse configuration: {ex.Message}");
+        }
+
+        var shortDistancePulses = stepsBuilder.GetShortDistancePulses(steps);
+        if (shortDistancePulses == null)
+        {
+            throw new InvalidRequestBodyException($"Invalid short move steps: {steps}");
+        }
+
+        var accelerationStepCount = shortDistancePulses.Count / 2;
+        var hasCruisingStep = (shortDistancePulses.Count % 2) == 1;
+        var deaccelerationStartIndex = accelerationStepCount + (hasCruisingStep ? 1 : 0);
+
+        ushort[] acceleratingPeriods = new ushort[accelerationStepCount];
+        for (int i = 0; i < acceleratingPeriods.Length; i++)
+        {
+            acceleratingPeriods[i] = shortDistancePulses[i];
+        }
+
+        var cruisingPulseWidth = shortDistancePulses[Math.Min(accelerationStepCount, shortDistancePulses.Count - 1)];
+
+        ushort[] deacceleratingPeriods = new ushort[shortDistancePulses.Count - deaccelerationStartIndex];
+        for (int i = 0; i < deacceleratingPeriods.Length; i++)
+        {
+            deacceleratingPeriods[i] = shortDistancePulses[deaccelerationStartIndex + i];
+        }
+
+        var result = await SendActiveAccelerationPeriods(stepperIndex, acceleratingPeriods, backSocket);
+        if (result != null)
+        {
+            return result;
+        }
+
+        result = await SendActiveCruisingPeriod(stepperIndex, cruisingPulseWidth, backSocket);
+        if (result != null)
+        {
+            return result;
+        }
+
+        result = await SendActiveDeaccelerationPeriods(stepperIndex, deacceleratingPeriods, backSocket);
+        if (result != null)
+        {
+            return result;
+        }
+
+        return Results.Text("success", "text/html");
+    }
+
+    private static async Task<IResult?> SendActiveAccelerationPeriods(byte stepperIndex,
+                                                                      IReadOnlyList<ushort> acceleratingPeriods,
+                                                                      BackSocket backSocket)
+    {
+        var totalBatches = (acceleratingPeriods.Count + MaxAmountOfPulseInBatch - 1) / MaxAmountOfPulseInBatch;
+        for (int batchIndex = 0; batchIndex < totalBatches; batchIndex++)
+        {
+            ushort[] batch;
+
+            if ((batchIndex + 1) * MaxAmountOfPulseInBatch > acceleratingPeriods.Count)
+            {
+                batch = new ushort[acceleratingPeriods.Count - batchIndex * MaxAmountOfPulseInBatch];
+            }
+            else
+            {
+                batch = new ushort[MaxAmountOfPulseInBatch];
+            }
+
+            for (int i = 0; i < batch.Length; i++)
+            {
+                batch[i] = acceleratingPeriods[batchIndex * MaxAmountOfPulseInBatch + i];
+            }
+
+            var cmd = new CmdSetStepperActiveRampupPulseWidth(stepperIndex, (byte)batchIndex, (byte)totalBatches, batch);
+            var result = await RunCommand(cmd, backSocket);
+            if (result != "success")
+            {
+                return Results.Text($"Failed in set rampup periods: '{result}'", "text/html");
+            }
+        }
+
+        return null;
+    }
+
+    private static async Task<IResult?> SendActiveCruisingPeriod(byte stepperIndex,
+                                                                 ushort cruisingPulseWidth,
+                                                                 BackSocket backSocket)
+    {
+        var cmd = new CmdSetStepperActiveCruisePulseWidth(stepperIndex, cruisingPulseWidth);
+        var result = await RunCommand(cmd, backSocket);
+        if (result != "success")
+        {
+            return Results.Text($"Failed in set cruising period: '{result}'", "text/html");
+        }
+
+        return null;
+    }
+
+    private static async Task<IResult?> SendActiveDeaccelerationPeriods(byte stepperIndex,
+                                                                        IReadOnlyList<ushort> deacceleratingPeriods,
+                                                                        BackSocket backSocket)
+    {
+        var totalBatches = (deacceleratingPeriods.Count + MaxAmountOfPulseInBatch - 1) / MaxAmountOfPulseInBatch;
+        for (int batchIndex = 0; batchIndex < totalBatches; batchIndex++)
+        {
+            ushort[] batch;
+
+            if ((batchIndex + 1) * MaxAmountOfPulseInBatch > deacceleratingPeriods.Count)
+            {
+                batch = new ushort[deacceleratingPeriods.Count - batchIndex * MaxAmountOfPulseInBatch];
+            }
+            else
+            {
+                batch = new ushort[MaxAmountOfPulseInBatch];
+            }
+
+            for (int i = 0; i < batch.Length; i++)
+            {
+                batch[i] = deacceleratingPeriods[batchIndex * MaxAmountOfPulseInBatch + i];
+            }
+
+            var cmd = new CmdSetStepperActiveRampdownPulseWidth(stepperIndex, (byte)batchIndex, (byte)totalBatches, batch);
+            var result = await RunCommand(cmd, backSocket);
+            if (result != "success")
+            {
+                return Results.Text($"Failed in set rampdown periods: '{result}'", "text/html");
+            }
+        }
+
+        return null;
     }
 
     private static async Task<IResult> SetStepperControls(JsonElement jsonRoot, BackSocket backSocket)
