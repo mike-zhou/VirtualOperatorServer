@@ -61,14 +61,6 @@ internal sealed class ClientHandlers
             {
                 return SaveStepperConfig(command, jsonRoot);
             }
-            else if (command == "setActivePeriods")
-            {
-                return await SetActivePeriods(jsonRoot);
-            }
-            else if (command == "setShortMoveActivePeriods")
-            {
-                return await SetShortMoveActivePeriods(jsonRoot);
-            }
             else if (command == "setStepperControls")
             {
                 return await SetStepperControls(jsonRoot);
@@ -945,8 +937,7 @@ internal sealed class ClientHandlers
     }
 
     private async Task<IResult?> SendActiveAccelerationPeriods(byte stepperIndex,
-                                                                      IReadOnlyList<ushort> acceleratingPeriods,
-                                                                      BackSocket backSocket)
+                                                            IReadOnlyList<ushort> acceleratingPeriods)
     {
         var totalBatches = (acceleratingPeriods.Count + MaxAmountOfPulseInBatch - 1) / MaxAmountOfPulseInBatch;
         for (int batchIndex = 0; batchIndex < totalBatches; batchIndex++)
@@ -979,8 +970,7 @@ internal sealed class ClientHandlers
     }
 
     private async Task<IResult?> SendActiveCruisingPeriod(byte stepperIndex,
-                                                                 ushort cruisingPulseWidth,
-                                                                 BackSocket backSocket)
+                                                        ushort cruisingPulseWidth)
     {
         var cmd = new CmdSetStepperActiveCruisePulseWidth(stepperIndex, cruisingPulseWidth);
         var result = await RunCommand(cmd);
@@ -993,8 +983,7 @@ internal sealed class ClientHandlers
     }
 
     private async Task<IResult?> SendActiveDeaccelerationPeriods(byte stepperIndex,
-                                                                        IReadOnlyList<ushort> deacceleratingPeriods,
-                                                                        BackSocket backSocket)
+                                                                IReadOnlyList<ushort> deacceleratingPeriods)
     {
         var totalBatches = (deacceleratingPeriods.Count + MaxAmountOfPulseInBatch - 1) / MaxAmountOfPulseInBatch;
         for (int batchIndex = 0; batchIndex < totalBatches; batchIndex++)
