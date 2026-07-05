@@ -242,6 +242,12 @@ internal sealed class ClientHandlers
             return Results.Text($"failure: CmdSetStepperActive: {result}", "text/html");
         }
 
+        result = await SetActivePeriods(stepperId, steps);
+        if (result != "success")
+        {
+            return Results.Text(result, "text/html");
+        }
+
         var cmdRunActive = new CmdRunStepperActive(stepperId, (byte)stepperConfig.timer);
         result = await RunCommand(cmdRunActive);
         if (result != "success")
@@ -739,204 +745,166 @@ internal sealed class ClientHandlers
         return Results.Text("success", "text/html");
     }
 
-    private async Task<IResult> SetActivePeriods(JsonElement jsonRoot)
+    private async Task<string> SetActivePeriods(byte stepperIndex, uint steps)
     {
-        byte stepperIndex = jsonRoot.GetProperty("stepperId").GetByte();
-        var configs = StaticConfig.Instance.StepperConfigs;
-        var status = CmdGetStatus.Status;
+        try
+        {
+            var configs = StaticConfig.Instance.StepperConfigs;
+            var status = CmdGetStatus.Status;
 
-        if (stepperIndex >= configs.Length)
-        {
-            throw new InvalidRequestBodyException($"Invalid stepper index '{stepperIndex}'");
-        }
-        if (status == null)
-        {
-            throw new InvalidRequestBodyException("CmdGetStatus.Status is not ready");
-        }
+            if (stepperIndex >= configs.Length)
+            {
+                throw new InvalidRequestBodyException($"Invalid stepper index '{stepperIndex}'");
+            }
+            if (steps < 1)
+            {
+                throw new InvalidRequestBodyException($"Invalid active move steps: {steps}");
+            }
+            if (status == null)
+            {
+                throw new InvalidRequestBodyException("CmdGetStatus.Status is not ready");
+            }
 
-        var config = configs[stepperIndex];
+            var config = configs[stepperIndex];
 
-        var timerId = config.timer;
-        if (timerId == StatusFacade.Facade.Stepper.Configuration.EnumTimer.NOT_SELECTED)
-        {
-            throw new InvalidRequestBodyException($"Timer is not selected for stepper: {stepperIndex}");
-        }
+            var timerId = config.timer;
+            if (timerId == StatusFacade.Facade.Stepper.Configuration.EnumTimer.NOT_SELECTED)
+            {
+                throw new InvalidRequestBodyException($"Timer is not selected for stepper: {stepperIndex}");
+            }
 
-        uint timerClockPeriodNs;
-        if (timerId == StatusFacade.Facade.Stepper.Configuration.EnumTimer.FIX_TIMER)
-        {
-            timerClockPeriodNs = status.timersData[(int)timerId].prescaler * (uint)17;
-        }
-        else
-        {
-            timerClockPeriodNs = (uint)(status.timersData[(int)timerId].prescaler * 4.16);
-        }
+            uint timerClockPeriodNs;
+            if (timerId == StatusFacade.Facade.Stepper.Configuration.EnumTimer.FIX_TIMER)
+            {
+                timerClockPeriodNs = status.timersData[(int)timerId].prescaler * (uint)17;
+            }
+            else
+            {
+                timerClockPeriodNs = (uint)(status.timersData[(int)timerId].prescaler * 4.16);
+            }
 
-        if (config.activeModeConfig.acceleratingSteps < 1)
-        {
-            throw new InvalidRequestBodyException($"Invalid count of rampup periods: {config.activeModeConfig.acceleratingSteps}");
-        }
-        else
-        {
-            IStepperPulses stepsBuilder;
+            if (config.activeModeConfig.acceleratingSteps < 1)
+            {
+                throw new InvalidRequestBodyException($"Invalid count of rampup periods: {config.activeModeConfig.acceleratingSteps}");
+            }
+
+            if (config.activeModeConfig.deacceleratingSteps < 1)
+            {
+                throw new InvalidRequestBodyException($"Invalid count of rampdown periods: {config.activeModeConfig.deacceleratingSteps}");
+            }
+
+            IStepperPulses accelerationStepsBuilder;
             try
             {
-                stepsBuilder = StepperPulsesFactory.Create(config.activeModeConfig.startingPulseWidth,
-                                                           config.activeModeConfig.acceleratingSteps,
-                                                           config.activeModeConfig.cruisingPulseWidth,
-                                                           timerClockPeriodNs);
+                accelerationStepsBuilder = StepperPulsesFactory.Create(config.activeModeConfig.startingPulseWidth,
+                                                                       config.activeModeConfig.acceleratingSteps,
+                                                                       config.activeModeConfig.cruisingPulseWidth,
+                                                                       timerClockPeriodNs);
             }
             catch (Exception ex)
             {
                 throw new InvalidRequestBodyException($"Invalid rampup pulse configuration: {ex.Message}");
             }
 
-            var result = await SendActiveAccelerationPeriods(stepperIndex, stepsBuilder.SCurvePulsesRampup);
-            if (result != null)
+            var longMoveStepCount = config.activeModeConfig.acceleratingSteps + config.activeModeConfig.deacceleratingSteps;
+            if (steps < longMoveStepCount)
             {
-                return result;
-            }
-        }
+                if (steps > int.MaxValue)
+                {
+                    throw new InvalidRequestBodyException($"Invalid active move steps: {steps}");
+                }
 
-        {
-            var result = await SendActiveCruisingPeriod(stepperIndex, config.activeModeConfig.cruisingPulseWidth);
-            if (result != null)
+                var shortDistancePulses = accelerationStepsBuilder.GetShortDistancePulses((int)steps);
+                if (shortDistancePulses == null || shortDistancePulses.Count == 0)
+                {
+                    throw new InvalidRequestBodyException($"Invalid active move steps: {steps}");
+                }
+
+                var accelerationStepCount = shortDistancePulses.Count / 2;
+                var hasCruisingStep = (shortDistancePulses.Count % 2) == 1;
+                var deaccelerationStartIndex = accelerationStepCount + (hasCruisingStep ? 1 : 0);
+
+                ushort[] acceleratingPeriods = new ushort[accelerationStepCount];
+                for (int i = 0; i < acceleratingPeriods.Length; i++)
+                {
+                    acceleratingPeriods[i] = shortDistancePulses[i];
+                }
+
+                var cruisingPulseWidth = shortDistancePulses[accelerationStepCount];
+
+                ushort[] deacceleratingPeriods = new ushort[shortDistancePulses.Count - deaccelerationStartIndex];
+                for (int i = 0; i < deacceleratingPeriods.Length; i++)
+                {
+                    deacceleratingPeriods[i] = shortDistancePulses[deaccelerationStartIndex + i];
+                }
+
+                var result = await SendActiveAccelerationPeriods(stepperIndex, acceleratingPeriods);
+                if (result != "success")
+                {
+                    return result;
+                }
+
+                result = await SendActiveCruisingPeriod(stepperIndex, cruisingPulseWidth);
+                if (result != "success")
+                {
+                    return result;
+                }
+
+                result = await SendActiveDeaccelerationPeriods(stepperIndex, deacceleratingPeriods);
+                if (result != "success")
+                {
+                    return result;
+                }
+
+                return "success";
+            }
+
             {
-                return result;
+                var result = await SendActiveAccelerationPeriods(stepperIndex, accelerationStepsBuilder.SCurvePulsesRampup);
+                if (result != "success")
+                {
+                    return result;
+                }
             }
-        }
 
-        if (config.activeModeConfig.deacceleratingSteps < 1)
-        {
-            throw new InvalidRequestBodyException($"Invalid count of rampdown periods: {config.activeModeConfig.deacceleratingSteps}");
-        }
-        else
-        {
-            IStepperPulses stepsBuilder;
-            try
             {
-                stepsBuilder = StepperPulsesFactory.Create(config.activeModeConfig.endingPulseWidth,
-                                                           config.activeModeConfig.deacceleratingSteps,
-                                                           config.activeModeConfig.cruisingPulseWidth,
-                                                           timerClockPeriodNs);
+                var result = await SendActiveCruisingPeriod(stepperIndex, config.activeModeConfig.cruisingPulseWidth);
+                if (result != "success")
+                {
+                    return result;
+                }
             }
-            catch (Exception ex)
+
             {
-                throw new InvalidRequestBodyException($"Invalid rampdown pulse configuration: {ex.Message}");
+                IStepperPulses deaccelerationStepsBuilder;
+                try
+                {
+                    deaccelerationStepsBuilder = StepperPulsesFactory.Create(config.activeModeConfig.endingPulseWidth,
+                                                                             config.activeModeConfig.deacceleratingSteps,
+                                                                             config.activeModeConfig.cruisingPulseWidth,
+                                                                             timerClockPeriodNs);
+                }
+                catch (Exception ex)
+                {
+                    throw new InvalidRequestBodyException($"Invalid rampdown pulse configuration: {ex.Message}");
+                }
+
+                var result = await SendActiveDeaccelerationPeriods(stepperIndex, deaccelerationStepsBuilder.SCurvePulsesRampdown);
+                if (result != "success")
+                {
+                    return result;
+                }
             }
 
-            var result = await SendActiveDeaccelerationPeriods(stepperIndex, stepsBuilder.SCurvePulsesRampdown);
-            if (result != null)
-            {
-                return result;
-            }
-        }
-
-        return Results.Text("success", "text/html");
-    }
-
-    private async Task<IResult> SetShortMoveActivePeriods(JsonElement jsonRoot)
-    {
-        byte stepperIndex = jsonRoot.GetProperty("stepperId").GetByte();
-        int steps = jsonRoot.GetProperty("steps").GetInt32();
-        var configs = StaticConfig.Instance.StepperConfigs;
-        var status = CmdGetStatus.Status;
-
-        if (stepperIndex >= configs.Length)
-        {
-            throw new InvalidRequestBodyException($"Invalid stepper index '{stepperIndex}'");
-        }
-        if (steps < 1)
-        {
-            throw new InvalidRequestBodyException($"Invalid short move steps: {steps}");
-        }
-        if (status == null)
-        {
-            throw new InvalidRequestBodyException("CmdGetStatus.Status is not ready");
-        }
-
-        var config = configs[stepperIndex];
-
-        var timerId = config.timer;
-        if (timerId == StatusFacade.Facade.Stepper.Configuration.EnumTimer.NOT_SELECTED)
-        {
-            throw new InvalidRequestBodyException($"Timer is not selected for stepper: {stepperIndex}");
-        }
-
-        uint timerClockPeriodNs;
-        if (timerId == StatusFacade.Facade.Stepper.Configuration.EnumTimer.FIX_TIMER)
-        {
-            timerClockPeriodNs = status.timersData[(int)timerId].prescaler * (uint)17;
-        }
-        else
-        {
-            timerClockPeriodNs = (uint)(status.timersData[(int)timerId].prescaler * 4.16);
-        }
-
-        if (config.activeModeConfig.acceleratingSteps < 1)
-        {
-            throw new InvalidRequestBodyException($"Invalid count of rampup periods: {config.activeModeConfig.acceleratingSteps}");
-        }
-
-        IStepperPulses stepsBuilder;
-        try
-        {
-            stepsBuilder = StepperPulsesFactory.Create(config.activeModeConfig.startingPulseWidth,
-                                                       config.activeModeConfig.acceleratingSteps,
-                                                       config.activeModeConfig.cruisingPulseWidth,
-                                                       timerClockPeriodNs);
+            return "success";
         }
         catch (Exception ex)
         {
-            throw new InvalidRequestBodyException($"Invalid short move pulse configuration: {ex.Message}");
+            return ex.ToString();
         }
-
-        var shortDistancePulses = stepsBuilder.GetShortDistancePulses(steps);
-        if (shortDistancePulses == null)
-        {
-            throw new InvalidRequestBodyException($"Invalid short move steps: {steps}");
-        }
-
-        var accelerationStepCount = shortDistancePulses.Count / 2;
-        var hasCruisingStep = (shortDistancePulses.Count % 2) == 1;
-        var deaccelerationStartIndex = accelerationStepCount + (hasCruisingStep ? 1 : 0);
-
-        ushort[] acceleratingPeriods = new ushort[accelerationStepCount];
-        for (int i = 0; i < acceleratingPeriods.Length; i++)
-        {
-            acceleratingPeriods[i] = shortDistancePulses[i];
-        }
-
-        var cruisingPulseWidth = shortDistancePulses[Math.Min(accelerationStepCount, shortDistancePulses.Count - 1)];
-
-        ushort[] deacceleratingPeriods = new ushort[shortDistancePulses.Count - deaccelerationStartIndex];
-        for (int i = 0; i < deacceleratingPeriods.Length; i++)
-        {
-            deacceleratingPeriods[i] = shortDistancePulses[deaccelerationStartIndex + i];
-        }
-
-        var result = await SendActiveAccelerationPeriods(stepperIndex, acceleratingPeriods);
-        if (result != null)
-        {
-            return result;
-        }
-
-        result = await SendActiveCruisingPeriod(stepperIndex, cruisingPulseWidth);
-        if (result != null)
-        {
-            return result;
-        }
-
-        result = await SendActiveDeaccelerationPeriods(stepperIndex, deacceleratingPeriods);
-        if (result != null)
-        {
-            return result;
-        }
-
-        return Results.Text("success", "text/html");
     }
 
-    private async Task<IResult?> SendActiveAccelerationPeriods(byte stepperIndex,
+    private async Task<string> SendActiveAccelerationPeriods(byte stepperIndex,
                                                             IReadOnlyList<ushort> acceleratingPeriods)
     {
         var totalBatches = (acceleratingPeriods.Count + MaxAmountOfPulseInBatch - 1) / MaxAmountOfPulseInBatch;
@@ -962,27 +930,27 @@ internal sealed class ClientHandlers
             var result = await RunCommand(cmd);
             if (result != "success")
             {
-                return Results.Text($"Failed in set rampup periods: '{result}'", "text/html");
+                return $"Failed in set rampup periods: '{result}'";
             }
         }
 
-        return null;
+        return "success";
     }
 
-    private async Task<IResult?> SendActiveCruisingPeriod(byte stepperIndex,
+    private async Task<string> SendActiveCruisingPeriod(byte stepperIndex,
                                                         ushort cruisingPulseWidth)
     {
         var cmd = new CmdSetStepperActiveCruisePulseWidth(stepperIndex, cruisingPulseWidth);
         var result = await RunCommand(cmd);
         if (result != "success")
         {
-            return Results.Text($"Failed in set cruising period: '{result}'", "text/html");
+            return $"Failed in set cruising period: '{result}'";
         }
 
-        return null;
+        return "success";
     }
 
-    private async Task<IResult?> SendActiveDeaccelerationPeriods(byte stepperIndex,
+    private async Task<string> SendActiveDeaccelerationPeriods(byte stepperIndex,
                                                                 IReadOnlyList<ushort> deacceleratingPeriods)
     {
         var totalBatches = (deacceleratingPeriods.Count + MaxAmountOfPulseInBatch - 1) / MaxAmountOfPulseInBatch;
@@ -1008,11 +976,11 @@ internal sealed class ClientHandlers
             var result = await RunCommand(cmd);
             if (result != "success")
             {
-                return Results.Text($"Failed in set rampdown periods: '{result}'", "text/html");
+                return $"Failed in set rampdown periods: '{result}'";
             }
         }
 
-        return null;
+        return "success";
     }
 
     private async Task<IResult> SetStepperControls(JsonElement jsonRoot)
