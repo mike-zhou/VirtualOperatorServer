@@ -715,6 +715,7 @@ function createStepperTable()
 
             // set controls
             html.push('<div>');
+            html.push(`<button id="id_stepper_setActivePeriods_${stepperIndex}">Set Active Periods</button>`);
             html.push(`<button id="id_stepper_setControls_${stepperIndex}">Set Controls</button>`);
             html.push('</div>');
             // control
@@ -1572,6 +1573,19 @@ async function onClick_Stepper(id)
             {
                 alert(`Error: failed to save ${classification}, info: ${data}`);
             }
+        }
+    }
+    else if(classification == "setActivePeriods")
+    {
+        let stepperIndex = parseInt(segments[3], 10);
+        let payload = {
+            stepperId: stepperIndex
+        }
+
+        let data = await post('setActivePeriods', payload);
+        if(data != "success")
+        {
+            alert(`Error: failed to set active periods, info: ${data}`);
         }
     }
     else if(classification == "setControls")

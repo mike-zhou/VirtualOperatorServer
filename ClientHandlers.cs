@@ -61,6 +61,14 @@ internal sealed class ClientHandlers
             {
                 return SaveStepperConfig(command, jsonRoot);
             }
+            else if (command == "setActivePeriods")
+            {
+                return await SetActivePeriods(jsonRoot);
+            }
+            else if (command == "setShortMoveActivePeriods")
+            {
+                return await SetShortMoveActivePeriods(jsonRoot);
+            }
             else if (command == "setStepperControls")
             {
                 return await SetStepperControls(jsonRoot);
