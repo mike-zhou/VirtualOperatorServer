@@ -65,10 +65,6 @@ internal sealed class ClientHandlers
             {
                 return await SetActivePeriods(jsonRoot);
             }
-            else if (command == "setShortMoveActivePeriods")
-            {
-                return await SetShortMoveActivePeriods(jsonRoot);
-            }
             else if (command == "setStepperControls")
             {
                 return await SetStepperControls(jsonRoot);
@@ -751,6 +747,42 @@ internal sealed class ClientHandlers
 
         StaticConfig.Instance.SaveStepperConfigs();
         return Results.Text("success", "text/html");
+    }
+
+    private async Task<IResult> SetActivePeriods(JsonElement jsonRoot)
+    {
+        byte stepperIndex = jsonRoot.GetProperty("stepperId").GetByte();
+
+        try {
+            var configs = StaticConfig.Instance.StepperConfigs;
+
+            if (stepperIndex >= configs.Length)
+            {
+                throw new InvalidRequestBodyException($"Invalid stepper index '{stepperIndex}'");
+            }
+
+            var config = configs[stepperIndex];
+
+            if (config.activeModeConfig.acceleratingSteps < 1)
+            {
+                throw new InvalidRequestBodyException($"Invalid count of rampup periods: {config.activeModeConfig.acceleratingSteps}");
+            }
+
+            if (config.activeModeConfig.deacceleratingSteps < 1)
+            {
+                throw new InvalidRequestBodyException($"Invalid count of rampdown periods: {config.activeModeConfig.deacceleratingSteps}");
+            }
+
+            var steps = config.activeModeConfig.acceleratingSteps + config.activeModeConfig.deacceleratingSteps;
+
+            string result = await SetActivePeriods(stepperIndex, (uint)steps);
+
+            return Results.Text(result, "text/html");
+        }
+        catch (Exception ex)
+        {
+            return Results.Text(ex.ToString(), "text/html");
+        }
     }
 
     private async Task<string> SetActivePeriods(byte stepperIndex, uint steps)
