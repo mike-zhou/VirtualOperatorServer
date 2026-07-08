@@ -239,17 +239,17 @@ internal sealed class ClientHandlers
             return Results.Text($"{result}", "text/html");
         }
 
+        result = await SetActivePeriods(stepperId, steps);
+        if (result != "success")
+        {
+            return Results.Text(result, "text/html");
+        }
+
         var cmdSetActive = new CmdSetStepperActive(stepperId, steps);
         result = await RunCommand(cmdSetActive);
         if (result != "success")
         {
             return Results.Text($"failure: CmdSetStepperActive: {result}", "text/html");
-        }
-
-        result = await SetActivePeriods(stepperId, steps);
-        if (result != "success")
-        {
-            return Results.Text(result, "text/html");
         }
 
         var cmdRunActive = new CmdRunStepperActive(stepperId, (byte)stepperConfig.timer);
