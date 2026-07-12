@@ -1,5 +1,5 @@
 using System.Text.Json;
-using VirtualOperatorServer.Configuration;
+using VirtualOperatorServer.Coordinates;
 using VirtualOperatorServer.Services;
 
 var builder = WebApplication.CreateBuilder(args);
