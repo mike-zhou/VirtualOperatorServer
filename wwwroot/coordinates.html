@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coordinates</title>
+    <link rel="icon" type="image/png" sizes="16x16" href="/images/index-icon-robot-operator-16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/index-icon-robot-operator-32.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="/images/index-icon-robot-operator-48.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/images/index-icon-robot-operator-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/index-icon-robot-operator-180.png">
+    <link rel="stylesheet" href="/css/coordinates.css">
+    <script src="/js/coordinates.js" defer></script>
+</head>
+<body>
+    <header class="page-header">
+        <div>
+            <p class="eyebrow">Virtual Operator</p>
+            <h1>Coordinate Setup</h1>
+            <p class="subtitle">Jog each axis to a target, then save the live position as a card or OPT coordinate.</p>
+        </div>
+        <nav aria-label="Page navigation">
+            <a href="/">Home</a>
+            <a href="/lowLevelAccess.html">Low-level access</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="panel" aria-labelledby="axis-heading">
+            <div class="section-heading">
+                <div>
+                    <h2 id="axis-heading">Axis movement</h2>
+                    <p>Movement uses each stepper's configured active mode. A control is available when its axis is ready.</p>
+                </div>
+                <span id="connection-state" class="status-pill status-offline">Waiting for status</span>
+            </div>
+
+            <div class="table-scroll">
+                <table class="axis-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Axis</th>
+                            <th scope="col">Stepper</th>
+                            <th scope="col">State</th>
+                            <th scope="col">Position</th>
+                            <th scope="col">Jog steps</th>
+                            <th scope="col">Movement</th>
+                        </tr>
+                    </thead>
+                    <tbody id="axis-rows"></tbody>
+                </table>
+            </div>
+
+            <div class="live-point" aria-label="Current live coordinate">
+                <span>Live point</span>
+                <output id="live-point-value">X — · Y — · Z — · U — · V —</output>
+            </div>
+        </section>
+
+        <div class="editor-grid">
+            <section class="panel" aria-labelledby="card-heading">
+                <h2 id="card-heading">Card bays</h2>
+                <p>Add a new card position or replace an existing card position with the current live point.</p>
+
+                <div class="form-grid">
+                    <label>
+                        Card bay
+                        <select id="card-bay-select"></select>
+                    </label>
+                    <label>
+                        Action
+                        <select id="card-action-select">
+                            <option value="add">Add card coordinate</option>
+                            <option value="adjust">Adjust card coordinate</option>
+                        </select>
+                    </label>
+                    <label>
+                        Card
+                        <select id="card-point-select" disabled></select>
+                    </label>
+                </div>
+
+                <button id="save-card-button" class="primary-button" type="button" disabled>Save live point</button>
+
+                <div class="table-scroll stored-table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th scope="col">Bay</th>
+                                <th scope="col">Card</th>
+                                <th scope="col">X</th>
+                                <th scope="col">Y</th>
+                                <th scope="col">Z</th>
+                                <th scope="col">U</th>
+                                <th scope="col">V</th>
+                            </tr>
+                        </thead>
+                        <tbody id="card-coordinate-rows"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="panel" aria-labelledby="opt-heading">
+                <h2 id="opt-heading">OPT points</h2>
+                <p>Set or replace a named OPT point with the current live position.</p>
+
+                <div class="form-grid opt-form-grid">
+                    <label>
+                        OPT
+                        <select id="opt-select"></select>
+                    </label>
+                    <label>
+                        Point
+                        <select id="opt-point-select"></select>
+                    </label>
+                </div>
+
+                <div class="selected-coordinate">
+                    <span>Stored value</span>
+                    <output id="selected-opt-value">—</output>
+                </div>
+
+                <button id="save-opt-button" class="primary-button" type="button" disabled>Set from live point</button>
+
+                <div class="table-scroll stored-table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th scope="col">OPT</th>
+                                <th scope="col">Point</th>
+                                <th scope="col">X</th>
+                                <th scope="col">Y</th>
+                                <th scope="col">Z</th>
+                                <th scope="col">U</th>
+                                <th scope="col">V</th>
+                            </tr>
+                        </thead>
+                        <tbody id="opt-coordinate-rows"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <div id="message" class="message" role="status" aria-live="polite"></div>
+</body>
+</html>

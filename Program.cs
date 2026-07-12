@@ -1,16 +1,19 @@
 using System.Text.Json;
+using VirtualOperatorServer.Configuration;
 using VirtualOperatorServer.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<BackSocket>();
 builder.Services.AddSingleton<ClientHandlers>();
+builder.Services.AddSingleton<CoordinateStore>();
 builder.Services.AddHostedService<BackService>();
 
 var app = builder.Build();
 
 app.UseDefaultFiles();
 app.UseStaticFiles();
+CoordinateApi.MapCoordinateApi(app);
 
 app.MapGet("/get/{*command}", (string command, ClientHandlers clientHandlers) =>
 {

@@ -51,12 +51,26 @@ namespace VirtualOperatorServer.Coordinates
 
     public sealed class Coordinates
     {
+        private static readonly System.Text.Json.JsonSerializerOptions FileSerializerOptions = new()
+        {
+            WriteIndented = true
+        };
+
         public CardBay[] CardBays { get; set; } = { new(), new(), new() };
-        public OPT[] OPTs { get; set; } = { new(), new() };
+        public OPT[] OPTs { get; set; } =
+        {
+            new() { Name = "OPT 1" },
+            new() { Name = "OPT 2" }
+        };
 
         public string Serialize()
         {
             return System.Text.Json.JsonSerializer.Serialize(this);
+        }
+
+        public string SerializeIndented()
+        {
+            return System.Text.Json.JsonSerializer.Serialize(this, FileSerializerOptions);
         }
 
         public bool Deserialize(string json)
@@ -67,7 +81,11 @@ namespace VirtualOperatorServer.Coordinates
             try
             {
                 var coordinates = System.Text.Json.JsonSerializer.Deserialize<Coordinates>(json);
-                if (coordinates == null)
+                if (coordinates == null ||
+                    coordinates.CardBays == null ||
+                    coordinates.CardBays.Any(cardBay => cardBay == null || cardBay.Points == null) ||
+                    coordinates.OPTs == null ||
+                    coordinates.OPTs.Any(opt => opt == null))
                     return false;
 
                 CardBays = coordinates.CardBays;
@@ -82,6 +100,39 @@ namespace VirtualOperatorServer.Coordinates
             {
                 return false;
             }
+        }
+
+        public static Coordinates LoadFromFile(string path)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(path);
+
+            if (!File.Exists(path))
+            {
+                var emptyCoordinates = new Coordinates();
+                emptyCoordinates.SaveToFile(path);
+                return emptyCoordinates;
+            }
+
+            var coordinates = new Coordinates();
+            if (!coordinates.Deserialize(File.ReadAllText(path)))
+            {
+                throw new InvalidDataException($"Unable to deserialize coordinates from '{path}'.");
+            }
+
+            return coordinates;
+        }
+
+        public void SaveToFile(string path)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(path);
+
+            var directory = Path.GetDirectoryName(path);
+            if (!string.IsNullOrEmpty(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            File.WriteAllText(path, SerializeIndented());
         }
     }
 }

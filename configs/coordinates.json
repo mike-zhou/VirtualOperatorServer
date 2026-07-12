@@ -1,0 +1,204 @@
+{
+  "CardBays": [
+    {
+      "Points": []
+    },
+    {
+      "Points": [
+        {
+          "X": 1940,
+          "Y": 390,
+          "Z": 1000,
+          "U": 1088,
+          "V": -40
+        },
+        {
+          "X": 2040,
+          "Y": 390,
+          "Z": 1000,
+          "U": 1088,
+          "V": -40
+        }
+      ]
+    },
+    {
+      "Points": []
+    }
+  ],
+  "OPTs": [
+    {
+      "Name": "OPT 1",
+      "MsrSwipingStartPoint": {
+        "X": 2140,
+        "Y": 490,
+        "Z": 1000,
+        "U": 1088,
+        "V": -40
+      },
+      "MsrSwipingStopPoint": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0,
+        "U": 0,
+        "V": 0
+      },
+      "ContactInsertingStartPoint": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0,
+        "U": 0,
+        "V": 0
+      },
+      "ContactInsertingStopPoint": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0,
+        "U": 0,
+        "V": 0
+      },
+      "ContactlessTappingStartPoint": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0,
+        "U": 0,
+        "V": 0
+      },
+      "ContactlessTappingStopPoint": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0,
+        "U": 0,
+        "V": 0
+      },
+      "BarcodeReadingStartPoint": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0,
+        "U": 0,
+        "V": 0
+      },
+      "BarcodeReadingStopPoint": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0,
+        "U": 0,
+        "V": 0
+      },
+      "ScreenTopLeft": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0,
+        "U": 0,
+        "V": 0
+      },
+      "ScreenTopRight": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0,
+        "U": 0,
+        "V": 0
+      },
+      "ScreenBottomRight": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0,
+        "U": 0,
+        "V": 0
+      },
+      "ScreenBottomLeft": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0,
+        "U": 0,
+        "V": 0
+      }
+    },
+    {
+      "Name": "OPT 2",
+      "MsrSwipingStartPoint": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0,
+        "U": 0,
+        "V": 0
+      },
+      "MsrSwipingStopPoint": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0,
+        "U": 0,
+        "V": 0
+      },
+      "ContactInsertingStartPoint": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0,
+        "U": 0,
+        "V": 0
+      },
+      "ContactInsertingStopPoint": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0,
+        "U": 0,
+        "V": 0
+      },
+      "ContactlessTappingStartPoint": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0,
+        "U": 0,
+        "V": 0
+      },
+      "ContactlessTappingStopPoint": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0,
+        "U": 0,
+        "V": 0
+      },
+      "BarcodeReadingStartPoint": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0,
+        "U": 0,
+        "V": 0
+      },
+      "BarcodeReadingStopPoint": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0,
+        "U": 0,
+        "V": 0
+      },
+      "ScreenTopLeft": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0,
+        "U": 0,
+        "V": 0
+      },
+      "ScreenTopRight": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0,
+        "U": 0,
+        "V": 0
+      },
+      "ScreenBottomRight": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0,
+        "U": 0,
+        "V": 0
+      },
+      "ScreenBottomLeft": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0,
+        "U": 0,
+        "V": 0
+      }
+    }
+  ]
+}

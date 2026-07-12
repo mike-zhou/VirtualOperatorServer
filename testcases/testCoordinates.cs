@@ -43,6 +43,25 @@ namespace VirtualOperatorServer.Tests
             Assert.Equal(before, coordinates.Serialize());
         }
 
+        [Fact]
+        public void SaveToFileAndLoadFromFileRoundTripCoordinateData()
+        {
+            var path = Path.Combine(Path.GetTempPath(), $"coordinates-{Guid.NewGuid():N}.json");
+            try
+            {
+                var source = CreateSampleCoordinates();
+
+                source.SaveToFile(path);
+                var restored = CoordinatesModel.LoadFromFile(path);
+
+                AssertCoordinatesEqual(source, restored, "File coordinates");
+            }
+            finally
+            {
+                File.Delete(path);
+            }
+        }
+
         private static CoordinatesModel CreateSampleCoordinates()
         {
             var coordinates = new CoordinatesModel();
