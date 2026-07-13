@@ -199,7 +199,15 @@ select {
 
 .movement-controls {
     display: flex;
+    flex-direction: column;
     gap: 0.4rem;
+}
+
+.fixed-step-controls {
+    display: grid;
+    grid-template-columns: repeat(10, minmax(3rem, 1fr));
+    gap: 0.3rem;
+    min-width: 33rem;
 }
 
 button {
@@ -218,6 +226,13 @@ button:disabled {
     color: #fff;
     background: var(--blue);
     font-weight: 800;
+}
+
+.fixed-step-button {
+    min-width: 3rem;
+    min-height: 2rem;
+    padding: 0.25rem 0.35rem;
+    font-size: 0.75rem;
 }
 
 .jog-button:hover:not(:disabled),
@@ -288,6 +303,17 @@ button:disabled {
     padding: 1rem;
     color: var(--muted);
     text-align: center;
+}
+
+.card-update-button {
+    padding: 0.35rem 0.6rem;
+    color: #fff;
+    background: var(--blue);
+    font-weight: 800;
+}
+
+.card-update-button:hover {
+    background: var(--blue-dark);
 }
 
 .message {

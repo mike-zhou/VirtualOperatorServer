@@ -8,6 +8,11 @@ const axes = [
     { name: "V", property: "v", stepperId: 4 }
 ];
 
+const fixedJogSteps = [
+    -1, -2, -4, -8, -16, -32, -64, -128, -256, -512,
+    1, 2, 4, 8, 16, 32, 64, 128, 256, 512
+];
+
 const optPoints = [
     ["msrSwipingStartPoint", "MSR swiping start"],
     ["msrSwipingStopPoint", "MSR swiping stop"],
@@ -44,6 +49,14 @@ function createAxisRows() {
                 <div class="movement-controls">
                     <button class="jog-button" type="button" data-stepper-id="${axis.stepperId}" data-direction="-1" disabled>− ${axis.name}</button>
                     <button class="jog-button" type="button" data-stepper-id="${axis.stepperId}" data-direction="1" disabled>+ ${axis.name}</button>
+                </div>
+            </td>
+            <td>
+                <div class="fixed-step-controls" aria-label="${axis.name} fixed-step movement">
+                    ${fixedJogSteps.map(steps => `
+                        <button class="jog-button fixed-step-button" type="button"
+                            data-stepper-id="${axis.stepperId}" data-fixed-steps="${steps}" disabled>${steps > 0 ? `+${steps}` : steps}</button>
+                    `).join("")}
                 </div>
             </td>
         </tr>
@@ -181,13 +194,18 @@ function setSaveButtonsEnabled(enabled) {
 
 async function moveAxis(button) {
     const stepperId = Number(button.dataset.stepperId);
-    const direction = Number(button.dataset.direction);
+    const fixedSteps = button.dataset.fixedSteps === undefined
+        ? null
+        : Number(button.dataset.fixedSteps);
+    const direction = fixedSteps === null ? Number(button.dataset.direction) : Math.sign(fixedSteps);
     const stepsInput = document.getElementById(`axis-steps-${stepperId}`);
-    const steps = stepsInput.valueAsNumber;
+    const steps = fixedSteps === null ? stepsInput.valueAsNumber : Math.abs(fixedSteps);
 
     if (!Number.isInteger(steps) || steps < 1 || steps > 2048) {
         showMessage("Jog steps must be a whole number between 1 and 2048.", true);
-        stepsInput.focus();
+        if (fixedSteps === null) {
+            stepsInput.focus();
+        }
         return;
     }
 
@@ -234,12 +252,18 @@ function renderCardSelectors() {
     const bayIndex = Number(document.getElementById("card-bay-select").value || 0);
     const action = document.getElementById("card-action-select").value;
     const pointSelect = document.getElementById("card-point-select");
-    const points = coordinateConfig.cardBays[bayIndex].points;
+    const selectedCard = pointSelect.value;
+    const cards = Object.keys(coordinateConfig.cardBays[bayIndex].cards)
+        .sort((left, right) => Number(left) - Number(right));
 
     pointSelect.disabled = action !== "adjust";
-    pointSelect.innerHTML = points.length === 0
+    pointSelect.innerHTML = cards.length === 0
         ? '<option value="">No saved cards</option>'
-        : points.map((_, index) => `<option value="${index}">Card ${index + 1}</option>`).join("");
+        : cards.map(index => `<option value="${index}">Card ${Number(index) + 1}</option>`).join("");
+
+    if (cards.includes(selectedCard)) {
+        pointSelect.value = selectedCard;
+    }
 
     setSaveButtonsEnabled(allAxesReady);
 }
@@ -247,12 +271,18 @@ function renderCardSelectors() {
 function renderCardTable() {
     const rows = [];
     coordinateConfig.cardBays.forEach((bay, bayIndex) => {
-        bay.points.forEach((point, pointIndex) => {
+        Object.entries(bay.cards).forEach(([pointIndex, point]) => {
             rows.push(`
                 <tr>
                     <td>${bayIndex + 1}</td>
-                    <td>${pointIndex + 1}</td>
+                    <td>${Number(pointIndex) + 1}</td>
                     ${pointCells(point)}
+                    <td>
+                        <button class="card-update-button" type="button"
+                            data-bay-index="${bayIndex}" data-card-index="${pointIndex}">
+                            Update
+                        </button>
+                    </td>
                 </tr>
             `);
         });
@@ -260,7 +290,17 @@ function renderCardTable() {
 
     document.getElementById("card-coordinate-rows").innerHTML = rows.length > 0
         ? rows.join("")
-        : '<tr class="empty-row"><td colspan="7">No card coordinates saved yet.</td></tr>';
+        : '<tr class="empty-row"><td colspan="8">No card coordinates saved yet.</td></tr>';
+}
+
+function selectCardForUpdate(button) {
+    const pointSelect = document.getElementById("card-point-select");
+    document.getElementById("card-bay-select").value = button.dataset.bayIndex;
+    document.getElementById("card-action-select").value = "adjust";
+    renderCardSelectors();
+    pointSelect.value = button.dataset.cardIndex;
+    pointSelect.focus();
+    setSaveButtonsEnabled(allAxesReady);
 }
 
 function renderOptSelectors() {
@@ -347,6 +387,9 @@ async function saveOptPoint() {
 }
 
 function pointCells(point) {
+    if (!point) {
+        return axes.map(() => "<td>—</td>").join("");
+    }
     return axes.map(axis => `<td>${point[axis.property]}</td>`).join("");
 }
 
@@ -391,6 +434,12 @@ async function initialize() {
     document.getElementById("card-bay-select").addEventListener("change", renderCardSelectors);
     document.getElementById("card-action-select").addEventListener("change", renderCardSelectors);
     document.getElementById("card-point-select").addEventListener("change", () => setSaveButtonsEnabled(allAxesReady));
+    document.getElementById("card-coordinate-rows").addEventListener("click", event => {
+        const button = event.target.closest(".card-update-button");
+        if (button) {
+            selectCardForUpdate(button);
+        }
+    });
     document.getElementById("opt-select").addEventListener("change", renderSelectedOptValue);
     document.getElementById("opt-point-select").addEventListener("change", renderSelectedOptValue);
     document.getElementById("save-card-button").addEventListener("click", saveCardPoint);

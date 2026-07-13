@@ -66,10 +66,10 @@ namespace VirtualOperatorServer.Tests
         {
             var coordinates = new CoordinatesModel();
 
-            coordinates.CardBays[0].AddPoint(CreatePoint(1));
-            coordinates.CardBays[0].AddPoint(CreatePoint(11));
-            coordinates.CardBays[1].AddPoint(CreatePoint(21));
-            coordinates.CardBays[2].AddPoint(CreatePoint(31));
+            coordinates.CardBays[0].AddCard(CreatePoint(1));
+            coordinates.CardBays[0].AddCard(CreatePoint(11));
+            coordinates.CardBays[1].AddCard(CreatePoint(21));
+            coordinates.CardBays[2].AddCard(CreatePoint(31));
 
             coordinates.OPTs[0] = CreateOpt("OPT 1", 100);
             coordinates.OPTs[1] = CreateOpt("OPT 2", 200);
@@ -119,10 +119,10 @@ namespace VirtualOperatorServer.Tests
 
         private static void AssertCardBayEqual(CardBayModel expected, CardBayModel actual, string path)
         {
-            Assert.Equal(expected.Points.Count, actual.Points.Count);
-            for (var i = 0; i < expected.Points.Count; i++)
+            Assert.Equal(expected.Cards.Count, actual.Cards.Count);
+            for (var i = 0; i < expected.Cards.Count; i++)
             {
-                AssertPointEqual(expected.Points[i], actual.Points[i], $"{path}.Points[{i}]");
+                AssertPointEqual(expected.Cards[i], actual.Cards[i], $"{path}.Cards[{i}]");
             }
         }
 

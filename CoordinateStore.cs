@@ -25,26 +25,28 @@ namespace VirtualOperatorServer.Coordinates
 
     public sealed class CardBay
     {
-        public List<Point> Points { get; set; } = new();
+        // The card bay has many slots and each slot can contain a card. 
+        // the key is actually the slot index.
+        public Dictionary<uint, Point> Cards { get; set; } = new();
 
-        public void AddPoint(Point point) => Points.Add(point);
+        public void AddCard(Point point) => Cards.Add((uint)Cards.Count, point);
     }
 
     public sealed class OPT
     {
         public string Name { get; set; } = string.Empty;
-        public Point MsrSwipingStartPoint { get; set; } = new();
-        public Point MsrSwipingStopPoint { get; set; } = new();
-        public Point ContactInsertingStartPoint { get; set; } = new();
-        public Point ContactInsertingStopPoint { get; set; } = new();
-        public Point ContactlessTappingStartPoint { get; set; } = new();
-        public Point ContactlessTappingStopPoint { get; set; } = new();
-        public Point BarcodeReadingStartPoint { get; set; } = new();
-        public Point BarcodeReadingStopPoint { get; set; } = new();
-        public Point ScreenTopLeft { get; set; } = new();
-        public Point ScreenTopRight { get; set; } = new();
-        public Point ScreenBottomRight { get; set; } = new();
-        public Point ScreenBottomLeft { get; set; } = new();
+        public Point? MsrSwipingStartPoint { get; set; }
+        public Point? MsrSwipingStopPoint { get; set; }
+        public Point? ContactInsertingStartPoint { get; set; }
+        public Point? ContactInsertingStopPoint { get; set; }
+        public Point? ContactlessTappingStartPoint { get; set; }
+        public Point? ContactlessTappingStopPoint { get; set; }
+        public Point? BarcodeReadingStartPoint { get; set; }
+        public Point? BarcodeReadingStopPoint { get; set; }
+        public Point? ScreenTopLeft { get; set; }
+        public Point? ScreenTopRight { get; set; }
+        public Point? ScreenBottomRight { get; set; }
+        public Point? ScreenBottomLeft { get; set; }
     }
 
     public sealed class Coordinates
@@ -75,7 +77,7 @@ namespace VirtualOperatorServer.Coordinates
                 var coordinates = System.Text.Json.JsonSerializer.Deserialize<Coordinates>(json);
                 if (coordinates == null ||
                     coordinates.CardBays == null ||
-                    coordinates.CardBays.Any(cardBay => cardBay == null || cardBay.Points == null) ||
+                    coordinates.CardBays.Any(cardBay => cardBay == null || cardBay.Cards == null) ||
                     coordinates.OPTs == null ||
                     coordinates.OPTs.Any(opt => opt == null))
                     return false;
@@ -147,7 +149,7 @@ namespace VirtualOperatorServer.Coordinates
         public PointModel AddCardBayPoint(int cardBayIndex, PointModel point)
         {
             var savedPoint = Clone(point);
-            Mutate(coordinates => GetCardBay(coordinates, cardBayIndex).Points.Add(savedPoint));
+            Mutate(coordinates => GetCardBay(coordinates, cardBayIndex).AddCard(savedPoint));
             return Clone(savedPoint);
         }
 
@@ -156,13 +158,13 @@ namespace VirtualOperatorServer.Coordinates
             var savedPoint = Clone(point);
             Mutate(coordinates =>
             {
-                var points = GetCardBay(coordinates, cardBayIndex).Points;
-                if (pointIndex < 0 || pointIndex >= points.Count)
+                var points = GetCardBay(coordinates, cardBayIndex).Cards;
+                if (pointIndex < 0 || !points.ContainsKey((uint)pointIndex))
                 {
                     throw new ArgumentOutOfRangeException(nameof(pointIndex), $"Card point index {pointIndex} does not exist.");
                 }
 
-                points[pointIndex] = savedPoint;
+                points[(uint)pointIndex] = savedPoint;
             });
             return Clone(savedPoint);
         }
