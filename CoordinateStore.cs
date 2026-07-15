@@ -56,6 +56,7 @@ namespace VirtualOperatorServer.Coordinates
             WriteIndented = true
         };
 
+        public Point Idle { get; set; } = new();
         public CardBay[] CardBays { get; set; } = { new(), new(), new() };
         public OPT[] OPTs { get; set; } =
         {
@@ -76,12 +77,14 @@ namespace VirtualOperatorServer.Coordinates
             {
                 var coordinates = System.Text.Json.JsonSerializer.Deserialize<Coordinates>(json);
                 if (coordinates == null ||
+                    coordinates.Idle == null ||
                     coordinates.CardBays == null ||
                     coordinates.CardBays.Any(cardBay => cardBay == null || cardBay.Cards == null) ||
                     coordinates.OPTs == null ||
                     coordinates.OPTs.Any(opt => opt == null))
                     return false;
 
+                Idle = coordinates.Idle;
                 CardBays = coordinates.CardBays;
                 OPTs = coordinates.OPTs;
                 return true;
@@ -144,6 +147,13 @@ namespace VirtualOperatorServer.Coordinates
             {
                 return Clone(_coordinates);
             }
+        }
+
+        public PointModel UpdateIdlePoint(PointModel point)
+        {
+            var savedPoint = Clone(point);
+            Mutate(coordinates => coordinates.Idle = savedPoint);
+            return Clone(savedPoint);
         }
 
         public PointModel AddCardBayPoint(int cardBayIndex, PointModel point)
@@ -271,6 +281,9 @@ namespace VirtualOperatorServer.Coordinates
             var api = endpoints.MapGroup("/api/coordinates");
 
             api.MapGet("/", (CoordinateStore store) => Results.Ok(store.GetCoordinates()));
+
+            api.MapPut("/idle", (PointModel point, CoordinateStore store) =>
+                HandleMutation(() => store.UpdateIdlePoint(point)));
 
             api.MapPost("/card-bays/{cardBayIndex:int}/points", (int cardBayIndex, PointModel point, CoordinateStore store) =>
                 HandleMutation(() => store.AddCardBayPoint(cardBayIndex, point)));

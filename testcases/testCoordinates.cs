@@ -64,7 +64,10 @@ namespace VirtualOperatorServer.Tests
 
         private static CoordinatesModel CreateSampleCoordinates()
         {
-            var coordinates = new CoordinatesModel();
+            var coordinates = new CoordinatesModel
+            {
+                Idle = CreatePoint(41)
+            };
 
             coordinates.CardBays[0].AddCard(CreatePoint(1));
             coordinates.CardBays[0].AddCard(CreatePoint(11));
@@ -104,6 +107,8 @@ namespace VirtualOperatorServer.Tests
 
         private static void AssertCoordinatesEqual(CoordinatesModel expected, CoordinatesModel actual, string path)
         {
+            AssertPointEqual(expected.Idle, actual.Idle, $"{path}.Idle");
+
             Assert.Equal(expected.CardBays.Length, actual.CardBays.Length);
             for (var i = 0; i < expected.CardBays.Length; i++)
             {
@@ -122,7 +127,7 @@ namespace VirtualOperatorServer.Tests
             Assert.Equal(expected.Cards.Count, actual.Cards.Count);
             for (var i = 0; i < expected.Cards.Count; i++)
             {
-                AssertPointEqual(expected.Cards[i], actual.Cards[i], $"{path}.Cards[{i}]");
+                AssertPointEqual(expected.Cards[(uint)i], actual.Cards[(uint)i], $"{path}.Cards[{i}]");
             }
         }
 

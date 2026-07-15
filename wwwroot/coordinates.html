@@ -17,7 +17,7 @@
         <div>
             <p class="eyebrow">Virtual Operator</p>
             <h1>Coordinate Setup</h1>
-            <p class="subtitle">Jog each axis to a target, then save the live position as a card or OPT coordinate.</p>
+            <p class="subtitle">Jog each axis to a target, then save the live position as an idle, card, or OPT coordinate.</p>
         </div>
         <nav aria-label="Page navigation">
             <a href="/">Home</a>
@@ -56,6 +56,18 @@
                 <span>Live point</span>
                 <output id="live-point-value">X — · Y — · Z — · U — · V —</output>
             </div>
+        </section>
+
+        <section class="panel" aria-labelledby="idle-heading">
+            <h2 id="idle-heading">Idle point</h2>
+            <p>Set or replace the position used for the stepper offsets while the device is idle.</p>
+
+            <div class="selected-coordinate">
+                <span>Stored value</span>
+                <output id="idle-point-value">—</output>
+            </div>
+
+            <button id="save-idle-button" class="primary-button" type="button" disabled>Set from live point</button>
         </section>
 
         <div class="editor-grid">

@@ -188,6 +188,7 @@ function setSaveButtonsEnabled(enabled) {
     const hasConfig = coordinateConfig !== null;
     const cardAction = document.getElementById("card-action-select").value;
     const pointSelectionValid = cardAction === "add" || document.getElementById("card-point-select").value !== "";
+    document.getElementById("save-idle-button").disabled = !(enabled && hasConfig);
     document.getElementById("save-card-button").disabled = !(enabled && hasConfig && pointSelectionValid);
     document.getElementById("save-opt-button").disabled = !(enabled && hasConfig);
 }
@@ -241,11 +242,16 @@ async function moveAxis(button) {
 }
 
 function renderCoordinateConfig() {
+    renderIdlePoint();
     renderCardSelectors();
     renderCardTable();
     renderOptSelectors();
     renderOptTable();
     renderSelectedOptValue();
+}
+
+function renderIdlePoint() {
+    document.getElementById("idle-point-value").textContent = formatPoint(coordinateConfig.idle);
 }
 
 function renderCardSelectors() {
@@ -367,6 +373,21 @@ async function saveCardPoint() {
     }
 }
 
+async function saveIdlePoint() {
+    if (!livePoint) {
+        showMessage("Live stepper positions are not available.", true);
+        return;
+    }
+
+    try {
+        await requestJson("/api/coordinates/idle", jsonOptions("PUT", livePoint));
+        showMessage("Idle coordinate was updated.");
+        await loadCoordinates();
+    } catch (error) {
+        showMessage(`Unable to save idle coordinate: ${error.message}`, true);
+    }
+}
+
 async function saveOptPoint() {
     if (!livePoint) {
         showMessage("Live stepper positions are not available.", true);
@@ -442,6 +463,7 @@ async function initialize() {
     });
     document.getElementById("opt-select").addEventListener("change", renderSelectedOptValue);
     document.getElementById("opt-point-select").addEventListener("change", renderSelectedOptValue);
+    document.getElementById("save-idle-button").addEventListener("click", saveIdlePoint);
     document.getElementById("save-card-button").addEventListener("click", saveCardPoint);
     document.getElementById("save-opt-button").addEventListener("click", saveOptPoint);
 
