@@ -1,4 +1,57 @@
 
+const lowLevelAccessSections = [
+    { id: "section-gpio", label: "GPIO" },
+    { id: "section-power-switch", label: "Power Switch" },
+    { id: "section-position-detector", label: "Position Detector" },
+    { id: "section-bdc-control", label: "BDC Control" },
+    { id: "section-dynamic-status", label: "Dynamic Status" },
+    { id: "section-encoders", label: "Encoders" },
+    { id: "section-timer", label: "Timer" },
+    {
+        id: "section-stepper",
+        label: "Stepper",
+        children: [
+            { id: "section-stepper-0", label: "0: X" },
+            { id: "section-stepper-1", label: "1: Y" },
+            { id: "section-stepper-2", label: "2: Z" },
+            { id: "section-stepper-3", label: "3: U" },
+            { id: "section-stepper-4", label: "4: V" },
+            { id: "section-stepper-5", label: "5: Clicker" },
+            { id: "section-stepper-6", label: "6" },
+            { id: "section-stepper-7", label: "7" },
+            { id: "section-stepper-8", label: "8" },
+            { id: "section-stepper-9", label: "9" }
+        ]
+    }
+];
+
+function createBlockNavigation()
+{
+    let html = [];
+
+    html.push(`<nav class="block-navigation" aria-label="Page sections">`);
+    html.push(`<div class="block-navigation-title">Jump to</div>`);
+    html.push("<ul>");
+    for(const section of lowLevelAccessSections)
+    {
+        html.push(`<li><a href="#${section.id}">${section.label}</a>`);
+        if(section.children)
+        {
+            html.push(`<ul class="block-navigation-subsections">`);
+            for(const child of section.children)
+            {
+                html.push(`<li><a href="#${child.id}">${child.label}</a></li>`);
+            }
+            html.push("</ul>");
+        }
+        html.push("</li>");
+    }
+    html.push("</ul>");
+    html.push("</nav>");
+
+    return html.join("");
+}
+
 function createGpioTable()
 {
     let portNameList = [
@@ -17,7 +70,7 @@ function createGpioTable()
 
     let html = [];
 
-    html.push("<div>");
+    html.push(`<div id="section-gpio" class="content-block">`);
     html.push("<h1>GPIO</h1>")
     html.push("<table>");
     for(let portIndex = 0; portIndex < portNameList.length; portIndex++)
@@ -46,7 +99,7 @@ function createPowerTable()
 {
     let html = [];
 
-    html.push("<div>");
+    html.push(`<div id="section-power-switch" class="content-block">`);
     html.push("<h1>Power Switch</h1>");
     html.push("<table>");
     html.push("<tr>");
@@ -106,7 +159,7 @@ function createPositionDetectorTable()
 {
     let html = [];
 
-    html.push("<div>");
+    html.push(`<div id="section-position-detector" class="content-block">`);
     html.push("<h1>Position Detector</h1>");
     html.push("<table>");
     html.push("<tr>");
@@ -187,7 +240,7 @@ function createBdcControlTable()
 {
     let html = [];
 
-    html.push("<div>");
+    html.push(`<div id="section-bdc-control" class="content-block">`);
     html.push("<h1>BDC Control</h1>");
     html.push("<table>");
     html.push("<tr>");
@@ -239,7 +292,7 @@ function createDynamicStatus()
 {
     let html = [];
 
-    html.push("<div>");
+    html.push(`<div id="section-dynamic-status" class="content-block">`);
     html.push("<h1>Dynamic Status</h1>");
     html.push("<table>");
     html.push(`<tr><td>Main loop/s: </td><td><label id="id_dynamicStatus_mainLoop" /></td></tr>`);
@@ -266,7 +319,7 @@ function createEncoderTable()
         ["ENC7", "TIM3",    "id_encoder_7"]
     ];
 
-    html.push("<div>");
+    html.push(`<div id="section-encoders" class="content-block">`);
     html.push("<h1>Encoders</h1>");
     html.push("<div>");
     html.push("<table>");
@@ -293,7 +346,7 @@ function createTimerTable()
 {
     let html = [];
     
-    html.push("<div>");
+    html.push(`<div id="section-timer" class="content-block">`);
     html.push("<h1>Timer</h1>");
 
     html.push("<h2>Config</h2>");
@@ -510,13 +563,13 @@ function createStepperTable()
 
     let html = [];
 
-    html.push("<div>");
+    html.push(`<div id="section-stepper" class="content-block">`);
     html.push("<h1>Stepper</h1>");
     html.push("<div>");
     
     for(let stepperIndex=0; stepperIndex<10; stepperIndex++)
     {
-        html.push("<div onmouseenter=\"this.style.backgroundColor='lightgreen'\" onmouseleave=\"this.style.backgroundColor=''\">");
+        html.push(`<div id="section-stepper-${stepperIndex}" class="stepper-content-block" onmouseenter="this.style.backgroundColor='lightgreen'" onmouseleave="this.style.backgroundColor=''">`);
         let stepperName = "";
         switch(stepperIndex)
         {
@@ -782,7 +835,10 @@ function createBody()
 {
     let html = [];
 
-    html.push(`<div>`);
+    html.push(createBlockNavigation());
+
+    html.push(`<main class="page-content">`);
+    html.push(`<div id="section-version" class="content-block">`);
     html.push("<h1>Version</h1>");
     html.push(`<label id="id_version"></label>`);
     html.push(`</div>`)
@@ -795,6 +851,7 @@ function createBody()
     html.push(createEncoderTable());
     html.push(createTimerTable());
     html.push(createStepperTable());
+    html.push(`</main>`);
 
     return html.join("");   
 }
