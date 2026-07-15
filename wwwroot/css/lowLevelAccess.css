@@ -36,6 +36,17 @@
     font-weight: bold;
 }
 
+.block-navigation-pages {
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #d8e3f2;
+    font-weight: bold;
+}
+
+.block-navigation-pages a + a {
+    margin-top: 0.25rem;
+}
+
 .block-navigation ul {
     margin: 0;
     padding: 0;

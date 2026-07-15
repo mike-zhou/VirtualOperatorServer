@@ -29,7 +29,11 @@ function createBlockNavigation()
 {
     let html = [];
 
-    html.push(`<nav class="block-navigation" aria-label="Page sections">`);
+    html.push(`<nav class="block-navigation" aria-label="Low-level access navigation">`);
+    html.push(`<div class="block-navigation-pages">`);
+    html.push(`<a href="/">Home</a>`);
+    html.push(`<a href="/coordinates.html">Coordinates</a>`);
+    html.push(`</div>`);
     html.push(`<div class="block-navigation-title">Jump to</div>`);
     html.push("<ul>");
     for(const section of lowLevelAccessSections)
