@@ -14,6 +14,10 @@ namespace VirtualOperatorServer.Configuration
     public class StaticConfig
     {
         private static readonly StaticConfig _instance = new();
+        private static readonly JsonSerializerOptions _indentedJsonOptions = new()
+        {
+            WriteIndented = true
+        };
         private readonly string _stepperConfigFile;
         private readonly string _timerConfigFile;
 
@@ -116,7 +120,7 @@ namespace VirtualOperatorServer.Configuration
 
         public void SaveStepperConfigs()
         {
-            string jsonStr = JsonSerializer.Serialize<StatusFacade.Facade.Stepper.Configuration[]>(StepperConfigs);
+            string jsonStr = JsonSerializer.Serialize(StepperConfigs, _indentedJsonOptions);
             SaveFile(_stepperConfigFile, jsonStr);
         }
 
@@ -127,5 +131,4 @@ namespace VirtualOperatorServer.Configuration
         }
     }
 }
-
 
