@@ -3,7 +3,9 @@
     "timer": 0,
     "encoder": 2,
     "mode": 0,
-    "forcedModeConfig": { "pulseWidth": 2000 },
+    "forcedModeConfig": {
+      "pulseWidth": 2000
+    },
     "activeModeConfig": {
       "startingPulseWidth": 2000,
       "acceleratingSteps": 200,
@@ -11,7 +13,9 @@
       "deacceleratingSteps": 200,
       "endingPulseWidth": 2000
     },
-    "passiveModeConfig": { "activeStepper": 255 },
+    "passiveModeConfig": {
+      "activeStepper": 255
+    },
     "isEnableHigh": false,
     "isForwardHigh": true,
     "isRisingEdgeDriven": false,
@@ -34,10 +38,26 @@
       "enabled": false,
       "negativeRange": -10,
       "boundaries": [
-        { "enabled": true, "value": 0, "error": 1 },
-        { "enabled": false, "value": 0, "error": 2 },
-        { "enabled": false, "value": 0, "error": 3 },
-        { "enabled": false, "value": 0, "error": 4 }
+        {
+          "enabled": true,
+          "value": 0,
+          "error": 1
+        },
+        {
+          "enabled": false,
+          "value": 0,
+          "error": 2
+        },
+        {
+          "enabled": false,
+          "value": 0,
+          "error": 3
+        },
+        {
+          "enabled": false,
+          "value": 0,
+          "error": 4
+        }
       ]
     }
   },
@@ -45,7 +65,9 @@
     "timer": 1,
     "encoder": 3,
     "mode": 0,
-    "forcedModeConfig": { "pulseWidth": 2000 },
+    "forcedModeConfig": {
+      "pulseWidth": 2000
+    },
     "activeModeConfig": {
       "startingPulseWidth": 2000,
       "acceleratingSteps": 100,
@@ -53,7 +75,9 @@
       "deacceleratingSteps": 100,
       "endingPulseWidth": 2000
     },
-    "passiveModeConfig": { "activeStepper": 255 },
+    "passiveModeConfig": {
+      "activeStepper": 255
+    },
     "isEnableHigh": false,
     "isForwardHigh": false,
     "isRisingEdgeDriven": false,
@@ -76,10 +100,26 @@
       "enabled": false,
       "negativeRange": 0,
       "boundaries": [
-        { "enabled": false, "value": 0, "error": 0 },
-        { "enabled": true, "value": 10, "error": 2 },
-        { "enabled": false, "value": 0, "error": 0 },
-        { "enabled": false, "value": 0, "error": 0 }
+        {
+          "enabled": false,
+          "value": 0,
+          "error": 0
+        },
+        {
+          "enabled": true,
+          "value": 10,
+          "error": 2
+        },
+        {
+          "enabled": false,
+          "value": 0,
+          "error": 0
+        },
+        {
+          "enabled": false,
+          "value": 0,
+          "error": 0
+        }
       ]
     }
   },
@@ -87,7 +127,9 @@
     "timer": 2,
     "encoder": 0,
     "mode": 0,
-    "forcedModeConfig": { "pulseWidth": 1000 },
+    "forcedModeConfig": {
+      "pulseWidth": 1000
+    },
     "activeModeConfig": {
       "startingPulseWidth": 1000,
       "acceleratingSteps": 100,
@@ -95,7 +137,9 @@
       "deacceleratingSteps": 100,
       "endingPulseWidth": 1000
     },
-    "passiveModeConfig": { "activeStepper": 255 },
+    "passiveModeConfig": {
+      "activeStepper": 255
+    },
     "isEnableHigh": false,
     "isForwardHigh": true,
     "isRisingEdgeDriven": false,
@@ -118,10 +162,26 @@
       "enabled": false,
       "negativeRange": 0,
       "boundaries": [
-        { "enabled": false, "value": 0, "error": 0 },
-        { "enabled": false, "value": 0, "error": 0 },
-        { "enabled": false, "value": 0, "error": 0 },
-        { "enabled": false, "value": 0, "error": 0 }
+        {
+          "enabled": false,
+          "value": 0,
+          "error": 0
+        },
+        {
+          "enabled": false,
+          "value": 0,
+          "error": 0
+        },
+        {
+          "enabled": false,
+          "value": 0,
+          "error": 0
+        },
+        {
+          "enabled": false,
+          "value": 0,
+          "error": 0
+        }
       ]
     }
   },
@@ -129,7 +189,9 @@
     "timer": 3,
     "encoder": 7,
     "mode": 0,
-    "forcedModeConfig": { "pulseWidth": 2000 },
+    "forcedModeConfig": {
+      "pulseWidth": 2000
+    },
     "activeModeConfig": {
       "startingPulseWidth": 2000,
       "acceleratingSteps": 25,
@@ -137,7 +199,9 @@
       "deacceleratingSteps": 25,
       "endingPulseWidth": 2000
     },
-    "passiveModeConfig": { "activeStepper": 255 },
+    "passiveModeConfig": {
+      "activeStepper": 255
+    },
     "isEnableHigh": false,
     "isForwardHigh": true,
     "isRisingEdgeDriven": false,
@@ -160,10 +224,26 @@
       "enabled": true,
       "negativeRange": -16,
       "boundaries": [
-        { "enabled": false, "value": -7, "error": 9 },
-        { "enabled": false, "value": 928, "error": 9 },
-        { "enabled": false, "value": 1001, "error": 9 },
-        { "enabled": false, "value": 0, "error": 0 }
+        {
+          "enabled": false,
+          "value": -7,
+          "error": 9
+        },
+        {
+          "enabled": false,
+          "value": 928,
+          "error": 9
+        },
+        {
+          "enabled": false,
+          "value": 1001,
+          "error": 9
+        },
+        {
+          "enabled": false,
+          "value": 0,
+          "error": 0
+        }
       ]
     }
   },
@@ -171,7 +251,9 @@
     "timer": 4,
     "encoder": 6,
     "mode": 0,
-    "forcedModeConfig": { "pulseWidth": 1200 },
+    "forcedModeConfig": {
+      "pulseWidth": 1200
+    },
     "activeModeConfig": {
       "startingPulseWidth": 1200,
       "acceleratingSteps": 20,
@@ -179,7 +261,9 @@
       "deacceleratingSteps": 20,
       "endingPulseWidth": 1200
     },
-    "passiveModeConfig": { "activeStepper": 255 },
+    "passiveModeConfig": {
+      "activeStepper": 255
+    },
     "isEnableHigh": false,
     "isForwardHigh": false,
     "isRisingEdgeDriven": false,
@@ -194,18 +278,34 @@
     "portClock": 0,
     "pinClock": 7,
     "homeBoundaryToReadySteps": 10,
-    "range": 80,
+    "range": 240,
     "stepsPerRotation": 800,
     "encoderCountsPerRotation": 2000,
     "encoderOffsetErrorThreshold": 6,
     "crossBoundary": {
       "enabled": true,
-      "negativeRange": -260,
+      "negativeRange": -80,
       "boundaries": [
-        { "enabled": true, "value": -11, "error": 2 },
-        { "enabled": true, "value": -16, "error": 2 },
-        { "enabled": true, "value": -227, "error": 2 },
-        { "enabled": true, "value": -232, "error": 2 }
+        {
+          "enabled": true,
+          "value": -11,
+          "error": 2
+        },
+        {
+          "enabled": true,
+          "value": -16,
+          "error": 2
+        },
+        {
+          "enabled": false,
+          "value": -227,
+          "error": 2
+        },
+        {
+          "enabled": false,
+          "value": -232,
+          "error": 2
+        }
       ]
     }
   },
@@ -213,7 +313,9 @@
     "timer": 5,
     "encoder": 255,
     "mode": 0,
-    "forcedModeConfig": { "pulseWidth": 1000 },
+    "forcedModeConfig": {
+      "pulseWidth": 1000
+    },
     "activeModeConfig": {
       "startingPulseWidth": 1000,
       "acceleratingSteps": 10,
@@ -221,7 +323,9 @@
       "deacceleratingSteps": 10,
       "endingPulseWidth": 1000
     },
-    "passiveModeConfig": { "activeStepper": 255 },
+    "passiveModeConfig": {
+      "activeStepper": 255
+    },
     "isEnableHigh": false,
     "isForwardHigh": false,
     "isRisingEdgeDriven": false,
@@ -244,10 +348,26 @@
       "enabled": true,
       "negativeRange": -1200,
       "boundaries": [
-        { "enabled": true, "value": -10, "error": 5 },
-        { "enabled": true, "value": -271, "error": 5 },
-        { "enabled": false, "value": 0, "error": 0 },
-        { "enabled": false, "value": 0, "error": 0 }
+        {
+          "enabled": true,
+          "value": -10,
+          "error": 5
+        },
+        {
+          "enabled": true,
+          "value": -271,
+          "error": 5
+        },
+        {
+          "enabled": false,
+          "value": 0,
+          "error": 0
+        },
+        {
+          "enabled": false,
+          "value": 0,
+          "error": 0
+        }
       ]
     }
   },
@@ -255,7 +375,9 @@
     "timer": 5,
     "encoder": 0,
     "mode": 0,
-    "forcedModeConfig": { "pulseWidth": 1000 },
+    "forcedModeConfig": {
+      "pulseWidth": 1000
+    },
     "activeModeConfig": {
       "startingPulseWidth": 2000,
       "acceleratingSteps": 20,
@@ -263,7 +385,9 @@
       "deacceleratingSteps": 20,
       "endingPulseWidth": 2000
     },
-    "passiveModeConfig": { "activeStepper": 255 },
+    "passiveModeConfig": {
+      "activeStepper": 255
+    },
     "isEnableHigh": false,
     "isForwardHigh": false,
     "isRisingEdgeDriven": false,
@@ -286,10 +410,26 @@
       "enabled": false,
       "negativeRange": 0,
       "boundaries": [
-        { "enabled": false, "value": 0, "error": 0 },
-        { "enabled": false, "value": 0, "error": 0 },
-        { "enabled": false, "value": 0, "error": 0 },
-        { "enabled": false, "value": 0, "error": 0 }
+        {
+          "enabled": false,
+          "value": 0,
+          "error": 0
+        },
+        {
+          "enabled": false,
+          "value": 0,
+          "error": 0
+        },
+        {
+          "enabled": false,
+          "value": 0,
+          "error": 0
+        },
+        {
+          "enabled": false,
+          "value": 0,
+          "error": 0
+        }
       ]
     }
   },
@@ -297,7 +437,9 @@
     "timer": 3,
     "encoder": 0,
     "mode": 0,
-    "forcedModeConfig": { "pulseWidth": 2000 },
+    "forcedModeConfig": {
+      "pulseWidth": 2000
+    },
     "activeModeConfig": {
       "startingPulseWidth": 2000,
       "acceleratingSteps": 20,
@@ -305,7 +447,9 @@
       "deacceleratingSteps": 20,
       "endingPulseWidth": 2000
     },
-    "passiveModeConfig": { "activeStepper": 255 },
+    "passiveModeConfig": {
+      "activeStepper": 255
+    },
     "isEnableHigh": false,
     "isForwardHigh": false,
     "isRisingEdgeDriven": false,
@@ -328,10 +472,26 @@
       "enabled": false,
       "negativeRange": 0,
       "boundaries": [
-        { "enabled": false, "value": 0, "error": 0 },
-        { "enabled": false, "value": 0, "error": 0 },
-        { "enabled": false, "value": 0, "error": 0 },
-        { "enabled": false, "value": 0, "error": 0 }
+        {
+          "enabled": false,
+          "value": 0,
+          "error": 0
+        },
+        {
+          "enabled": false,
+          "value": 0,
+          "error": 0
+        },
+        {
+          "enabled": false,
+          "value": 0,
+          "error": 0
+        },
+        {
+          "enabled": false,
+          "value": 0,
+          "error": 0
+        }
       ]
     }
   },
@@ -339,7 +499,9 @@
     "timer": 3,
     "encoder": 0,
     "mode": 0,
-    "forcedModeConfig": { "pulseWidth": 2000 },
+    "forcedModeConfig": {
+      "pulseWidth": 2000
+    },
     "activeModeConfig": {
       "startingPulseWidth": 2000,
       "acceleratingSteps": 20,
@@ -347,7 +509,9 @@
       "deacceleratingSteps": 20,
       "endingPulseWidth": 2000
     },
-    "passiveModeConfig": { "activeStepper": 255 },
+    "passiveModeConfig": {
+      "activeStepper": 255
+    },
     "isEnableHigh": false,
     "isForwardHigh": false,
     "isRisingEdgeDriven": false,
@@ -370,10 +534,26 @@
       "enabled": false,
       "negativeRange": 0,
       "boundaries": [
-        { "enabled": false, "value": 0, "error": 0 },
-        { "enabled": false, "value": 0, "error": 0 },
-        { "enabled": false, "value": 0, "error": 0 },
-        { "enabled": false, "value": 0, "error": 0 }
+        {
+          "enabled": false,
+          "value": 0,
+          "error": 0
+        },
+        {
+          "enabled": false,
+          "value": 0,
+          "error": 0
+        },
+        {
+          "enabled": false,
+          "value": 0,
+          "error": 0
+        },
+        {
+          "enabled": false,
+          "value": 0,
+          "error": 0
+        }
       ]
     }
   },
@@ -381,7 +561,9 @@
     "timer": 3,
     "encoder": 0,
     "mode": 0,
-    "forcedModeConfig": { "pulseWidth": 2000 },
+    "forcedModeConfig": {
+      "pulseWidth": 2000
+    },
     "activeModeConfig": {
       "startingPulseWidth": 2000,
       "acceleratingSteps": 20,
@@ -389,7 +571,9 @@
       "deacceleratingSteps": 20,
       "endingPulseWidth": 2000
     },
-    "passiveModeConfig": { "activeStepper": 255 },
+    "passiveModeConfig": {
+      "activeStepper": 255
+    },
     "isEnableHigh": false,
     "isForwardHigh": false,
     "isRisingEdgeDriven": false,
@@ -412,10 +596,26 @@
       "enabled": false,
       "negativeRange": 0,
       "boundaries": [
-        { "enabled": false, "value": 0, "error": 0 },
-        { "enabled": false, "value": 0, "error": 0 },
-        { "enabled": false, "value": 0, "error": 0 },
-        { "enabled": false, "value": 0, "error": 0 }
+        {
+          "enabled": false,
+          "value": 0,
+          "error": 0
+        },
+        {
+          "enabled": false,
+          "value": 0,
+          "error": 0
+        },
+        {
+          "enabled": false,
+          "value": 0,
+          "error": 0
+        },
+        {
+          "enabled": false,
+          "value": 0,
+          "error": 0
+        }
       ]
     }
   }
