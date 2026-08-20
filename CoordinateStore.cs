@@ -35,6 +35,10 @@ namespace VirtualOperatorServer.Coordinates
     public sealed class OPT
     {
         public string Name { get; set; } = string.Empty;
+        public int SwipeDeltaX { get; set; }
+        public int SwipeDeltaY { get; set; }
+        public int ContactInsertDistance { get; set; }
+        public int ContactPushDistance { get; set; }
         public Point? MsrSwipingStartPoint { get; set; }
         public Point? MsrSwipingStopPoint { get; set; }
         public Point? ContactInsertingStartPoint { get; set; }
@@ -57,6 +61,8 @@ namespace VirtualOperatorServer.Coordinates
         };
 
         public Point Idle { get; set; } = new();
+        public int InsertDistance { get; set; }
+        public int FetchDistance { get; set; }
         public CardBay[] CardBays { get; set; } = { new(), new(), new() };
         public OPT[] OPTs { get; set; } =
         {
@@ -85,6 +91,8 @@ namespace VirtualOperatorServer.Coordinates
                     return false;
 
                 Idle = coordinates.Idle;
+                InsertDistance = coordinates.InsertDistance;
+                FetchDistance = coordinates.FetchDistance;
                 CardBays = coordinates.CardBays;
                 OPTs = coordinates.OPTs;
                 return true;
@@ -129,6 +137,14 @@ namespace VirtualOperatorServer.Coordinates
         }
     }
 
+    public sealed record DistanceSettings(int InsertDistance, int FetchDistance);
+
+    public sealed record OptSettings(
+        int SwipeDeltaX,
+        int SwipeDeltaY,
+        int ContactInsertDistance,
+        int ContactPushDistance);
+
     public sealed class CoordinateStore
     {
         private readonly object _lock = new();
@@ -154,6 +170,17 @@ namespace VirtualOperatorServer.Coordinates
             var savedPoint = Clone(point);
             Mutate(coordinates => coordinates.Idle = savedPoint);
             return Clone(savedPoint);
+        }
+
+        public DistanceSettings UpdateDistances(DistanceSettings settings)
+        {
+            ArgumentNullException.ThrowIfNull(settings);
+            Mutate(coordinates =>
+            {
+                coordinates.InsertDistance = settings.InsertDistance;
+                coordinates.FetchDistance = settings.FetchDistance;
+            });
+            return settings;
         }
 
         public PointModel AddCardBayPoint(int cardBayIndex, PointModel point)
@@ -235,6 +262,25 @@ namespace VirtualOperatorServer.Coordinates
             return Clone(savedPoint);
         }
 
+        public OptSettings UpdateOptSettings(int optIndex, OptSettings settings)
+        {
+            ArgumentNullException.ThrowIfNull(settings);
+            Mutate(coordinates =>
+            {
+                if (optIndex < 0 || optIndex >= coordinates.OPTs.Length)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(optIndex), $"OPT index {optIndex} does not exist.");
+                }
+
+                var opt = coordinates.OPTs[optIndex];
+                opt.SwipeDeltaX = settings.SwipeDeltaX;
+                opt.SwipeDeltaY = settings.SwipeDeltaY;
+                opt.ContactInsertDistance = settings.ContactInsertDistance;
+                opt.ContactPushDistance = settings.ContactPushDistance;
+            });
+            return settings;
+        }
+
         private void Mutate(Action<CoordinatesModel> mutation)
         {
             lock (_lock)
@@ -285,6 +331,9 @@ namespace VirtualOperatorServer.Coordinates
             api.MapPut("/idle", (PointModel point, CoordinateStore store) =>
                 HandleMutation(() => store.UpdateIdlePoint(point)));
 
+            api.MapPut("/distances", (DistanceSettings settings, CoordinateStore store) =>
+                HandleMutation(() => store.UpdateDistances(settings)));
+
             api.MapPost("/card-bays/{cardBayIndex:int}/points", (int cardBayIndex, PointModel point, CoordinateStore store) =>
                 HandleMutation(() => store.AddCardBayPoint(cardBayIndex, point)));
 
@@ -296,10 +345,14 @@ namespace VirtualOperatorServer.Coordinates
                 (int optIndex, string pointName, PointModel point, CoordinateStore store) =>
                     HandleMutation(() => store.UpdateOptPoint(optIndex, pointName, point)));
 
+            api.MapPut("/opts/{optIndex:int}/settings",
+                (int optIndex, OptSettings settings, CoordinateStore store) =>
+                    HandleMutation(() => store.UpdateOptSettings(optIndex, settings)));
+
             return endpoints;
         }
 
-        private static IResult HandleMutation(Func<PointModel> mutation)
+        private static IResult HandleMutation<T>(Func<T> mutation)
         {
             try
             {

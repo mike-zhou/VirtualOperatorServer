@@ -71,9 +71,10 @@
         </section>
 
         <div class="editor-grid">
-            <section class="panel" aria-labelledby="card-heading">
-                <h2 id="card-heading">Card bays</h2>
-                <p>Add a new card position or replace an existing card position with the current live point.</p>
+            <div class="editor-column">
+                <section class="panel" aria-labelledby="card-heading">
+                    <h2 id="card-heading">Card bays</h2>
+                    <p>Add a new card position or replace an existing card position with the current live point.</p>
 
                 <div class="form-grid">
                     <label>
@@ -112,7 +113,26 @@
                         <tbody id="card-coordinate-rows"></tbody>
                     </table>
                 </div>
-            </section>
+                </section>
+
+                <section class="panel" aria-labelledby="distance-heading">
+                    <h2 id="distance-heading">Card movement distances</h2>
+                    <p>Configure the distances used when inserting and fetching a card.</p>
+
+                    <div class="form-grid settings-form-grid">
+                        <label>
+                            Insert distance
+                            <input id="insert-distance" type="number" step="1">
+                        </label>
+                        <label>
+                            Fetch distance
+                            <input id="fetch-distance" type="number" step="1">
+                        </label>
+                    </div>
+
+                    <button id="save-distances-button" class="primary-button" type="button" disabled>Save distances</button>
+                </section>
+            </div>
 
             <section class="panel" aria-labelledby="opt-heading">
                 <h2 id="opt-heading">OPT points</h2>
@@ -128,6 +148,27 @@
                         <select id="opt-point-select"></select>
                     </label>
                 </div>
+
+                <div class="form-grid opt-settings-form-grid">
+                    <label>
+                        Swipe delta X
+                        <input id="swipe-delta-x" type="number" step="1">
+                    </label>
+                    <label>
+                        Swipe delta Y
+                        <input id="swipe-delta-y" type="number" step="1">
+                    </label>
+                    <label>
+                        Contact insert distance
+                        <input id="contact-insert-distance" type="number" step="1">
+                    </label>
+                    <label>
+                        Contact push distance
+                        <input id="contact-push-distance" type="number" step="1">
+                    </label>
+                </div>
+
+                <button id="save-opt-settings-button" class="primary-button" type="button" disabled>Save OPT settings</button>
 
                 <div class="selected-coordinate">
                     <span>Stored value</span>

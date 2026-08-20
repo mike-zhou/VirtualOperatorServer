@@ -191,6 +191,8 @@ function setSaveButtonsEnabled(enabled) {
     document.getElementById("save-idle-button").disabled = !(enabled && hasConfig);
     document.getElementById("save-card-button").disabled = !(enabled && hasConfig && pointSelectionValid);
     document.getElementById("save-opt-button").disabled = !(enabled && hasConfig);
+    document.getElementById("save-distances-button").disabled = !hasConfig;
+    document.getElementById("save-opt-settings-button").disabled = !hasConfig;
 }
 
 async function moveAxis(button) {
@@ -243,15 +245,22 @@ async function moveAxis(button) {
 
 function renderCoordinateConfig() {
     renderIdlePoint();
+    renderDistances();
     renderCardSelectors();
     renderCardTable();
     renderOptSelectors();
+    renderOptSettings();
     renderOptTable();
     renderSelectedOptValue();
 }
 
 function renderIdlePoint() {
     document.getElementById("idle-point-value").textContent = formatPoint(coordinateConfig.idle);
+}
+
+function renderDistances() {
+    document.getElementById("insert-distance").value = coordinateConfig.insertDistance;
+    document.getElementById("fetch-distance").value = coordinateConfig.fetchDistance;
 }
 
 function renderCardSelectors() {
@@ -346,6 +355,60 @@ function renderSelectedOptValue() {
     const pointName = document.getElementById("opt-point-select").value;
     const point = coordinateConfig.opTs[optIndex][pointName];
     document.getElementById("selected-opt-value").textContent = formatPoint(point);
+}
+
+function renderOptSettings() {
+    if (!coordinateConfig) {
+        return;
+    }
+
+    const optIndex = Number(document.getElementById("opt-select").value || 0);
+    const opt = coordinateConfig.opTs[optIndex];
+    document.getElementById("swipe-delta-x").value = opt.swipeDeltaX;
+    document.getElementById("swipe-delta-y").value = opt.swipeDeltaY;
+    document.getElementById("contact-insert-distance").value = opt.contactInsertDistance;
+    document.getElementById("contact-push-distance").value = opt.contactPushDistance;
+}
+
+function readIntegerInput(id, label) {
+    const input = document.getElementById(id);
+    const value = input.valueAsNumber;
+    if (!Number.isInteger(value)) {
+        input.focus();
+        throw new Error(`${label} must be a whole number.`);
+    }
+    return value;
+}
+
+async function saveDistances() {
+    try {
+        const settings = {
+            insertDistance: readIntegerInput("insert-distance", "Insert distance"),
+            fetchDistance: readIntegerInput("fetch-distance", "Fetch distance")
+        };
+        await requestJson("/api/coordinates/distances", jsonOptions("PUT", settings));
+        showMessage("Card movement distances were updated.");
+        await loadCoordinates();
+    } catch (error) {
+        showMessage(`Unable to save distances: ${error.message}`, true);
+    }
+}
+
+async function saveOptSettings() {
+    const optIndex = Number(document.getElementById("opt-select").value);
+    try {
+        const settings = {
+            swipeDeltaX: readIntegerInput("swipe-delta-x", "Swipe delta X"),
+            swipeDeltaY: readIntegerInput("swipe-delta-y", "Swipe delta Y"),
+            contactInsertDistance: readIntegerInput("contact-insert-distance", "Contact insert distance"),
+            contactPushDistance: readIntegerInput("contact-push-distance", "Contact push distance")
+        };
+        await requestJson(`/api/coordinates/opts/${optIndex}/settings`, jsonOptions("PUT", settings));
+        showMessage(`${coordinateConfig.opTs[optIndex].name} settings were updated.`);
+        await loadCoordinates();
+    } catch (error) {
+        showMessage(`Unable to save OPT settings: ${error.message}`, true);
+    }
 }
 
 async function saveCardPoint() {
@@ -461,11 +524,16 @@ async function initialize() {
             selectCardForUpdate(button);
         }
     });
-    document.getElementById("opt-select").addEventListener("change", renderSelectedOptValue);
+    document.getElementById("opt-select").addEventListener("change", () => {
+        renderSelectedOptValue();
+        renderOptSettings();
+    });
     document.getElementById("opt-point-select").addEventListener("change", renderSelectedOptValue);
     document.getElementById("save-idle-button").addEventListener("click", saveIdlePoint);
     document.getElementById("save-card-button").addEventListener("click", saveCardPoint);
     document.getElementById("save-opt-button").addEventListener("click", saveOptPoint);
+    document.getElementById("save-distances-button").addEventListener("click", saveDistances);
+    document.getElementById("save-opt-settings-button").addEventListener("click", saveOptSettings);
 
     try {
         await loadCoordinates();

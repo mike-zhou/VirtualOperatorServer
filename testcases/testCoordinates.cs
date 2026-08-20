@@ -66,7 +66,9 @@ namespace VirtualOperatorServer.Tests
         {
             var coordinates = new CoordinatesModel
             {
-                Idle = CreatePoint(41)
+                Idle = CreatePoint(41),
+                InsertDistance = 125,
+                FetchDistance = 250
             };
 
             coordinates.CardBays[0].AddCard(CreatePoint(1));
@@ -85,6 +87,10 @@ namespace VirtualOperatorServer.Tests
             return new OptModel
             {
                 Name = name,
+                SwipeDeltaX = offset + 2,
+                SwipeDeltaY = offset + 3,
+                ContactInsertDistance = offset + 4,
+                ContactPushDistance = offset + 5,
                 MsrSwipingStartPoint = CreatePoint(offset + 1),
                 MsrSwipingStopPoint = CreatePoint(offset + 11),
                 ContactInsertingStartPoint = CreatePoint(offset + 21),
@@ -108,6 +114,8 @@ namespace VirtualOperatorServer.Tests
         private static void AssertCoordinatesEqual(CoordinatesModel expected, CoordinatesModel actual, string path)
         {
             AssertPointEqual(expected.Idle, actual.Idle, $"{path}.Idle");
+            Assert.Equal(expected.InsertDistance, actual.InsertDistance);
+            Assert.Equal(expected.FetchDistance, actual.FetchDistance);
 
             Assert.Equal(expected.CardBays.Length, actual.CardBays.Length);
             for (var i = 0; i < expected.CardBays.Length; i++)
@@ -134,6 +142,10 @@ namespace VirtualOperatorServer.Tests
         private static void AssertOptEqual(OptModel expected, OptModel actual, string path)
         {
             Assert.Equal(expected.Name, actual.Name);
+            Assert.Equal(expected.SwipeDeltaX, actual.SwipeDeltaX);
+            Assert.Equal(expected.SwipeDeltaY, actual.SwipeDeltaY);
+            Assert.Equal(expected.ContactInsertDistance, actual.ContactInsertDistance);
+            Assert.Equal(expected.ContactPushDistance, actual.ContactPushDistance);
             AssertPointEqual(expected.MsrSwipingStartPoint, actual.MsrSwipingStartPoint, $"{path}.MsrSwipingStartPoint");
             AssertPointEqual(expected.MsrSwipingStopPoint, actual.MsrSwipingStopPoint, $"{path}.MsrSwipingStopPoint");
             AssertPointEqual(expected.ContactInsertingStartPoint, actual.ContactInsertingStartPoint, $"{path}.ContactInsertingStartPoint");
