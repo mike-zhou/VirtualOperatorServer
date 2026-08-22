@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operation</title>
+    <style>
+        table {
+            border-collapse: collapse;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid black;
+        }
+
+        th {
+            background-color: gray;
+        }
+
+        tbody tr {
+            cursor: pointer;
+        }
+
+        tbody tr.selected {
+            background-color: lightblue;
+        }
+
+        .table-actions-layout {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .table-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+    </style>
+    <script src="/js/operation.js" defer></script>
+</head>
+<body>
+    <button type="button">StartHomePositioning</button>
+
+    <div>
+        <label for="card-name">Card name</label>
+        <input id="card-name" name="cardName" type="text">
+
+        <label for="card-bay">Card bay</label>
+        <select id="card-bay" name="cardBay">
+            <option value="0">1</option>
+            <option value="1">2</option>
+            <option value="2">3</option>
+        </select>
+
+        <label for="card-slot">Card slot number</label>
+        <select id="card-slot" name="cardSlot">
+            <option value="0">1</option>
+            <option value="1">2</option>
+            <option value="2">3</option>
+            <option value="3">4</option>
+            <option value="4">5</option>
+            <option value="5">6</option>
+            <option value="6">7</option>
+            <option value="7">8</option>
+            <option value="8">9</option>
+            <option value="9">10</option>
+            <option value="10">11</option>
+            <option value="11">12</option>
+        </select>
+
+        <button id="add-card" type="button">Add</button>
+        <button id="delete-card" type="button" disabled>Delete</button>
+    </div>
+
+    <div class="table-actions-layout">
+        <table>
+            <thead>
+                <tr>
+                    <th scope="col">Card name</th>
+                    <th scope="col">Card bay</th>
+                    <th scope="col">Card slot number</th>
+                </tr>
+            </thead>
+            <tbody id="card-mapping-table-body"></tbody>
+        </table>
+
+        <div class="table-actions" role="group" aria-label="Card actions">
+            <button type="button">Swipe</button>
+            <button type="button">Insert</button>
+            <button type="button">Tap</button>
+            <button type="button">Barcode</button>
+        </div>
+    </div>
+</body>
+</html>
