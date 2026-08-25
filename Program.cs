@@ -2,6 +2,7 @@ using System.Text.Json;
 using VirtualOperatorServer.CardMappings;
 using VirtualOperatorServer.Coordinates;
 using VirtualOperatorServer.Services;
+using VirtualOperatorServer.Operation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,7 @@ builder.Services.AddSingleton<BackSocket>();
 builder.Services.AddSingleton<ClientHandlers>();
 builder.Services.AddSingleton<CoordinateStore>();
 builder.Services.AddSingleton<CardMappingStore>();
+builder.Services.AddSingleton<Operations>();
 builder.Services.AddHostedService<BackService>();
 
 var app = builder.Build();
@@ -17,6 +19,7 @@ app.UseDefaultFiles();
 app.UseStaticFiles();
 CoordinateApi.MapCoordinateApi(app);
 app.MapCardMappingApi();
+app.MapOperationsApi();
 
 app.MapGet("/get/{*command}", (string command, ClientHandlers clientHandlers) =>
 {

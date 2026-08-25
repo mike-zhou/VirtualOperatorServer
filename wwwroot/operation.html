@@ -38,11 +38,17 @@
             flex-direction: column;
             gap: 0.5rem;
         }
+
+        .vertical-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
     </style>
     <script src="/js/operation.js" defer></script>
 </head>
 <body>
-    <button type="button">StartHomePositioning</button>
+    <button id="initialize-machine" type="button">Initialize Machine</button>
 
     <div>
         <label for="card-name">Card name</label>
@@ -88,10 +94,27 @@
         </table>
 
         <div class="table-actions" role="group" aria-label="Card actions">
-            <button type="button">Swipe</button>
-            <button type="button">Insert</button>
-            <button type="button">Tap</button>
-            <button type="button">Barcode</button>
+            <table>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="vertical-actions">
+                                <label><input type="radio" name="OPT-option" value="0" checked> OPT1</label>
+                                <label><input type="radio" name="OPT-option" value="1"> OPT2</label>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="vertical-actions">
+                                <button id="swipe-card" type="button">Swipe</button>
+                                <button id="tap-card" type="button">Tap</button>
+                                <button id="barcode-card" type="button">Barcode</button>
+                                <button id="insert-card" type="button">Insert</button>
+                                <button id="extract-card" type="button">Extract</button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </body>

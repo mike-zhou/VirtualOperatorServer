@@ -56,6 +56,52 @@ async function getResponseError(response, fallbackMessage) {
     }
 }
 
+async function initializeMachine() {
+    const button = document.getElementById("initialize-machine");
+    button.disabled = true;
+
+    try {
+        const response = await fetch("/api/operations/initialize", { method: "POST" });
+        if (!response.ok)
+            throw new Error(await getResponseError(response, "Unable to initialize the machine."));
+
+        alert("Machine initialized.");
+    } catch (error) {
+        alert(error.message);
+    } finally {
+        button.disabled = false;
+    }
+}
+
+async function performCardOperation(operation) {
+    const selectedRow = document.querySelector("#card-mapping-table-body tr.selected");
+    if (!selectedRow) {
+        alert(`Select a card mapping to ${operation}.`);
+        return;
+    }
+
+    const button = document.getElementById(`${operation}-card`);
+    button.disabled = true;
+
+    try {
+        const response = await fetch(`/api/operations/${operation}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                cardName: selectedRow.dataset.cardName,
+                opt: Number(document.querySelector('input[name="OPT-option"]:checked').value)
+            })
+        });
+
+        if (!response.ok)
+            throw new Error(await getResponseError(response, `Unable to ${operation} the card.`));
+    } catch (error) {
+        alert(error.message);
+    } finally {
+        button.disabled = false;
+    }
+}
+
 function selectCardMapping(event) {
     const row = event.target.closest("tr");
     if (!row)
@@ -143,6 +189,10 @@ document.getElementById("add-card").addEventListener("click", addCardMapping);
 document.getElementById("card-name").addEventListener("input", updateCardActionButtons);
 document.getElementById("card-mapping-table-body").addEventListener("click", selectCardMapping);
 document.getElementById("delete-card").addEventListener("click", deleteCardMapping);
+document.getElementById("initialize-machine").addEventListener("click", initializeMachine);
+for (const operation of ["swipe", "tap", "barcode", "insert", "extract"]) {
+    document.getElementById(`${operation}-card`).addEventListener("click", () => performCardOperation(operation));
+}
 loadCardMappings().catch(error => {
     alert(error.message);
 });
