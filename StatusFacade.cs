@@ -310,23 +310,22 @@ namespace VirtualOperatorServer.Facade
         }
 
         /// <summary>
-        /// This static function construct a temporary Facade object,
-        /// fill its content with information collected from different sources,
-        /// then convert the object to a JSON string.
+        /// Constructs a Facade object and fills it with information collected
+        /// from the available status sources.
         /// </summary>        
-        public static string CreateStatusJsonString()
+        public static Facade? GetFacade()
         {
             if (CmdGetVersion.Version == null)
             {
-                return "";
+                return null;
             }
             if (CmdGetGPIOMode.GpioModes == null)
             {
-                return "";
+                return null;
             }
             if (CmdGetStatus.Status == null)
             {
-                return "";
+                return null;
             }
 
             Facade facade = new Facade();
@@ -692,8 +691,15 @@ namespace VirtualOperatorServer.Facade
                 }
             }
 
-            var jsonStr = JsonSerializer.Serialize(facade, facadeSerializerOption);
-            return jsonStr;
+            return facade;
+        }
+
+        public static string CreateStatusJsonString()
+        {
+            var facade = GetFacade();
+            return facade == null
+                ? ""
+                : JsonSerializer.Serialize(facade, facadeSerializerOption);
         }
 
     }
