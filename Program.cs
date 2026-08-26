@@ -16,7 +16,7 @@ var app = builder.Build();
 
 app.UseDefaultFiles();
 app.UseStaticFiles();
-CoordinateApi.MapCoordinateApi(app);
+app.MapCoordinateApi();
 app.MapCardMappingApi();
 app.MapOperationsApi();
 app.MapLowLevelAccessApi();

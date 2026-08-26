@@ -322,7 +322,7 @@ namespace VirtualOperatorServer.Coordinates
 
     public static class CoordinateApi
     {
-        public static IEndpointRouteBuilder MapCoordinateApi(IEndpointRouteBuilder endpoints)
+        public static IEndpointRouteBuilder MapCoordinateApi(this IEndpointRouteBuilder endpoints)
         {
             var api = endpoints.MapGroup("/api/coordinates");
 
