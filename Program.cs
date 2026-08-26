@@ -1,4 +1,3 @@
-using System.Text.Json;
 using VirtualOperatorServer.CardMappings;
 using VirtualOperatorServer.Coordinates;
 using VirtualOperatorServer.Services;
@@ -7,7 +6,7 @@ using VirtualOperatorServer.Operation;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<BackSocket>();
-builder.Services.AddSingleton<ClientHandlers>();
+builder.Services.AddSingleton<LowLevelAccessHandlers>();
 builder.Services.AddSingleton<CoordinateStore>();
 builder.Services.AddSingleton<CardMappingStore>();
 builder.Services.AddSingleton<Operations>();
@@ -20,30 +19,6 @@ app.UseStaticFiles();
 CoordinateApi.MapCoordinateApi(app);
 app.MapCardMappingApi();
 app.MapOperationsApi();
-
-app.MapGet("/get/{*command}", (string command, ClientHandlers clientHandlers) =>
-{
-    Console.WriteLine($"/get/{command}");
-    if(command.Length == 0)
-    {
-        return Results.Text("Empty command", "text/html");
-    }
-
-    return clientHandlers.GetCommandHandler(command);
-});
-
-app.MapPost("/post/{*command}", async (HttpRequest request, string command, ClientHandlers clientHandlers) =>
-{
-    Console.WriteLine($"/post/{command}");
-    if(command.Length == 0)
-    {
-        return Results.Text("Empty command", "text/html");
-    }
-
-    using var jsonDoc = await JsonDocument.ParseAsync(request.Body);
-    var jsonRoot = jsonDoc.RootElement;
-
-    return await clientHandlers.PostCommandHandler(command, jsonRoot);
-});
+app.MapLowLevelAccessApi();
 
 app.Run();

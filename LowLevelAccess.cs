@@ -4,12 +4,12 @@ using VirtualOperatorServer.Configuration;
 using VirtualOperatorServer.Facade;
 using VirtualOperatorServer.Services;
 
-internal sealed class ClientHandlers
+internal sealed class LowLevelAccessHandlers
 {
     private const byte MaxAmountOfPulseInBatch = 100;
     private readonly BackSocket _backSocket;
 
-    public ClientHandlers(BackSocket backSocket)
+    public LowLevelAccessHandlers(BackSocket backSocket)
     {
         _backSocket = backSocket;
     }
@@ -1258,4 +1258,40 @@ internal sealed class ClientHandlers
         return Results.Text(result, "text/html");
     }
 
+}
+
+internal static class LowLevelAccessApi
+{
+    public static IEndpointRouteBuilder MapLowLevelAccessApi(this IEndpointRouteBuilder endpoints)
+    {
+        endpoints.MapGet("/get/{*command}", (string command, LowLevelAccessHandlers lowLevelAccessHandlers) =>
+        {
+            Console.WriteLine($"/get/{command}");
+            if (command.Length == 0)
+            {
+                return Results.Text("Empty command", "text/html");
+            }
+
+            return lowLevelAccessHandlers.GetCommandHandler(command);
+        });
+
+        endpoints.MapPost("/post/{*command}", async (
+            HttpRequest request,
+            string command,
+            LowLevelAccessHandlers lowLevelAccessHandlers) =>
+        {
+            Console.WriteLine($"/post/{command}");
+            if (command.Length == 0)
+            {
+                return Results.Text("Empty command", "text/html");
+            }
+
+            using var jsonDoc = await JsonDocument.ParseAsync(request.Body);
+            var jsonRoot = jsonDoc.RootElement;
+
+            return await lowLevelAccessHandlers.PostCommandHandler(command, jsonRoot);
+        });
+
+        return endpoints;
+    }
 }
