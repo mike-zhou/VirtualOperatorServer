@@ -1,6 +1,7 @@
 "use strict";
 
 let mappedCardNames = new Set();
+let cardBays = [];
 
 function normalizeCardName(cardName) {
     return cardName.trim().toLowerCase();
@@ -9,9 +10,57 @@ function normalizeCardName(cardName) {
 function updateCardActionButtons() {
     const cardName = normalizeCardName(document.getElementById("card-name").value);
     const mappingExists = mappedCardNames.has(cardName);
+    const slotSelected = document.getElementById("card-slot").selectedIndex >= 0;
 
-    document.getElementById("add-card").disabled = mappingExists;
+    document.getElementById("add-card").disabled = mappingExists || !slotSelected;
     document.getElementById("delete-card").disabled = !mappingExists;
+}
+
+function renderCardSlots() {
+    const cardBayIndex = Number(document.getElementById("card-bay").value);
+    const cards = cardBays[cardBayIndex]?.cards;
+    const slotNumbers = cards && typeof cards === "object"
+        ? Object.keys(cards)
+            .map(Number)
+            .filter(Number.isInteger)
+            .sort((first, second) => first - second)
+        : [];
+    const cardSlotSelect = document.getElementById("card-slot");
+
+    cardSlotSelect.replaceChildren(...slotNumbers.map(slotNumber => {
+        const option = document.createElement("option");
+        option.value = slotNumber;
+        option.textContent = slotNumber + 1;
+        return option;
+    }));
+    cardSlotSelect.disabled = slotNumbers.length === 0;
+    updateCardActionButtons();
+}
+
+function renderCardSelectors(coordinates) {
+    if (!Array.isArray(coordinates.cardBays))
+        throw new Error("The coordinate configuration does not contain card bays.");
+
+    cardBays = coordinates.cardBays;
+    const cardBaySelect = document.getElementById("card-bay");
+    cardBaySelect.replaceChildren(...cardBays.map((_, cardBayIndex) => {
+        const option = document.createElement("option");
+        option.value = cardBayIndex;
+        option.textContent = cardBayIndex + 1;
+        return option;
+    }));
+    cardBaySelect.disabled = cardBays.length === 0;
+    renderCardSlots();
+}
+
+async function loadCardSelectors() {
+    const response = await fetch("/api/coordinates/");
+    const coordinates = await response.json();
+
+    if (!response.ok)
+        throw new Error(coordinates.error || coordinates.detail || "Unable to load card coordinates.");
+
+    renderCardSelectors(coordinates);
 }
 
 function renderCardMappings(mappings) {
@@ -33,6 +82,33 @@ function renderCardMappings(mappings) {
     updateCardActionButtons();
 }
 
+function cardMappingSlotExists(slot) {
+    if (!Number.isInteger(slot?.cardBay) || !Number.isInteger(slot?.cardSlotNumber))
+        return false;
+
+    const cards = cardBays[slot.cardBay]?.cards;
+    return cards != null && Object.prototype.hasOwnProperty.call(cards, slot.cardSlotNumber);
+}
+
+async function requestCardMappingDeletion(cardName) {
+    const response = await fetch(`/api/card-mappings/${encodeURIComponent(cardName)}`, {
+        method: "DELETE"
+    });
+
+    if (!response.ok)
+        throw new Error(await getResponseError(response, `Unable to delete the mapping for ${cardName}.`));
+}
+
+async function removeInvalidCardMappings(mappings) {
+    const invalidCardNames = Object.entries(mappings)
+        .filter(([, slot]) => !cardMappingSlotExists(slot))
+        .map(([cardName]) => cardName);
+
+    await Promise.all(invalidCardNames.map(requestCardMappingDeletion));
+    invalidCardNames.forEach(cardName => delete mappings[cardName]);
+    return mappings;
+}
+
 async function loadCardMappings() {
     const response = await fetch("/api/card-mappings");
     const mappings = await response.json();
@@ -40,7 +116,7 @@ async function loadCardMappings() {
     if (!response.ok)
         throw new Error(mappings.error || mappings.detail || "Unable to load card mappings.");
 
-    renderCardMappings(mappings);
+    renderCardMappings(await removeInvalidCardMappings(mappings));
 }
 
 async function getResponseError(response, fallbackMessage) {
@@ -127,13 +203,7 @@ async function deleteCardMapping() {
     deleteButton.disabled = true;
 
     try {
-        const response = await fetch(`/api/card-mappings/${encodeURIComponent(cardName)}`, {
-            method: "DELETE"
-        });
-
-        if (!response.ok) {
-            throw new Error(await getResponseError(response, "Unable to delete card mapping."));
-        }
+        await requestCardMappingDeletion(cardName);
 
         await loadCardMappings();
         alert(`Deleted ${cardName}.`);
@@ -187,12 +257,19 @@ async function addCardMapping() {
 
 document.getElementById("add-card").addEventListener("click", addCardMapping);
 document.getElementById("card-name").addEventListener("input", updateCardActionButtons);
+document.getElementById("card-bay").addEventListener("change", renderCardSlots);
 document.getElementById("card-mapping-table-body").addEventListener("click", selectCardMapping);
 document.getElementById("delete-card").addEventListener("click", deleteCardMapping);
 document.getElementById("initialize-machine").addEventListener("click", initializeMachine);
 for (const operation of ["swipe", "tap", "barcode", "insert", "extract"]) {
     document.getElementById(`${operation}-card`).addEventListener("click", () => performCardOperation(operation));
 }
-loadCardMappings().catch(error => {
+
+async function initializePage() {
+    await loadCardSelectors();
+    await loadCardMappings();
+}
+
+initializePage().catch(error => {
     alert(error.message);
 });

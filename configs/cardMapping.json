@@ -1,12 +1,4 @@
 {
-  "Visa Credit": {
-    "CardBay": 0,
-    "CardSlotNumber": 0
-  },
-  "Visa Debit": {
-    "CardBay": 0,
-    "CardSlotNumber": 0
-  },
   "Mastercard": {
     "CardBay": 1,
     "CardSlotNumber": 4
