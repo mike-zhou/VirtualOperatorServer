@@ -24,13 +24,15 @@ namespace VirtualOperatorServer.Services
         {
             _logger.LogInformation("BackService started.");
 
+            bool staticStatusFetched = false;
+
             while (!stoppingToken.IsCancellationRequested)
             {
                 try
                 {
-                    if (!Connected)
+                    if (!staticStatusFetched)
                     {
-                        Connected = await FetchStaticStatusAsync();
+                        staticStatusFetched = await FetchStaticStatusAsync();
                     }
 
                     var success = await FetchDynamicStatusAsync();

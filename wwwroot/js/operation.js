@@ -133,6 +133,9 @@ async function getResponseError(response, fallbackMessage) {
 }
 
 async function initializeMachine() {
+    if (!confirm("Warning: Check that all steppers are at the correct positions before initializing the machine. Continue?"))
+        return;
+
     const button = document.getElementById("initialize-machine");
     button.disabled = true;
 

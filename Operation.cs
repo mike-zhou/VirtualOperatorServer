@@ -1,4 +1,8 @@
 
+using System.Text.Json;
+using VirtualOperatorServer.CommandAndReply;
+using VirtualOperatorServer.Services;
+
 namespace VirtualOperatorServer.Operation
 {
     enum Action
@@ -28,9 +32,18 @@ namespace VirtualOperatorServer.Operation
 
     class Operations
     {
+        private static readonly HashSet<byte> _stepperPowerIndices = [6, 7, 8, 9, 10, 11];
         private readonly object _dataLock = new();
+        private readonly ILogger<Operations> _logger;
+        private readonly BackSocket _backSocket;
         private Action _action = Action.Idle;
         private Position _position = Position.Unknown;
+
+        public Operations(ILogger<Operations> logger, BackSocket backSocket)
+        {
+            _logger = logger;
+            _backSocket = backSocket;
+        }
 
         public Position PositionState
         {
@@ -56,6 +69,7 @@ namespace VirtualOperatorServer.Operation
 
         public bool StartInitializingMachine()
         {
+            Facade.StatusFacade.Facade? facade;
             lock (_dataLock)
             {
                 if (_action != Action.Idle)
@@ -63,16 +77,79 @@ namespace VirtualOperatorServer.Operation
                 if (_position != Position.Unknown)
                     return false;
 
+                facade = Facade.StatusFacade.GetFacade();
+                if (facade == null)
+                    return false;
+
                 _action = Action.Initializing;
             }
 
-            _ = Task.Run(InitializeMachine);
+            _ = Task.Run(() => initializeMachine(facade));
             return true;
         }
 
-        private async Task InitializeMachine()
+        private async Task<bool> powerOutput(byte index, bool enableOutput)
         {
-            await Task.CompletedTask;
+            if (index >= Facade.StatusFacade.Facade.PowerOutputCount)
+                return false;
+
+            JsonElement payload = JsonSerializer.SerializeToElement(new
+            {
+                powerOutput = index,
+                enable = enableOutput
+            });
+            var command = new CmdSetPowerOutput(payload);
+            command.Reply = await _backSocket.SendAndReceiveAsync(command.Command);
+            return command.ParseReply().result;
+        }
+
+        private async Task<bool> bdcPowerOutput(bool enableOutput)
+        {
+            CmdSetGPIO.GPIO[] gpioArray =
+            [
+                new CmdSetGPIO.GPIO
+                {
+                    PortName = "PC",
+                    BitIndex = 15,
+                    Level = enableOutput ? (byte)1 : (byte)0
+                }
+            ];
+
+            var command = new CmdSetGPIO(gpioArray);
+            command.Reply = await _backSocket.SendAndReceiveAsync(command.Command);
+            return command.ParseReply().result;
+        }
+
+        private async Task initializeMachine(Facade.StatusFacade.Facade facade)
+        {
+            var succeeded = false;
+            
+            try
+            {
+                succeeded = true;
+                foreach (var index in _stepperPowerIndices)
+                {
+                    if (!await powerOutput(index, true))
+                    {
+                        succeeded = false;
+                        _logger.LogError("Failed to enable power output {StepperPowerIndex}.", index);
+                    }
+                }
+                if (!await bdcPowerOutput(true))
+                {
+                    succeeded = false;
+                    _logger.LogError("Failed to enable BDC power output.");
+                }
+            }
+            finally
+            {
+                lock (_dataLock)
+                {
+                    _action = Action.Idle;
+                    if (succeeded)
+                        _position = Position.Idle;
+                }
+            }
         }
 
         public bool StartSwipingCard(string cardName, uint opt)
@@ -87,11 +164,11 @@ namespace VirtualOperatorServer.Operation
                 _action = Action.Swiping;
             }
 
-            _ = Task.Run(() => Swipe(cardName, opt));
+            _ = Task.Run(() => swipe(cardName, opt));
             return true;
         }
 
-        private async Task Swipe(string cardName, uint opt)
+        private async Task swipe(string cardName, uint opt)
         {
             await Task.CompletedTask;
         }
@@ -108,11 +185,11 @@ namespace VirtualOperatorServer.Operation
                 _action = Action.Inserting;
             }
 
-            _ = Task.Run(() => Insert(cardName, opt));
+            _ = Task.Run(() => insert(cardName, opt));
             return true;
         }
 
-        private async Task Insert(string cardName, uint opt)
+        private async Task insert(string cardName, uint opt)
         {
             await Task.CompletedTask;
         }
@@ -129,11 +206,11 @@ namespace VirtualOperatorServer.Operation
                 _action = Action.Extracting;
             }
 
-            _ = Task.Run(() => Extract(cardName, opt));
+            _ = Task.Run(() => extract(cardName, opt));
             return true;
         }
 
-        private async Task Extract(string cardName, uint opt)
+        private async Task extract(string cardName, uint opt)
         {
             await Task.CompletedTask;
         }
@@ -150,11 +227,11 @@ namespace VirtualOperatorServer.Operation
                 _action = Action.Tapping;
             }
 
-            _ = Task.Run(() => Tap(cardName, opt));
+            _ = Task.Run(() => tap(cardName, opt));
             return true;
         }
 
-        private async Task Tap(string cardName, uint opt)
+        private async Task tap(string cardName, uint opt)
         {
             await Task.CompletedTask;
         }
@@ -171,11 +248,11 @@ namespace VirtualOperatorServer.Operation
                 _action = Action.Barcoding;
             }
 
-            _ = Task.Run(() => BarCode(cardName, opt));
+            _ = Task.Run(() => barCode(cardName, opt));
             return true;
         }
 
-        private async Task BarCode(string cardName, uint opt)
+        private async Task barCode(string cardName, uint opt)
         {
             await Task.CompletedTask;
         }
@@ -192,11 +269,11 @@ namespace VirtualOperatorServer.Operation
                 _action = Action.Touching;
             }
 
-            _ = Task.Run(() => Touch(opt, coordinates));
+            _ = Task.Run(() => touch(opt, coordinates));
             return true;
         }
 
-        private async Task Touch(uint opt, IReadOnlyList<(int x, int y)> coordinates)
+        private async Task touch(uint opt, IReadOnlyList<(int x, int y)> coordinates)
         {
             await Task.CompletedTask;
         }

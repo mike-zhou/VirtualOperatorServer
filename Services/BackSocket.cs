@@ -66,6 +66,11 @@ namespace VirtualOperatorServer.Services
                 Console.WriteLine($"Error: BackSocket::SendCommand: command is too long ({command.Length})");
                 return [];
             }
+            else if(command.Length < 1)
+            {
+                Console.WriteLine($"Error: BackSocket::SendCommand: command is empty ({command.Length})");
+                return [];
+            }
 
             await _mutex.WaitAsync();
             try
