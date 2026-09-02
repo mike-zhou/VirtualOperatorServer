@@ -460,6 +460,8 @@ namespace VirtualOperatorServer.Operation
                     _logger.LogError("Failed to enable BDC power output.");
                 }
 
+                await Task.Delay(1000);
+
                 if (!await initializeStepper())
                 {
                     succeeded = false;

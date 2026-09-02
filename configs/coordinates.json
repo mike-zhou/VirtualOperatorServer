@@ -1,10 +1,10 @@
 {
   "Idle": {
     "X": 1000,
-    "Y": 0,
+    "Y": 500,
     "Z": 1000,
     "U": 1000,
-    "V": -48
+    "V": -64
   },
   "InsertDistance": 0,
   "FetchDistance": 0,
