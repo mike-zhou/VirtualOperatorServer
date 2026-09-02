@@ -132,8 +132,21 @@ async function getResponseError(response, fallbackMessage) {
     }
 }
 
+function confirmMachineInitialization() {
+    const dialog = document.getElementById("initialize-machine-dialog");
+    dialog.returnValue = "";
+
+    const result = new Promise(resolve => {
+        dialog.addEventListener("close", () => resolve(dialog.returnValue === "initialize"), { once: true });
+    });
+
+    dialog.showModal();
+    document.getElementById("cancel-initialize-machine").focus();
+    return result;
+}
+
 async function initializeMachine() {
-    if (!confirm("Warning: Check that all steppers are at the correct positions before initializing the machine. Continue?"))
+    if (!await confirmMachineInitialization())
         return;
 
     const button = document.getElementById("initialize-machine");
@@ -144,7 +157,7 @@ async function initializeMachine() {
         if (!response.ok)
             throw new Error(await getResponseError(response, "Unable to initialize the machine."));
 
-        alert("Machine initialized.");
+        alert("Machine initialization is launched.");
     } catch (error) {
         alert(error.message);
     } finally {

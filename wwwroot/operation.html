@@ -44,11 +44,28 @@
             flex-direction: column;
             gap: 0.5rem;
         }
+
+        .dialog-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
     </style>
     <script src="/js/operation.js" defer></script>
 </head>
 <body>
     <button id="initialize-machine" type="button">Initialize Machine</button>
+
+    <dialog id="initialize-machine-dialog" aria-labelledby="initialize-machine-dialog-title">
+        <form method="dialog">
+            <h2 id="initialize-machine-dialog-title">Initialize machine?</h2>
+            <p>Warning: Check that all steppers are at the correct positions before initializing the machine.</p>
+            <div class="dialog-actions">
+                <button id="cancel-initialize-machine" type="submit" value="cancel" autofocus>Cancel</button>
+                <button type="submit" value="initialize">Initialize</button>
+            </div>
+        </form>
+    </dialog>
 
     <div>
         <label for="card-name">CardName</label>
