@@ -71,8 +71,8 @@ namespace VirtualOperatorServer.CommandAndReply
 
         public CmdGetStatus() : base(CreateCommand()) { }
 
-
-        public static VirtualOperatorStatus? Status { get; private set; } = null;
+        private static VirtualOperatorStatus? status;
+        public static VirtualOperatorStatus? Status => System.Threading.Volatile.Read(ref status);
 
         public override (bool result, string reason) ParseReply()
         {
@@ -210,7 +210,7 @@ namespace VirtualOperatorServer.CommandAndReply
                 offset += 12;
             }
 
-            Status = status; // update status
+            System.Threading.Volatile.Write(ref CmdGetStatus.status, status);
             return (true, "");
         }
     }
