@@ -1,5 +1,6 @@
 
 using System.Text.Json;
+using VirtualOperatorServer.CardMappings;
 using VirtualOperatorServer.CommandAndReply;
 using VirtualOperatorServer.Configuration;
 using VirtualOperatorServer.Coordinates;
@@ -39,14 +40,27 @@ namespace VirtualOperatorServer.Operation
         private readonly ILogger<Operations> _logger;
         private readonly BackSocket _backSocket;
         private readonly CoordinateStore _coordinateStore;
+        private readonly CardMappingStore _cardMappingStore;
         private Action _action = Action.Idle;
         private Position _position = Position.Unknown;
+        private readonly bool[,] _cardSlotsOccupied;
 
-        public Operations(ILogger<Operations> logger, BackSocket backSocket, CoordinateStore coordinateStore)
+        public Operations(ILogger<Operations> logger, BackSocket backSocket, CoordinateStore coordinateStore,
+            CardMappingStore cardMappingStore)
         {
             _logger = logger;
             _backSocket = backSocket;
             _coordinateStore = coordinateStore;
+            _cardMappingStore = cardMappingStore;
+
+            var coordinates = _coordinateStore.GetCoordinates();
+            var cardSlotCount = coordinates.CardBays.Max(cardBay => cardBay.Cards.Count);
+            _cardSlotsOccupied = new bool[coordinates.CardBays.Length, cardSlotCount];
+            for (var bayIndex = 0; bayIndex < _cardSlotsOccupied.GetLength(0); bayIndex++)
+            {
+                for (var slotIndex = 0; slotIndex < _cardSlotsOccupied.GetLength(1); slotIndex++)
+                    _cardSlotsOccupied[bayIndex, slotIndex] = true;
+            }
         }
 
         public Position PositionState
@@ -132,6 +146,39 @@ namespace VirtualOperatorServer.Operation
             var command = new CmdSetGPIO(gpioArray);
             command.Reply = await _backSocket.SendAndReceiveAsync(command.Command);
             return command.ParseReply().result;
+        }
+
+        /// <summary>
+        /// Sets the stepper's rampup, cruising, and rampdown pulse widths to the same value,
+        /// with one accelerating step and one decelerating step. Returns false on any failure.
+        /// </summary>
+        private async Task<bool> stepperSetConstActivePeriod(byte index, ushort pulseWidth)
+        {
+            if (index >= Facade.StatusFacade.Facade.StepperCount)
+                return false;
+
+            try
+            {
+                async Task<bool> send(VirtualOperatorServer.CommandAndReply.CommandAndReply command)
+                {
+                    command.Reply = await _backSocket.SendAndReceiveAsync(command.Command);
+                    return command.ParseReply().result;
+                }
+
+                ushort[] periods = [pulseWidth];
+                if (!await send(new CmdSetStepperActiveRampupPulseWidth(index, 0, 1, periods)))
+                    return false;
+
+                if (!await send(new CmdSetStepperActiveCruisePulseWidth(index, pulseWidth)))
+                    return false;
+
+                return await send(new CmdSetStepperActiveRampdownPulseWidth(index, 0, 1, periods));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to set constant active period for stepper {StepperIndex}.", index);
+                return false;
+            }
         }
 
         private async Task<bool> stepperSetDefaultActivePeriods(byte index)
@@ -353,6 +400,35 @@ namespace VirtualOperatorServer.Operation
             return runActiveCommand.ParseReply().result;
         }
 
+        /// <summary>
+        /// Sets the direction of the indexed stepper, runs the requested number of steps,
+        /// and waits until it is ready, returning whether the movement succeeded.
+        /// </summary>
+        private async Task<bool> stepperMoveActive(byte index, bool isForward, uint steps)
+        {
+            if (!await stepperForward(index, isForward))
+                return false;
+
+            if (!await stepperRunActive(index, steps))
+                return false;
+
+            while (true)
+            {
+                await Task.Delay(200);
+
+                var facade = await refreshFacade();
+                if (facade == null)
+                    return false;
+
+                var state = facade.steppers[index].status.state;
+                if (state == Facade.StatusFacade.Facade.Stepper.Status.State.READY)
+                    return true;
+
+                if (state != Facade.StatusFacade.Facade.Stepper.Status.State.RUNNING_ACTIVE)
+                    return false;
+            }
+        }
+
         private async Task<(bool result, Facade.StatusFacade.Facade.Stepper.Status.State state)> stepperGetStatus(byte index)
         {
             if (index >= Facade.StatusFacade.Facade.StepperCount)
@@ -526,9 +602,35 @@ namespace VirtualOperatorServer.Operation
                     _logger.LogError("Failed to enable BDC power output.");
                 }
 
-                await Task.Delay(1000);
+                await Task.Delay(500);
 
-                if (!await initializeStepper())
+                // check power outputs.
+                var refreshedFacade = await refreshFacade();
+                if (refreshedFacade == null)
+                {
+                    succeeded = false;
+                    _logger.LogError("Failed to refresh facade while validating power outputs.");
+                }
+                else
+                {
+                    foreach (var index in _stepperPowerIndices)
+                    {
+                        var output = refreshedFacade.powerOutputs[index];
+                        if (!output.isEnabled || !output.isOutputDetected)
+                        {
+                            succeeded = false;
+                            _logger.LogError("Power output {StepperPowerIndex} is not valid.", index);
+                        }
+                    }
+
+                    if (!refreshedFacade.bdcPowerOutput.isEnabled || !refreshedFacade.bdcPowerOutput.isOutputDetected)
+                    {
+                        succeeded = false;
+                        _logger.LogError("BDC power output is not valid.");
+                    }
+                }
+
+                if (succeeded && !await initializeStepper())
                 {
                     succeeded = false;
                     _logger.LogError("Failed to initialize steppers.");
@@ -562,9 +664,337 @@ namespace VirtualOperatorServer.Operation
             return true;
         }
 
+        private async Task<bool> pliersOpen()
+        {
+            return await pliersSetState(0, 1);
+        }
+
+        private async Task<bool> pliersClose()
+        {
+            return await pliersSetState(1, 0);
+        }
+
+        private async Task<bool> pliersDeactivate()
+        {
+            return await pliersSetState(0, 0);
+        }
+
+        private async Task<bool> pliersSetState(byte firstLevel, byte secondLevel)
+        {
+            CmdSetGPIO.GPIO[] gpioArray =
+            [
+                new CmdSetGPIO.GPIO { PortName = "PI", BitIndex = 9, Level = firstLevel },
+                new CmdSetGPIO.GPIO { PortName = "PC", BitIndex = 13, Level = secondLevel }
+            ];
+
+            var command = new CmdSetGPIO(gpioArray);
+            command.Reply = await _backSocket.SendAndReceiveAsync(command.Command);
+            return command.ParseReply().result;
+        }
+
+        private async Task<int[]?> getCurrentStepperCoordinates(string destination)
+        {
+            var facade = await refreshFacade();
+            if (facade == null)
+            {
+                _logger.LogError("Failed to retrieve stepper positions before moving to {Destination}.", destination);
+                return null;
+            }
+
+            return
+            [
+                facade.steppers[0].status.offset,
+                facade.steppers[1].status.offset,
+                facade.steppers[2].status.offset,
+                facade.steppers[3].status.offset,
+                facade.steppers[4].status.offset
+            ];
+        }
+
+        private static int[] getPointCoordinates(Point point)
+        {
+            return [point.X, point.Y, point.Z, point.U, point.V];
+        }
+
+        /// <summary>
+        /// Sets the direction of the indexed stepper from the sign of the requested distance,
+        /// then starts it moving for the corresponding number of steps.
+        /// </summary>
+        /// <returns><see langword="true"/> when the move starts successfully; otherwise, <see langword="false"/>.</returns>
+        private async Task<bool> stepperStartMove(byte index, long distance, string destination)
+        {
+            if (!await stepperForward(index, distance > 0))
+            {
+                _logger.LogError("Failed to set the direction of stepper {StepperIndex} while moving to {Destination}.", index, destination);
+                return false;
+            }
+
+            if (!await stepperRunActive(index, (uint)Math.Abs(distance)))
+            {
+                _logger.LogError("Failed to start stepper {StepperIndex} while moving to {Destination}.", index, destination);
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Waits for the indexed steppers to finish moving, failing if their states cannot be retrieved
+        /// or if any stepper enters a state other than ready or actively running.
+        /// </summary>
+        /// <returns><see langword="true"/> when every indexed stepper is ready; otherwise, <see langword="false"/>.</returns>
+        private async Task<bool> steppersWaitForMove(IReadOnlyList<byte> indices, string destination)
+        {
+            while (true)
+            {
+                await Task.Delay(200);
+
+                var facade = await refreshFacade();
+                if (facade == null)
+                {
+                    _logger.LogError("Failed to retrieve stepper states while moving to {Destination}.", destination);
+                    return false;
+                }
+
+                var allReady = true;
+                foreach (var index in indices)
+                {
+                    var state = facade.steppers[index].status.state;
+                    if (state == Facade.StatusFacade.Facade.Stepper.Status.State.READY)
+                        continue;
+
+                    if (state != Facade.StatusFacade.Facade.Stepper.Status.State.RUNNING_ACTIVE)
+                    {
+                        _logger.LogError("Stepper {StepperIndex} entered unexpected state {StepperState} while moving to {Destination}.", index, state, destination);
+                        return false;
+                    }
+
+                    allReady = false;
+                }
+
+                if (allReady)
+                    return true;
+            }
+        }
+
+        /// <summary>
+        /// Starts each requested stepper moving from its current coordinate to its target in parallel,
+        /// then waits for every moving stepper to become ready.
+        /// </summary>
+        /// <returns><see langword="true"/> when every move starts and completes successfully; otherwise, <see langword="false"/>.</returns>
+        private async Task<bool> steppersMoveInParallel(
+            IReadOnlyList<byte> indices,
+            IReadOnlyList<int> currentCoordinates,
+            IReadOnlyList<int> targetCoordinates,
+            string destination)
+        {
+            var movingIndices = new List<byte>(indices.Count);
+            var startTasks = new List<Task<bool>>(indices.Count);
+
+            foreach (var index in indices)
+            {
+                var distance = (long)targetCoordinates[index] - currentCoordinates[index];
+                if (distance == 0)
+                    continue;
+
+                movingIndices.Add(index);
+                startTasks.Add(stepperStartMove(index, distance, destination));
+            }
+
+            if (startTasks.Count == 0)
+                return true;
+
+            var results = await Task.WhenAll(startTasks);
+            foreach (var result in results)
+            {
+                if (!result)
+                    return false;
+            }
+
+            return await steppersWaitForMove(movingIndices, destination);
+        }
+
+        private async Task<bool> fromIdleToCardBay(byte bayIndex, byte cardIndex)
+        {
+            const string destination = "card bay";
+            var currentCoordinates = await getCurrentStepperCoordinates(destination);
+            if (currentCoordinates == null)
+                return false;
+
+            var coordinates = _coordinateStore.GetCoordinates();
+            if (bayIndex >= coordinates.CardBays.Length ||
+                !coordinates.CardBays[bayIndex].Cards.TryGetValue(cardIndex, out var target))
+                return false;
+
+            var targetCoordinates = getPointCoordinates(target);
+
+            const byte zIndex = 2;
+            if (!await steppersMoveInParallel([zIndex], currentCoordinates, targetCoordinates, destination))
+                return false;
+
+            return await steppersMoveInParallel([0, 1, 3, 4], currentCoordinates, targetCoordinates, destination);
+        }
+
+        // move to card bay 
+        private async Task<bool> toCardBay(byte bayIndex, byte cardIndex)
+        {
+            switch (_position)
+            {
+                case Position.Idle:
+                {
+                    var succeeded = await fromIdleToCardBay(bayIndex, cardIndex);
+                    lock (_dataLock)
+                    {
+                        _position = succeeded ? Position.CardBay : Position.Unknown;
+                    }
+
+                    return succeeded;
+                }
+
+                default:
+                    return false;
+            }
+        }
+
+        private async Task<bool> fromCardBayToMsrSwiping(uint opt)
+        {
+            try
+            {
+                var coordinates = _coordinateStore.GetCoordinates();
+                if (opt >= (uint)coordinates.OPTs.Length)
+                {
+                    _logger.LogError("Cannot move to the MSR swiping position: option {Option} is invalid.", opt);
+                    return false;
+                }
+
+                var target = coordinates.OPTs[(int)opt].MsrSwipingStartPoint;
+                if (target == null)
+                {
+                    _logger.LogError("Cannot move to the MSR swiping position: option {Option} has no start point.", opt);
+                    return false;
+                }
+
+                const string destination = "the MSR swiping position";
+                var currentCoordinates = await getCurrentStepperCoordinates(destination);
+                if (currentCoordinates == null)
+                    return false;
+                var targetCoordinates = getPointCoordinates(target);
+
+                if (!await steppersMoveInParallel([0, 1], currentCoordinates, targetCoordinates, destination))
+                    return false;
+
+                return await steppersMoveInParallel([2, 3, 4], currentCoordinates, targetCoordinates, destination);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to move to the MSR swiping position using option {Option}.", opt);
+                return false;
+            }
+        }
+
+        private async Task<bool> toMsrSwiping(uint opt)
+        {
+            switch (_position)
+            {
+                case Position.CardBay:
+                {
+                    var succeeded = await fromCardBayToMsrSwiping(opt);
+                    lock (_dataLock)
+                    {
+                        _position = succeeded ? Position.Swipe : Position.Unknown;
+                    }
+
+                    return succeeded;
+                }
+
+                default:
+                    return false;
+            }
+        }
+
         private async Task swipe(string cardName, uint opt)
         {
-            await Task.CompletedTask;
+            try
+            {
+                var hasCard = false;
+                byte bayIndex = 0;
+                byte cardIndex = 0;
+                if (_cardMappingStore.GetMappings().TryGetValue(cardName, out var slot) &&
+                    slot.CardBay >= 0 && slot.CardBay < _cardSlotsOccupied.GetLength(0) &&
+                    slot.CardSlotNumber >= 0 && slot.CardSlotNumber < _cardSlotsOccupied.GetLength(1))
+                {
+                    bayIndex = (byte)slot.CardBay;
+                    cardIndex = (byte)slot.CardSlotNumber;
+                    lock (_dataLock)
+                    {
+                        if (_cardSlotsOccupied[slot.CardBay, slot.CardSlotNumber])
+                        {
+                            _cardSlotsOccupied[slot.CardBay, slot.CardSlotNumber] = false;
+                            hasCard = true;
+                        }
+                    }
+                }
+
+                if (!hasCard)
+                {
+                    _logger.LogError("Cannot swipe card {CardName}: no card is present in the slot.", cardName);
+                    return;
+                }
+
+                if (!await toCardBay(bayIndex, cardIndex))
+                {
+                    _logger.LogError("Failed to move to card bay {BayIndex}, slot {CardIndex} while swiping card {CardName}.", bayIndex, cardIndex, cardName);
+                    return;
+                }
+
+                await pliersOpen();
+
+                var fetchDistance = _coordinateStore.GetCoordinates().FetchDistance;
+                if (fetchDistance == 0)
+                {
+                    _logger.LogError("Cannot swipe card {CardName}: fetch distance is zero.", cardName);
+                    return;
+                }
+
+                // going down to fetch the card
+                const byte zIndex = 2;
+                var steps = (uint)Math.Abs((long)fetchDistance);
+                if (!await stepperMoveActive(zIndex, fetchDistance > 0, steps))
+                {
+                    _logger.LogError("Failed to move stepper {StepperIndex} by fetch distance {FetchDistance} while swiping card {CardName}.", zIndex, fetchDistance, cardName);
+                    return;
+                }
+
+                await pliersClose();
+                await Task.Delay(500);
+
+                // going up to card position
+                if (!await stepperMoveActive(zIndex, fetchDistance < 0, steps))
+                {
+                    _logger.LogError("Failed to reverse stepper {StepperIndex} by fetch distance {FetchDistance} while swiping card {CardName}.", zIndex, fetchDistance, cardName);
+                    return;
+                }
+
+                if (!await toMsrSwiping(opt))
+                {
+                    _logger.LogError("Failed to move card {CardName} to the MSR swiping position using option {Option}.", cardName, opt);
+                    return;
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to swipe card {CardName}.", cardName);
+                return;
+            }
+            finally
+            {
+                lock (_dataLock)
+                {
+                    _action = Action.Idle;
+                }
+            }
         }
 
         public bool StartInsertingCard(string cardName, uint opt)

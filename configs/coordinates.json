@@ -6,7 +6,7 @@
     "U": 1000,
     "V": -64
   },
-  "InsertDistance": 0,
+  "ReplaceDistance": 0,
   "FetchDistance": 0,
   "CardBays": [
     {
@@ -118,7 +118,6 @@
         "U": 0,
         "V": 0
       },
-      "MsrSwipingStopPoint": null,
       "ContactInsertingStartPoint": null,
       "ContactInsertingStopPoint": null,
       "ContactlessTappingStartPoint": null,
@@ -143,7 +142,6 @@
         "U": 1016,
         "V": -64
       },
-      "MsrSwipingStopPoint": null,
       "ContactInsertingStartPoint": null,
       "ContactInsertingStopPoint": null,
       "ContactlessTappingStartPoint": null,

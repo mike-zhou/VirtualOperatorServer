@@ -67,7 +67,7 @@ namespace VirtualOperatorServer.Tests
             var coordinates = new CoordinatesModel
             {
                 Idle = CreatePoint(41),
-                InsertDistance = 125,
+                ReplaceDistance = 125,
                 FetchDistance = 250
             };
 
@@ -92,7 +92,6 @@ namespace VirtualOperatorServer.Tests
                 ContactInsertDistance = offset + 4,
                 ContactPushDistance = offset + 5,
                 MsrSwipingStartPoint = CreatePoint(offset + 1),
-                MsrSwipingStopPoint = CreatePoint(offset + 11),
                 ContactInsertingStartPoint = CreatePoint(offset + 21),
                 ContactInsertingStopPoint = CreatePoint(offset + 31),
                 ContactlessTappingStartPoint = CreatePoint(offset + 41),
@@ -114,7 +113,7 @@ namespace VirtualOperatorServer.Tests
         private static void AssertCoordinatesEqual(CoordinatesModel expected, CoordinatesModel actual, string path)
         {
             AssertPointEqual(expected.Idle, actual.Idle, $"{path}.Idle");
-            Assert.Equal(expected.InsertDistance, actual.InsertDistance);
+            Assert.Equal(expected.ReplaceDistance, actual.ReplaceDistance);
             Assert.Equal(expected.FetchDistance, actual.FetchDistance);
 
             Assert.Equal(expected.CardBays.Length, actual.CardBays.Length);
@@ -147,7 +146,6 @@ namespace VirtualOperatorServer.Tests
             Assert.Equal(expected.ContactInsertDistance, actual.ContactInsertDistance);
             Assert.Equal(expected.ContactPushDistance, actual.ContactPushDistance);
             AssertPointEqual(expected.MsrSwipingStartPoint, actual.MsrSwipingStartPoint, $"{path}.MsrSwipingStartPoint");
-            AssertPointEqual(expected.MsrSwipingStopPoint, actual.MsrSwipingStopPoint, $"{path}.MsrSwipingStopPoint");
             AssertPointEqual(expected.ContactInsertingStartPoint, actual.ContactInsertingStartPoint, $"{path}.ContactInsertingStartPoint");
             AssertPointEqual(expected.ContactInsertingStopPoint, actual.ContactInsertingStopPoint, $"{path}.ContactInsertingStopPoint");
             AssertPointEqual(expected.ContactlessTappingStartPoint, actual.ContactlessTappingStartPoint, $"{path}.ContactlessTappingStartPoint");

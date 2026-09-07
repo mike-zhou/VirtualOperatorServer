@@ -40,7 +40,6 @@ namespace VirtualOperatorServer.Coordinates
         public int ContactInsertDistance { get; set; }
         public int ContactPushDistance { get; set; }
         public Point? MsrSwipingStartPoint { get; set; }
-        public Point? MsrSwipingStopPoint { get; set; }
         public Point? ContactInsertingStartPoint { get; set; }
         public Point? ContactInsertingStopPoint { get; set; }
         public Point? ContactlessTappingStartPoint { get; set; }
@@ -61,7 +60,7 @@ namespace VirtualOperatorServer.Coordinates
         };
 
         public Point Idle { get; set; } = new();
-        public int InsertDistance { get; set; }
+        public int ReplaceDistance { get; set; }
         public int FetchDistance { get; set; }
         public CardBay[] CardBays { get; set; } = { new(), new(), new() };
         public OPT[] OPTs { get; set; } =
@@ -91,7 +90,7 @@ namespace VirtualOperatorServer.Coordinates
                     return false;
 
                 Idle = coordinates.Idle;
-                InsertDistance = coordinates.InsertDistance;
+                ReplaceDistance = coordinates.ReplaceDistance;
                 FetchDistance = coordinates.FetchDistance;
                 CardBays = coordinates.CardBays;
                 OPTs = coordinates.OPTs;
@@ -137,7 +136,7 @@ namespace VirtualOperatorServer.Coordinates
         }
     }
 
-    public sealed record DistanceSettings(int InsertDistance, int FetchDistance);
+    public sealed record DistanceSettings(int ReplaceDistance, int FetchDistance);
 
     public sealed record OptSettings(
         int SwipeDeltaX,
@@ -177,7 +176,7 @@ namespace VirtualOperatorServer.Coordinates
             ArgumentNullException.ThrowIfNull(settings);
             Mutate(coordinates =>
             {
-                coordinates.InsertDistance = settings.InsertDistance;
+                coordinates.ReplaceDistance = settings.ReplaceDistance;
                 coordinates.FetchDistance = settings.FetchDistance;
             });
             return settings;
@@ -221,9 +220,6 @@ namespace VirtualOperatorServer.Coordinates
                 {
                     case "msrSwipingStartPoint":
                         opt.MsrSwipingStartPoint = savedPoint;
-                        break;
-                    case "msrSwipingStopPoint":
-                        opt.MsrSwipingStopPoint = savedPoint;
                         break;
                     case "contactInsertingStartPoint":
                         opt.ContactInsertingStartPoint = savedPoint;

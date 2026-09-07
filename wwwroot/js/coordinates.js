@@ -15,7 +15,6 @@ const fixedJogSteps = [
 
 const optPoints = [
     ["msrSwipingStartPoint", "MSR swiping start"],
-    ["msrSwipingStopPoint", "MSR swiping stop"],
     ["contactInsertingStartPoint", "Contact inserting start"],
     ["contactInsertingStopPoint", "Contact inserting stop"],
     ["contactlessTappingStartPoint", "Contactless tapping start"],
@@ -259,7 +258,7 @@ function renderIdlePoint() {
 }
 
 function renderDistances() {
-    document.getElementById("insert-distance").value = coordinateConfig.insertDistance;
+    document.getElementById("replace-distance").value = coordinateConfig.replaceDistance;
     document.getElementById("fetch-distance").value = coordinateConfig.fetchDistance;
 }
 
@@ -383,7 +382,7 @@ function readIntegerInput(id, label) {
 async function saveDistances() {
     try {
         const settings = {
-            insertDistance: readIntegerInput("insert-distance", "Insert distance"),
+            replaceDistance: readIntegerInput("replace-distance", "Replace distance"),
             fetchDistance: readIntegerInput("fetch-distance", "Fetch distance")
         };
         await requestJson("/api/coordinates/distances", jsonOptions("PUT", settings));
