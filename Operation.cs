@@ -835,6 +835,26 @@ namespace VirtualOperatorServer.Operation
             return await steppersMoveInParallel([0, 1, 3, 4], currentCoordinates, targetCoordinates, destination);
         }
 
+        private async Task<bool> fromSwipeToCardBay(byte bayIndex, byte cardIndex)
+        {
+            const string destination = "card bay";
+            var currentCoordinates = await getCurrentStepperCoordinates(destination);
+            if (currentCoordinates == null)
+                return false;
+
+            var coordinates = _coordinateStore.GetCoordinates();
+            if (bayIndex >= coordinates.CardBays.Length ||
+                !coordinates.CardBays[bayIndex].Cards.TryGetValue(cardIndex, out var target))
+                return false;
+
+            var targetCoordinates = getPointCoordinates(target);
+
+            if (!await steppersMoveInParallel([2, 3, 4], currentCoordinates, targetCoordinates, destination))
+                return false;
+
+            return await steppersMoveInParallel([0, 1], currentCoordinates, targetCoordinates, destination);
+        }
+
         // move to card bay 
         private async Task<bool> toCardBay(byte bayIndex, byte cardIndex)
         {
@@ -843,6 +863,16 @@ namespace VirtualOperatorServer.Operation
                 case Position.Idle:
                 {
                     var succeeded = await fromIdleToCardBay(bayIndex, cardIndex);
+                    lock (_dataLock)
+                    {
+                        _position = succeeded ? Position.CardBay : Position.Unknown;
+                    }
+
+                    return succeeded;
+                }
+                case Position.Swipe:
+                {
+                    var succeeded = await fromSwipeToCardBay(bayIndex, cardIndex);
                     lock (_dataLock)
                     {
                         _position = succeeded ? Position.CardBay : Position.Unknown;
@@ -912,6 +942,37 @@ namespace VirtualOperatorServer.Operation
             }
         }
 
+        private async Task<bool> swipeCard(uint opt)
+        {
+            if (_position != Position.Swipe)
+            {
+                _logger.LogError("Failure in swipeCard, not in Swipe position");
+                return false;
+            }
+
+            var coordinates = _coordinateStore.GetCoordinates();
+            if (opt >= (uint)coordinates.OPTs.Length)
+            {
+                _logger.LogError("Cannot swipe card: option {Option} is invalid.", opt);
+                return false;
+            }
+
+            const byte xIndex = 0;
+            const byte yIndex = 1;
+
+            var settings = coordinates.OPTs[(int)opt];
+            var swipeDeltaX = (uint)Math.Abs((long)settings.SwipeDeltaX);
+            var swipeDeltaY = (uint)Math.Abs((long)settings.SwipeDeltaY);
+
+            if (!await stepperMoveActive(yIndex, true, swipeDeltaY))
+                return false;
+
+            if (!await stepperMoveActive(xIndex, false, swipeDeltaX))
+                return false;
+
+            return await stepperMoveActive(yIndex, false, swipeDeltaY);
+        }
+
         private async Task swipe(string cardName, uint opt)
         {
             try
@@ -978,6 +1039,18 @@ namespace VirtualOperatorServer.Operation
                 if (!await toMsrSwiping(opt))
                 {
                     _logger.LogError("Failed to move card {CardName} to the MSR swiping position using option {Option}.", cardName, opt);
+                    return;
+                }
+
+                if (!await swipeCard(opt))
+                {
+                    _logger.LogError("Failed to swipe card {CardName} using option {Option}.", cardName, opt);
+                    return;
+                }
+
+                if (!await toCardBay(bayIndex, cardIndex))
+                {
+                    _logger.LogError("Failed to move back to card bay {BayIndex}, slot {CardIndex} after swiping card {CardName}.", bayIndex, cardIndex, cardName);
                     return;
                 }
 
