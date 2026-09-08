@@ -61,6 +61,7 @@ namespace VirtualOperatorServer.Coordinates
 
         public Point Idle { get; set; } = new();
         public int ReplaceDistance { get; set; }
+        public int ReplaceDistanceSlow { get; set; }
         public int FetchDistance { get; set; }
         public CardBay[] CardBays { get; set; } = { new(), new(), new() };
         public OPT[] OPTs { get; set; } =
@@ -91,6 +92,7 @@ namespace VirtualOperatorServer.Coordinates
 
                 Idle = coordinates.Idle;
                 ReplaceDistance = coordinates.ReplaceDistance;
+                ReplaceDistanceSlow = coordinates.ReplaceDistanceSlow;
                 FetchDistance = coordinates.FetchDistance;
                 CardBays = coordinates.CardBays;
                 OPTs = coordinates.OPTs;
@@ -136,7 +138,7 @@ namespace VirtualOperatorServer.Coordinates
         }
     }
 
-    public sealed record DistanceSettings(int ReplaceDistance, int FetchDistance);
+    public sealed record DistanceSettings(int ReplaceDistance, int ReplaceDistanceSlow, int FetchDistance);
 
     public sealed record OptSettings(
         int SwipeDeltaX,
@@ -177,6 +179,7 @@ namespace VirtualOperatorServer.Coordinates
             Mutate(coordinates =>
             {
                 coordinates.ReplaceDistance = settings.ReplaceDistance;
+                coordinates.ReplaceDistanceSlow = settings.ReplaceDistanceSlow;
                 coordinates.FetchDistance = settings.FetchDistance;
             });
             return settings;

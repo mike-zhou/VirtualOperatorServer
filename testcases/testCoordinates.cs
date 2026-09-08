@@ -68,6 +68,7 @@ namespace VirtualOperatorServer.Tests
             {
                 Idle = CreatePoint(41),
                 ReplaceDistance = 125,
+                ReplaceDistanceSlow = 175,
                 FetchDistance = 250
             };
 
@@ -114,6 +115,7 @@ namespace VirtualOperatorServer.Tests
         {
             AssertPointEqual(expected.Idle, actual.Idle, $"{path}.Idle");
             Assert.Equal(expected.ReplaceDistance, actual.ReplaceDistance);
+            Assert.Equal(expected.ReplaceDistanceSlow, actual.ReplaceDistanceSlow);
             Assert.Equal(expected.FetchDistance, actual.FetchDistance);
 
             Assert.Equal(expected.CardBays.Length, actual.CardBays.Length);

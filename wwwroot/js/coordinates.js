@@ -259,6 +259,7 @@ function renderIdlePoint() {
 
 function renderDistances() {
     document.getElementById("replace-distance").value = coordinateConfig.replaceDistance;
+    document.getElementById("replace-distance-slow").value = coordinateConfig.replaceDistanceSlow;
     document.getElementById("fetch-distance").value = coordinateConfig.fetchDistance;
 }
 
@@ -383,6 +384,7 @@ async function saveDistances() {
     try {
         const settings = {
             replaceDistance: readIntegerInput("replace-distance", "Replace distance"),
+            replaceDistanceSlow: readIntegerInput("replace-distance-slow", "Slow replace distance"),
             fetchDistance: readIntegerInput("fetch-distance", "Fetch distance")
         };
         await requestJson("/api/coordinates/distances", jsonOptions("PUT", settings));
