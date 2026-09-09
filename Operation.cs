@@ -692,12 +692,12 @@ namespace VirtualOperatorServer.Operation
             return command.ParseReply().result;
         }
 
-        private async Task<int[]?> getCurrentStepperCoordinates(string destination)
+        private async Task<int[]?> getCurrentStepperCoordinates()
         {
             var facade = await refreshFacade();
             if (facade == null)
             {
-                _logger.LogError("Failed to retrieve stepper positions before moving to {Destination}.", destination);
+                _logger.LogError("Failed to retrieve current stepper positions.");
                 return null;
             }
 
@@ -817,7 +817,7 @@ namespace VirtualOperatorServer.Operation
         private async Task<bool> fromIdleToCardBay(byte bayIndex, byte cardIndex)
         {
             const string destination = "card bay";
-            var currentCoordinates = await getCurrentStepperCoordinates(destination);
+            var currentCoordinates = await getCurrentStepperCoordinates();
             if (currentCoordinates == null)
                 return false;
 
@@ -838,7 +838,7 @@ namespace VirtualOperatorServer.Operation
         private async Task<bool> fromSwipeToCardBay(byte bayIndex, byte cardIndex)
         {
             const string destination = "card bay";
-            var currentCoordinates = await getCurrentStepperCoordinates(destination);
+            var currentCoordinates = await getCurrentStepperCoordinates();
             if (currentCoordinates == null)
                 return false;
 
@@ -886,6 +886,40 @@ namespace VirtualOperatorServer.Operation
             }
         }
 
+        private async Task<bool> fetchCard()
+        {
+            await pliersOpen();
+            await Task.Delay(200);
+
+            var fetchDistance = _coordinateStore.GetCoordinates().FetchDistance;
+            if (fetchDistance == 0)
+            {
+                _logger.LogError("Cannot fetch card: fetch distance is zero.");
+                return false;
+            }
+
+            // going down to fetch the card
+            const byte zIndex = 2;
+            var steps = (uint)Math.Abs((long)fetchDistance);
+            if (!await stepperMoveActive(zIndex, fetchDistance > 0, steps))
+            {
+                _logger.LogError("Failed to move stepper {StepperIndex} by fetch distance {FetchDistance} while fetching card.", zIndex, fetchDistance);
+                return false;
+            }
+
+            await pliersClose();
+            await Task.Delay(500);
+
+            // going up to card position
+            if (!await stepperMoveActive(zIndex, fetchDistance < 0, steps))
+            {
+                _logger.LogError("Failed to reverse stepper {StepperIndex} by fetch distance {FetchDistance} while fetching card.", zIndex, fetchDistance);
+                return false;
+            }            
+
+            return true;
+        }
+
         private async Task<bool> fromCardBayToMsrSwiping(uint opt)
         {
             try
@@ -905,7 +939,7 @@ namespace VirtualOperatorServer.Operation
                 }
 
                 const string destination = "the MSR swiping position";
-                var currentCoordinates = await getCurrentStepperCoordinates(destination);
+                var currentCoordinates = await getCurrentStepperCoordinates();
                 if (currentCoordinates == null)
                     return false;
                 var targetCoordinates = getPointCoordinates(target);
@@ -973,6 +1007,68 @@ namespace VirtualOperatorServer.Operation
             return await stepperMoveActive(yIndex, false, swipeDeltaY);
         }
 
+        private async Task<bool> replaceCard()
+        {
+            if (_position != Position.CardBay)
+            {
+                _logger.LogError("Cannot replace card: not in card bay position.");
+                return false;
+            }
+
+            const byte zIndex = 2;
+            var coordinates = _coordinateStore.GetCoordinates();
+            var replaceDistance = (uint)Math.Abs((long)coordinates.ReplaceDistance);
+            var replaceDistanceSlow = (uint)Math.Abs((long)coordinates.ReplaceDistanceSlow);
+            var startingPulseWidth = StaticConfig.Instance.StepperConfigs[zIndex].activeModeConfig.startingPulseWidth;
+
+            if (!await stepperSetConstActivePeriod(zIndex, startingPulseWidth))
+            {
+                _logger.LogError("Failed to set the slow active period for stepper {StepperIndex} while replacing card.", zIndex);
+                return false;
+            }
+
+            if (!await stepperMoveActive(zIndex, true, replaceDistanceSlow))
+            {
+                _logger.LogError("Failed to move stepper {StepperIndex} forward by slow replacement distance {ReplaceDistanceSlow}.", zIndex, coordinates.ReplaceDistanceSlow);
+                return false;
+            }
+
+            if (!await stepperSetDefaultActivePeriods(zIndex))
+            {
+                _logger.LogError("Failed to restore default active periods for stepper {StepperIndex} while replacing card.", zIndex);
+                return false;
+            }
+
+            if (!await stepperMoveActive(zIndex, true, replaceDistance))
+            {
+                _logger.LogError("Failed to move stepper {StepperIndex} forward by replacement distance {ReplaceDistance}.", zIndex, coordinates.ReplaceDistance);
+                return false;
+            }
+
+            if (!await pliersOpen())
+            {
+                _logger.LogError("Failed to open pliers while replacing card.");
+                return false;
+            }
+
+            await Task.Delay(200);
+
+            var returnDistance = (uint)Math.Abs((long)coordinates.ReplaceDistance + coordinates.ReplaceDistanceSlow);
+            if (!await stepperMoveActive(zIndex, false, returnDistance))
+            {
+                _logger.LogError("Failed to move stepper {StepperIndex} backward after replacing card.", zIndex);
+                return false;
+            }
+
+            if (!await pliersDeactivate())
+            {
+                _logger.LogError("Failed to deactivate pliers after replacing card.");
+                return false;
+            }
+
+            return true;
+        }
+
         private async Task swipe(string cardName, uint opt)
         {
             try
@@ -1008,31 +1104,9 @@ namespace VirtualOperatorServer.Operation
                     return;
                 }
 
-                await pliersOpen();
-
-                var fetchDistance = _coordinateStore.GetCoordinates().FetchDistance;
-                if (fetchDistance == 0)
+                if (!await fetchCard())
                 {
-                    _logger.LogError("Cannot swipe card {CardName}: fetch distance is zero.", cardName);
-                    return;
-                }
-
-                // going down to fetch the card
-                const byte zIndex = 2;
-                var steps = (uint)Math.Abs((long)fetchDistance);
-                if (!await stepperMoveActive(zIndex, fetchDistance > 0, steps))
-                {
-                    _logger.LogError("Failed to move stepper {StepperIndex} by fetch distance {FetchDistance} while swiping card {CardName}.", zIndex, fetchDistance, cardName);
-                    return;
-                }
-
-                await pliersClose();
-                await Task.Delay(500);
-
-                // going up to card position
-                if (!await stepperMoveActive(zIndex, fetchDistance < 0, steps))
-                {
-                    _logger.LogError("Failed to reverse stepper {StepperIndex} by fetch distance {FetchDistance} while swiping card {CardName}.", zIndex, fetchDistance, cardName);
+                    _logger.LogError("Failed to fetch card {CardName} from card bay {BayIndex}, slot {CardIndex}.", cardName, bayIndex, cardIndex);
                     return;
                 }
 
@@ -1054,7 +1128,11 @@ namespace VirtualOperatorServer.Operation
                     return;
                 }
 
-
+                if (!await replaceCard())
+                {
+                    _logger.LogError("Failed to replace card {CardName} in card bay {BayIndex}, slot {CardIndex}.", cardName, bayIndex, cardIndex);
+                    return;
+                }
             }
             catch (Exception ex)
             {
