@@ -543,16 +543,16 @@ namespace VirtualOperatorServer.Operation
                     }
                 }
 
-                var negativeRange = StaticConfig.Instance.StepperConfigs[clickerIndex].crossBoundary.negativeRange;
-                if (!await stepperForward(clickerIndex, negativeRange >= 0))
+                var range = StaticConfig.Instance.StepperConfigs[clickerIndex].range - 1;
+                if (!await stepperForward(clickerIndex, range >= 0))
                 {
                     _logger.LogError("Failed to set direction for Clicker stepper during initialization.");
                     return false;
                 }
 
-                if (!await stepperRunActive(clickerIndex, (uint)Math.Abs((long)negativeRange)))
+                if (!await stepperRunActive(clickerIndex, range))
                 {
-                    _logger.LogError("Failed to move Clicker stepper to its negative range {NegativeRange} during initialization.", negativeRange);
+                    _logger.LogError("Failed to move Clicker stepper to positive range {range} during initialization.", range);
                     return false;
                 }
 
@@ -563,7 +563,7 @@ namespace VirtualOperatorServer.Operation
                     var (result, state) = await stepperGetStatus(clickerIndex);
                     if (!result)
                     {
-                        _logger.LogError("Failed to retrieve the state of the Clicker stepper while moving to its negative range.");
+                        _logger.LogError("Failed to retrieve the state of the Clicker stepper while moving to its positive range.");
                         return false;
                     }
 
@@ -572,7 +572,7 @@ namespace VirtualOperatorServer.Operation
 
                     if (state != Facade.StatusFacade.Facade.Stepper.Status.State.RUNNING_ACTIVE)
                     {
-                        _logger.LogError("Clicker stepper entered unexpected state {StepperState} while moving to its negative range.", state);
+                        _logger.LogError("Clicker stepper entered unexpected state {StepperState} while moving to its positive range.", state);
                         return false;
                     }
                 }
@@ -1109,7 +1109,7 @@ namespace VirtualOperatorServer.Operation
                     _logger.LogError("Failed to fetch card {CardName} from card bay {BayIndex}, slot {CardIndex}.", cardName, bayIndex, cardIndex);
                     return;
                 }
-
+                
                 if (!await toMsrSwiping(opt))
                 {
                     _logger.LogError("Failed to move card {CardName} to the MSR swiping position using option {Option}.", cardName, opt);
