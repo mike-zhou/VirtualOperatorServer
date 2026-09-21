@@ -1021,6 +1021,12 @@ namespace VirtualOperatorServer.Operation
             var replaceDistanceSlow = (uint)Math.Abs((long)coordinates.ReplaceDistanceSlow);
             var startingPulseWidth = StaticConfig.Instance.StepperConfigs[zIndex].activeModeConfig.startingPulseWidth;
 
+            if (!await stepperMoveActive(zIndex, true, replaceDistance))
+            {
+                _logger.LogError("Failed to move stepper {StepperIndex} forward by replacement distance {ReplaceDistance}.", zIndex, coordinates.ReplaceDistance);
+                return false;
+            }
+
             if (!await stepperSetConstActivePeriod(zIndex, startingPulseWidth))
             {
                 _logger.LogError("Failed to set the slow active period for stepper {StepperIndex} while replacing card.", zIndex);
@@ -1036,12 +1042,6 @@ namespace VirtualOperatorServer.Operation
             if (!await stepperSetDefaultActivePeriods(zIndex))
             {
                 _logger.LogError("Failed to restore default active periods for stepper {StepperIndex} while replacing card.", zIndex);
-                return false;
-            }
-
-            if (!await stepperMoveActive(zIndex, true, replaceDistance))
-            {
-                _logger.LogError("Failed to move stepper {StepperIndex} forward by replacement distance {ReplaceDistance}.", zIndex, coordinates.ReplaceDistance);
                 return false;
             }
 

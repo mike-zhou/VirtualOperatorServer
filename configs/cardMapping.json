@@ -2,5 +2,9 @@
   "Mastercard": {
     "CardBay": 1,
     "CardSlotNumber": 4
+  },
+  "card0201": {
+    "CardBay": 1,
+    "CardSlotNumber": 0
   }
 }
