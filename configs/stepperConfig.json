@@ -33,7 +33,7 @@
     "range": 5680,
     "stepsPerRotation": 400,
     "encoderCountsPerRotation": 400,
-    "encoderOffsetErrorThreshold": 11,
+    "encoderOffsetErrorThreshold": 32,
     "crossBoundary": {
       "enabled": false,
       "negativeRange": -10,
@@ -95,7 +95,7 @@
     "range": 2500,
     "stepsPerRotation": 400,
     "encoderCountsPerRotation": 400,
-    "encoderOffsetErrorThreshold": 8,
+    "encoderOffsetErrorThreshold": 32,
     "crossBoundary": {
       "enabled": false,
       "negativeRange": 0,
@@ -157,7 +157,7 @@
     "range": 2380,
     "stepsPerRotation": 500,
     "encoderCountsPerRotation": 200,
-    "encoderOffsetErrorThreshold": 5,
+    "encoderOffsetErrorThreshold": 10,
     "crossBoundary": {
       "enabled": false,
       "negativeRange": 0,
@@ -219,7 +219,7 @@
     "range": 1500,
     "stepsPerRotation": 800,
     "encoderCountsPerRotation": 2000,
-    "encoderOffsetErrorThreshold": 10,
+    "encoderOffsetErrorThreshold": 20,
     "crossBoundary": {
       "enabled": true,
       "negativeRange": -16,
@@ -281,7 +281,7 @@
     "range": 240,
     "stepsPerRotation": 800,
     "encoderCountsPerRotation": 2000,
-    "encoderOffsetErrorThreshold": 6,
+    "encoderOffsetErrorThreshold": 12,
     "crossBoundary": {
       "enabled": true,
       "negativeRange": -80,

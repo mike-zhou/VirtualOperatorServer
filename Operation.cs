@@ -666,12 +666,12 @@ namespace VirtualOperatorServer.Operation
 
         private async Task<bool> pliersOpen()
         {
-            return await pliersSetState(0, 1);
+            return await pliersSetState(1, 0);
         }
 
         private async Task<bool> pliersClose()
         {
-            return await pliersSetState(1, 0);
+            return await pliersSetState(0, 1);
         }
 
         private async Task<bool> pliersDeactivate()
@@ -788,6 +788,7 @@ namespace VirtualOperatorServer.Operation
             IReadOnlyList<int> targetCoordinates,
             string destination)
         {
+#if false
             var movingIndices = new List<byte>(indices.Count);
             var startTasks = new List<Task<bool>>(indices.Count);
 
@@ -812,6 +813,36 @@ namespace VirtualOperatorServer.Operation
             }
 
             return await steppersWaitForMove(movingIndices, destination);
+
+#else
+            var singleIndex = new List<byte>(1);
+            singleIndex.Add(0);
+
+            foreach (var index in indices)
+            {
+                var distance = (long)targetCoordinates[index] - currentCoordinates[index];
+                if (distance == 0)
+                    continue;
+
+                var stepperStarted = await stepperStartMove(index, distance, destination);
+                if (stepperStarted != true)
+                {
+                    _logger.LogError("Failed to start stepper {StepperIndex} to {Destination}", index, destination);
+                    return false;
+                }
+
+                singleIndex[0] = index;
+
+                var stepperArrived = await steppersWaitForMove(singleIndex, destination);
+                if (stepperArrived != true)
+                {
+                    _logger.LogError("Failed to move stepper {StepperIndex} to {Destination}", index, destination);
+                    return false;
+                }
+            }
+
+            return true;
+#endif
         }
 
         private async Task<bool> fromIdleToCardBay(byte bayIndex, byte cardIndex)
@@ -849,9 +880,15 @@ namespace VirtualOperatorServer.Operation
 
             var targetCoordinates = getPointCoordinates(target);
 
-            if (!await steppersMoveInParallel([2, 3, 4], currentCoordinates, targetCoordinates, destination))
+            // move Z
+            if (!await steppersMoveInParallel([2], currentCoordinates, targetCoordinates, destination))
                 return false;
 
+            // move U, V
+            if (!await steppersMoveInParallel([3, 4], currentCoordinates, targetCoordinates, destination))
+                return false;
+
+            // move X, Y
             return await steppersMoveInParallel([0, 1], currentCoordinates, targetCoordinates, destination);
         }
 
@@ -944,10 +981,16 @@ namespace VirtualOperatorServer.Operation
                     return false;
                 var targetCoordinates = getPointCoordinates(target);
 
+                // move X, Y
                 if (!await steppersMoveInParallel([0, 1], currentCoordinates, targetCoordinates, destination))
                     return false;
 
-                return await steppersMoveInParallel([2, 3, 4], currentCoordinates, targetCoordinates, destination);
+                // move U, V
+                if (!await steppersMoveInParallel([3, 4], currentCoordinates, targetCoordinates, destination))
+                    return false;
+
+                // move Z
+                return await steppersMoveInParallel([2], currentCoordinates, targetCoordinates, destination);
             }
             catch (Exception ex)
             {
