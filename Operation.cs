@@ -848,48 +848,128 @@ namespace VirtualOperatorServer.Operation
         private async Task<bool> fromIdleToCardBay(byte bayIndex, byte cardIndex)
         {
             const string destination = "card bay";
+
             var currentCoordinates = await getCurrentStepperCoordinates();
             if (currentCoordinates == null)
+            {
+                _logger.LogError("Failed to retrieve current stepper coordinates while moving from idle to card bay {BayIndex}, slot {CardIndex}.", bayIndex, cardIndex);
                 return false;
+            }
 
             var coordinates = _coordinateStore.GetCoordinates();
-            if (bayIndex >= coordinates.CardBays.Length ||
-                !coordinates.CardBays[bayIndex].Cards.TryGetValue(cardIndex, out var target))
+            if (bayIndex >= coordinates.CardBays.Length)
+            {
+                _logger.LogError("Cannot move from idle to card bay {BayIndex}, slot {CardIndex}: the bay index is out of range.", bayIndex, cardIndex);
                 return false;
+            }
+
+            if (!coordinates.CardBays[bayIndex].Cards.TryGetValue(cardIndex, out var target))
+            {
+                _logger.LogError("Cannot move from idle to card bay {BayIndex}, slot {CardIndex}: target coordinates are missing.", bayIndex, cardIndex);
+                return false;
+            }
 
             var targetCoordinates = getPointCoordinates(target);
 
             const byte zIndex = 2;
             if (!await steppersMoveInParallel([zIndex], currentCoordinates, targetCoordinates, destination))
+            {
+                _logger.LogError("Failed to move the Z stepper from idle to card bay {BayIndex}, slot {CardIndex}.", bayIndex, cardIndex);
                 return false;
+            }
 
-            return await steppersMoveInParallel([0, 1, 3, 4], currentCoordinates, targetCoordinates, destination);
+            if (!await steppersMoveInParallel([0, 1, 3, 4], currentCoordinates, targetCoordinates, destination))
+            {
+                _logger.LogError("Failed to move the X, Y, U, V steppers from idle to card bay {BayIndex}, slot {CardIndex}.", bayIndex, cardIndex);
+                return false;
+            }
+
+            return true;
         }
 
         private async Task<bool> fromSwipeToCardBay(byte bayIndex, byte cardIndex)
         {
             const string destination = "card bay";
+
             var currentCoordinates = await getCurrentStepperCoordinates();
             if (currentCoordinates == null)
+            {
+                _logger.LogError("Failed to retrieve current stepper coordinates while moving from swipe to card bay {BayIndex}, slot {CardIndex}.", bayIndex, cardIndex);
                 return false;
+            }
 
             var coordinates = _coordinateStore.GetCoordinates();
-            if (bayIndex >= coordinates.CardBays.Length ||
-                !coordinates.CardBays[bayIndex].Cards.TryGetValue(cardIndex, out var target))
+            if (bayIndex >= coordinates.CardBays.Length)
+            {
+                _logger.LogError("Cannot move from swipe to card bay {BayIndex}, slot {CardIndex}: the bay index is out of range.", bayIndex, cardIndex);
                 return false;
+            }
+
+            if (!coordinates.CardBays[bayIndex].Cards.TryGetValue(cardIndex, out var target))
+            {
+                _logger.LogError("Cannot move from swipe to card bay {BayIndex}, slot {CardIndex}: target coordinates are missing.", bayIndex, cardIndex);
+                return false;
+            }
 
             var targetCoordinates = getPointCoordinates(target);
 
             // move Z
             if (!await steppersMoveInParallel([2], currentCoordinates, targetCoordinates, destination))
+            {
+                _logger.LogError("Failed to move the Z stepper from swipe to card bay {BayIndex}, slot {CardIndex}.", bayIndex, cardIndex);
                 return false;
+            }
 
             // move U, V
             if (!await steppersMoveInParallel([3, 4], currentCoordinates, targetCoordinates, destination))
+            {
+                _logger.LogError("Failed to move the U, V steppers from swipe to card bay {BayIndex}, slot {CardIndex}.", bayIndex, cardIndex);
                 return false;
+            }
 
             // move X, Y
-            return await steppersMoveInParallel([0, 1], currentCoordinates, targetCoordinates, destination);
+            if (!await steppersMoveInParallel([0, 1], currentCoordinates, targetCoordinates, destination))
+            {
+                _logger.LogError("Failed to move the X, Y steppers from swipe to card bay {BayIndex}, slot {CardIndex}.", bayIndex, cardIndex);
+                return false;
+            }
+
+            return true;
+        }
+
+        private async Task<bool> fromCardBayToCardBay(byte bayIndex, byte cardIndex)
+        {
+            const string destination = "card bay";
+
+            var currentCoordinates = await getCurrentStepperCoordinates();
+            if (currentCoordinates == null)
+            {
+                _logger.LogError("Failed to retrieve current stepper coordinates while moving from card bay to card bay {BayIndex}, slot {CardIndex}.", bayIndex, cardIndex);
+                return false;
+            }
+
+            var coordinates = _coordinateStore.GetCoordinates();
+            if (bayIndex >= coordinates.CardBays.Length)
+            {
+                _logger.LogError("Cannot move from card bay to card bay {BayIndex}, slot {CardIndex}: the bay index is out of range.", bayIndex, cardIndex);
+                return false;
+            }
+
+            if (!coordinates.CardBays[bayIndex].Cards.TryGetValue(cardIndex, out var target))
+            {
+                _logger.LogError("Cannot move from card bay  to card bay {BayIndex}, slot {CardIndex}: target coordinates are missing.", bayIndex, cardIndex);
+                return false;
+            }
+
+            var targetCoordinates = getPointCoordinates(target);
+
+            if (!await steppersMoveInParallel([0, 1], currentCoordinates, targetCoordinates, destination))
+            {
+                _logger.LogError("Failed to move the X, Y steppers from card bay to card bay {BayIndex}, slot {CardIndex}.", bayIndex, cardIndex);
+                return false;
+            }
+
+            return true;
         }
 
         // move to card bay 
@@ -910,6 +990,16 @@ namespace VirtualOperatorServer.Operation
                 case Position.Swipe:
                 {
                     var succeeded = await fromSwipeToCardBay(bayIndex, cardIndex);
+                    lock (_dataLock)
+                    {
+                        _position = succeeded ? Position.CardBay : Position.Unknown;
+                    }
+
+                    return succeeded;
+                }
+                case Position.CardBay:
+                {
+                    var succeeded = await fromCardBayToCardBay(bayIndex, cardIndex);
                     lock (_dataLock)
                     {
                         _position = succeeded ? Position.CardBay : Position.Unknown;
@@ -1175,6 +1265,13 @@ namespace VirtualOperatorServer.Operation
                 {
                     _logger.LogError("Failed to replace card {CardName} in card bay {BayIndex}, slot {CardIndex}.", cardName, bayIndex, cardIndex);
                     return;
+                }
+
+                {
+                    lock (_dataLock)
+                    {
+                        _cardSlotsOccupied[bayIndex, cardIndex] = true;
+                    }
                 }
             }
             catch (Exception ex)

@@ -281,7 +281,7 @@
     "range": 240,
     "stepsPerRotation": 800,
     "encoderCountsPerRotation": 2000,
-    "encoderOffsetErrorThreshold": 12,
+    "encoderOffsetErrorThreshold": 16,
     "crossBoundary": {
       "enabled": true,
       "negativeRange": -80,
