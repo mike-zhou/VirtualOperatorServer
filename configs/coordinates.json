@@ -108,16 +108,16 @@
   "OPTs": [
     {
       "Name": "OPT 1",
-      "SwipeDeltaX": 0,
-      "SwipeDeltaY": 0,
+      "SwipeDeltaX": 128,
+      "SwipeDeltaY": 1504,
       "ContactInsertDistance": 0,
       "ContactPushDistance": 0,
       "MsrSwipingStartPoint": {
-        "X": 3080,
-        "Y": 278,
-        "Z": 1728,
-        "U": 1032,
-        "V": -60
+        "X": 3036,
+        "Y": 300,
+        "Z": 1764,
+        "U": 1028,
+        "V": -68
       },
       "ContactInsertingStartPoint": null,
       "ContactInsertingStopPoint": null,
