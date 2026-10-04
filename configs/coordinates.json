@@ -121,10 +121,34 @@
       },
       "ContactInsertingStartPoint": null,
       "ContactInsertingStopPoint": null,
-      "ContactlessTappingStartPoint": null,
-      "ContactlessTappingStopPoint": null,
-      "BarcodeReadingStartPoint": null,
-      "BarcodeReadingStopPoint": null,
+      "ContactlessTappingStartPoint": {
+        "X": 1128,
+        "Y": 792,
+        "Z": 1536,
+        "U": 1488,
+        "V": 150
+      },
+      "ContactlessTappingStopPoint": {
+        "X": 1128,
+        "Y": 792,
+        "Z": 1536,
+        "U": 1032,
+        "V": 150
+      },
+      "BarcodeReadingStartPoint": {
+        "X": 2120,
+        "Y": 152,
+        "Z": 1184,
+        "U": 1032,
+        "V": 150
+      },
+      "BarcodeReadingStopPoint": {
+        "X": 2120,
+        "Y": 920,
+        "Z": 1184,
+        "U": 1032,
+        "V": 150
+      },
       "ScreenTopLeft": null,
       "ScreenTopRight": null,
       "ScreenBottomRight": null,
@@ -145,10 +169,34 @@
       },
       "ContactInsertingStartPoint": null,
       "ContactInsertingStopPoint": null,
-      "ContactlessTappingStartPoint": null,
-      "ContactlessTappingStopPoint": null,
-      "BarcodeReadingStartPoint": null,
-      "BarcodeReadingStopPoint": null,
+      "ContactlessTappingStartPoint": {
+        "X": 3816,
+        "Y": 152,
+        "Z": 1536,
+        "U": 1488,
+        "V": 150
+      },
+      "ContactlessTappingStopPoint": {
+        "X": 3816,
+        "Y": 984,
+        "Z": 1536,
+        "U": 1032,
+        "V": 150
+      },
+      "BarcodeReadingStartPoint": {
+        "X": 3944,
+        "Y": 152,
+        "Z": 1184,
+        "U": 1032,
+        "V": 150
+      },
+      "BarcodeReadingStopPoint": {
+        "X": 3944,
+        "Y": 728,
+        "Z": 1184,
+        "U": 1032,
+        "V": 150
+      },
       "ScreenTopLeft": null,
       "ScreenTopRight": null,
       "ScreenBottomRight": null,
