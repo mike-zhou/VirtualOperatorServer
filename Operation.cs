@@ -845,6 +845,24 @@ namespace VirtualOperatorServer.Operation
 #endif
         }
 
+        private int[]? getCardCoordinates(byte bayIndex, byte cardIndex)
+        {
+            var coordinates = _coordinateStore.GetCoordinates();
+            if (bayIndex >= coordinates.CardBays.Length)
+            {
+                _logger.LogError("Cannot retrieve coordinates for card bay {BayIndex}, slot {CardIndex}: the bay index is out of range.", bayIndex, cardIndex);
+                return null;
+            }
+
+            if (!coordinates.CardBays[bayIndex].Cards.TryGetValue(cardIndex, out var target))
+            {
+                _logger.LogError("Cannot retrieve coordinates for card bay {BayIndex}, slot {CardIndex}: target coordinates are missing.", bayIndex, cardIndex);
+                return null;
+            }
+
+            return getPointCoordinates(target);
+        }
+
         private async Task<bool> fromIdleToCardBay(byte bayIndex, byte cardIndex)
         {
             const string destination = "card bay";
@@ -856,20 +874,12 @@ namespace VirtualOperatorServer.Operation
                 return false;
             }
 
-            var coordinates = _coordinateStore.GetCoordinates();
-            if (bayIndex >= coordinates.CardBays.Length)
+            var targetCoordinates = getCardCoordinates(bayIndex, cardIndex);
+            if (targetCoordinates == null)
             {
-                _logger.LogError("Cannot move from idle to card bay {BayIndex}, slot {CardIndex}: the bay index is out of range.", bayIndex, cardIndex);
+                _logger.LogError("Failed to retrieve target coordinates while moving from idle to card bay {BayIndex}, slot {CardIndex}.", bayIndex, cardIndex);
                 return false;
             }
-
-            if (!coordinates.CardBays[bayIndex].Cards.TryGetValue(cardIndex, out var target))
-            {
-                _logger.LogError("Cannot move from idle to card bay {BayIndex}, slot {CardIndex}: target coordinates are missing.", bayIndex, cardIndex);
-                return false;
-            }
-
-            var targetCoordinates = getPointCoordinates(target);
 
             const byte zIndex = 2;
             if (!await steppersMoveInParallel([zIndex], currentCoordinates, targetCoordinates, destination))
@@ -898,20 +908,12 @@ namespace VirtualOperatorServer.Operation
                 return false;
             }
 
-            var coordinates = _coordinateStore.GetCoordinates();
-            if (bayIndex >= coordinates.CardBays.Length)
+            var targetCoordinates = getCardCoordinates(bayIndex, cardIndex);
+            if (targetCoordinates == null)
             {
-                _logger.LogError("Cannot move from swipe to card bay {BayIndex}, slot {CardIndex}: the bay index is out of range.", bayIndex, cardIndex);
+                _logger.LogError("Failed to retrieve target coordinates while moving from swipe to card bay {BayIndex}, slot {CardIndex}.", bayIndex, cardIndex);
                 return false;
             }
-
-            if (!coordinates.CardBays[bayIndex].Cards.TryGetValue(cardIndex, out var target))
-            {
-                _logger.LogError("Cannot move from swipe to card bay {BayIndex}, slot {CardIndex}: target coordinates are missing.", bayIndex, cardIndex);
-                return false;
-            }
-
-            var targetCoordinates = getPointCoordinates(target);
 
             // move Z
             if (!await steppersMoveInParallel([2], currentCoordinates, targetCoordinates, destination))
@@ -948,24 +950,82 @@ namespace VirtualOperatorServer.Operation
                 return false;
             }
 
-            var coordinates = _coordinateStore.GetCoordinates();
-            if (bayIndex >= coordinates.CardBays.Length)
+            var targetCoordinates = getCardCoordinates(bayIndex, cardIndex);
+            if (targetCoordinates == null)
             {
-                _logger.LogError("Cannot move from card bay to card bay {BayIndex}, slot {CardIndex}: the bay index is out of range.", bayIndex, cardIndex);
+                _logger.LogError("Failed to retrieve target coordinates while moving from card bay to card bay {BayIndex}, slot {CardIndex}.", bayIndex, cardIndex);
                 return false;
             }
-
-            if (!coordinates.CardBays[bayIndex].Cards.TryGetValue(cardIndex, out var target))
-            {
-                _logger.LogError("Cannot move from card bay  to card bay {BayIndex}, slot {CardIndex}: target coordinates are missing.", bayIndex, cardIndex);
-                return false;
-            }
-
-            var targetCoordinates = getPointCoordinates(target);
 
             if (!await steppersMoveInParallel([0, 1], currentCoordinates, targetCoordinates, destination))
             {
                 _logger.LogError("Failed to move the X, Y steppers from card bay to card bay {BayIndex}, slot {CardIndex}.", bayIndex, cardIndex);
+                return false;
+            }
+
+            return true;
+        }
+
+        private async Task<bool> fromBarcodeToCardBay(byte bayIndex, byte cardIndex)
+        {
+            const string destination = "card bay";
+
+            var currentCoordinates = await getCurrentStepperCoordinates();
+            if (currentCoordinates == null)
+            {
+                _logger.LogError("Failed to retrieve current stepper coordinates while moving from barcode to card bay {BayIndex}, slot {CardIndex}.", bayIndex, cardIndex);
+                return false;
+            }
+
+            var targetCoordinates = getCardCoordinates(bayIndex, cardIndex);
+            if (targetCoordinates == null)
+            {
+                _logger.LogError("Failed to retrieve target coordinates while moving from barcode to card bay {BayIndex}, slot {CardIndex}.", bayIndex, cardIndex);
+                return false;
+            }
+
+            if (!await steppersMoveInParallel([2], currentCoordinates, targetCoordinates, destination))
+            {
+                _logger.LogError("Failed to move the Z stepper from barcode to card bay {BayIndex}, slot {CardIndex}.", bayIndex, cardIndex);
+                return false;
+            }
+
+            if (!await steppersMoveInParallel([4, 3, 1, 0], currentCoordinates, targetCoordinates, destination))
+            {
+                _logger.LogError("Failed to move the U, V, X, Y steppers from barcode to card bay {BayIndex}, slot {CardIndex}.", bayIndex, cardIndex);
+                return false;
+            }
+
+            return true;
+        }
+
+        private async Task<bool> fromTapToCardBay(byte bayIndex, byte cardIndex)
+        {
+            const string destination = "card bay";
+
+            var currentCoordinates = await getCurrentStepperCoordinates();
+            if (currentCoordinates == null)
+            {
+                _logger.LogError("Failed to retrieve current stepper coordinates while moving from barcode to card bay {BayIndex}, slot {CardIndex}.", bayIndex, cardIndex);
+                return false;
+            }
+
+            var targetCoordinates = getCardCoordinates(bayIndex, cardIndex);
+            if (targetCoordinates == null)
+            {
+                _logger.LogError("Failed to retrieve target coordinates while moving from barcode to card bay {BayIndex}, slot {CardIndex}.", bayIndex, cardIndex);
+                return false;
+            }
+
+            if (!await steppersMoveInParallel([2], currentCoordinates, targetCoordinates, destination))
+            {
+                _logger.LogError("Failed to move the Z stepper from barcode to card bay {BayIndex}, slot {CardIndex}.", bayIndex, cardIndex);
+                return false;
+            }
+
+            if (!await steppersMoveInParallel([4, 3, 1, 0], currentCoordinates, targetCoordinates, destination))
+            {
+                _logger.LogError("Failed to move the U, V, X, Y steppers from barcode to card bay {BayIndex}, slot {CardIndex}.", bayIndex, cardIndex);
                 return false;
             }
 
@@ -1000,6 +1060,26 @@ namespace VirtualOperatorServer.Operation
                 case Position.CardBay:
                 {
                     var succeeded = await fromCardBayToCardBay(bayIndex, cardIndex);
+                    lock (_dataLock)
+                    {
+                        _position = succeeded ? Position.CardBay : Position.Unknown;
+                    }
+
+                    return succeeded;
+                }
+                case Position.Tap:
+                {
+                    var succeeded = await fromTapToCardBay(bayIndex, cardIndex);
+                    lock (_dataLock)
+                    {
+                        _position = succeeded ? Position.CardBay : Position.Unknown;
+                    }
+
+                    return succeeded;
+                }
+                case Position.BarCode:
+                {
+                    var succeeded = await fromBarcodeToCardBay(bayIndex, cardIndex);
                     lock (_dataLock)
                     {
                         _position = succeeded ? Position.CardBay : Position.Unknown;
@@ -1202,30 +1282,40 @@ namespace VirtualOperatorServer.Operation
             return true;
         }
 
+        private bool hasCard(string cardName, uint opt, out byte bayIndex, out byte cardIndex)
+        {
+            var hasCard = false;
+
+            bayIndex = 0;
+            cardIndex = 0;
+
+            if (_cardMappingStore.GetMappings().TryGetValue(cardName, out var slot) &&
+                slot.CardBay >= 0 && slot.CardBay < _cardSlotsOccupied.GetLength(0) &&
+                slot.CardSlotNumber >= 0 && slot.CardSlotNumber < _cardSlotsOccupied.GetLength(1))
+            {
+                bayIndex = (byte)slot.CardBay;
+                cardIndex = (byte)slot.CardSlotNumber;
+                lock (_dataLock)
+                {
+                    if (_cardSlotsOccupied[slot.CardBay, slot.CardSlotNumber])
+                    {
+                        _cardSlotsOccupied[slot.CardBay, slot.CardSlotNumber] = false;
+                        hasCard = true;
+                    }
+                }
+            }
+
+            return hasCard;
+        }
+
         private async Task swipe(string cardName, uint opt)
         {
             try
             {
-                var hasCard = false;
-                byte bayIndex = 0;
-                byte cardIndex = 0;
-                if (_cardMappingStore.GetMappings().TryGetValue(cardName, out var slot) &&
-                    slot.CardBay >= 0 && slot.CardBay < _cardSlotsOccupied.GetLength(0) &&
-                    slot.CardSlotNumber >= 0 && slot.CardSlotNumber < _cardSlotsOccupied.GetLength(1))
-                {
-                    bayIndex = (byte)slot.CardBay;
-                    cardIndex = (byte)slot.CardSlotNumber;
-                    lock (_dataLock)
-                    {
-                        if (_cardSlotsOccupied[slot.CardBay, slot.CardSlotNumber])
-                        {
-                            _cardSlotsOccupied[slot.CardBay, slot.CardSlotNumber] = false;
-                            hasCard = true;
-                        }
-                    }
-                }
+                byte bayIndex;
+                byte cardIndex;
 
-                if (!hasCard)
+                if (!hasCard(cardName, opt, out bayIndex, out cardIndex))
                 {
                     _logger.LogError("Cannot swipe card {CardName}: no card is present in the slot.", cardName);
                     return;
@@ -1346,10 +1436,206 @@ namespace VirtualOperatorServer.Operation
             return true;
         }
 
+        private async Task<bool>toTap(uint opt)
+        {
+            lock (_dataLock)
+            {
+                if (_position != Position.CardBay)
+                    return false;
+            }
+
+            var succeeded = false;
+            try
+            {
+                var currentCoordinates = await getCurrentStepperCoordinates();
+                if (currentCoordinates == null)
+                    return false;
+
+                var coordinates = _coordinateStore.GetCoordinates();
+                if (opt >= (uint)coordinates.OPTs.Length)
+                {
+                    _logger.LogError("Cannot move to the tap position: option {Option} is invalid.", opt);
+                    return false;
+                }
+
+                var target = coordinates.OPTs[(int)opt].ContactlessTappingStartPoint;
+                if (target == null)
+                {
+                    _logger.LogError("Cannot move to the tap position: option {Option} has no start point.", opt);
+                    return false;
+                }
+
+                const string destination = "the tap position";
+                var targetCoordinates = getPointCoordinates(target);
+                if (!await steppersMoveInParallel([0, 1, 3, 4], currentCoordinates, targetCoordinates, destination))
+                    return false;
+
+                succeeded = await steppersMoveInParallel([2], currentCoordinates, targetCoordinates, destination);
+                return succeeded;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to move to the tap position using option {Option}.", opt);
+                return false;
+            }
+            finally
+            {
+                lock (_dataLock)
+                {
+                    _position = succeeded ? Position.Tap : Position.Unknown;
+                }
+            }
+        }
+
+        private async Task<bool>tapCard(uint opt)
+        {
+            const int tapDisplayDelayMs = 500;
+
+            lock (_dataLock)
+            {
+                if (_position != Position.Tap)
+                {
+                    _logger.LogError("Cannot tap: current position {Position} is not the tap position.", _position);
+                    return false;
+                }
+            }
+
+            try
+            {
+                var coordinates = _coordinateStore.GetCoordinates();
+                if (opt >= (uint)coordinates.OPTs.Length)
+                {
+                    _logger.LogError("Cannot tap: option {Option} is invalid.", opt);
+                    return false;
+                }
+
+                var settings = coordinates.OPTs[(int)opt];
+                if (settings.ContactlessTappingStartPoint == null || settings.ContactlessTappingStopPoint == null)
+                {
+                    _logger.LogError("Cannot tap: option {Option} has no start or stop point.", opt);
+                    return false;
+                }
+
+                var currentCoordinates = await getCurrentStepperCoordinates();
+                if (currentCoordinates == null)
+                {
+                    _logger.LogError("Cannot tap: failed to retrieve current stepper coordinates for option {Option}.", opt);
+                    return false;
+                }
+
+                var startCoordinates = getPointCoordinates(settings.ContactlessTappingStartPoint);
+                for (var index = 0; index < startCoordinates.Length; index++)
+                {
+                    if (currentCoordinates[index] != startCoordinates[index])
+                    {
+                        _logger.LogError("Cannot tap: current coordinates do not match the start point for option {Option}.", opt);
+                        return false;
+                    }
+                }
+
+                var stopCoordinates = getPointCoordinates(settings.ContactlessTappingStopPoint);
+                lock (_dataLock)
+                {
+                    _position = Position.Unknown;
+                }
+
+                if (!await steppersMoveInParallel([3], currentCoordinates, stopCoordinates, "the tap stop point"))
+                {
+                    _logger.LogError("Failed to move to the tap stop point for option {Option}.", opt);
+                    return false;
+                }
+
+                await Task.Delay(tapDisplayDelayMs);
+
+                if (!await steppersMoveInParallel([3], stopCoordinates, startCoordinates, "the tap start point"))
+                {
+                    _logger.LogError("Failed to return to the tap start point for option {Option}.", opt);
+                    return false;
+                }
+
+                lock (_dataLock)
+                {
+                    _position = Position.Tap;
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to show tap using option {Option}.", opt);
+                return false;
+            }
+        }
+
         private async Task tap(string cardName, uint opt)
         {
-            await Task.CompletedTask;
+            try
+            {
+                byte bayIndex;
+                byte cardIndex;
+
+                if (!hasCard(cardName, opt, out bayIndex, out cardIndex))
+                {
+                    _logger.LogError("Cannot show tap {CardName}: no card is present in the slot.", cardName);
+                    return;
+                }
+
+                if (!await toCardBay(bayIndex, cardIndex))
+                {
+                    _logger.LogError("Failed to move to card bay {BayIndex}, slot {CardIndex} while tapping {CardName}.", bayIndex, cardIndex, cardName);
+                    return;
+                }
+
+                if (!await fetchCard())
+                {
+                    _logger.LogError("Failed to fetch card {CardName} from card bay {BayIndex}, slot {CardIndex}.", cardName, bayIndex, cardIndex);
+                    return;
+                }
+                
+                if (!await toTap(opt))
+                {
+                    _logger.LogError("Failed to move to tap in OPT: {OPT}.", opt);
+                    return;
+                }
+
+                if (!await tapCard(opt))
+                {
+                    _logger.LogError("Failed to show tap in OPT:{OPT}.", opt);
+                    return;
+                }
+
+                if (!await toCardBay(bayIndex, cardIndex))
+                {
+                    _logger.LogError("Failed to move back to card bay {BayIndex}, slot {CardIndex} after tapping {CardName}.", bayIndex, cardIndex, cardName);
+                    return;
+                }
+
+                if (!await replaceCard())
+                {
+                    _logger.LogError("Failed to replace card {CardName} in card bay {BayIndex}, slot {CardIndex}.", cardName, bayIndex, cardIndex);
+                    return;
+                }
+
+                {
+                    lock (_dataLock)
+                    {
+                        _cardSlotsOccupied[bayIndex, cardIndex] = true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to show tap {CardName}.", cardName);
+                return;
+            }
+            finally
+            {
+                lock (_dataLock)
+                {
+                    _action = Action.Idle;
+                }
+            }
         }
+
 
         public bool StartBarCoding(string cardName, uint opt)
         {
@@ -1367,9 +1653,204 @@ namespace VirtualOperatorServer.Operation
             return true;
         }
 
+        private async Task<bool>toBarcode(uint opt)
+        {
+            lock (_dataLock)
+            {
+                if (_position != Position.CardBay)
+                    return false;
+            }
+
+            var succeeded = false;
+            try
+            {
+                var currentCoordinates = await getCurrentStepperCoordinates();
+                if (currentCoordinates == null)
+                    return false;
+
+                var coordinates = _coordinateStore.GetCoordinates();
+                if (opt >= (uint)coordinates.OPTs.Length)
+                {
+                    _logger.LogError("Cannot move to the barcode position: option {Option} is invalid.", opt);
+                    return false;
+                }
+
+                var target = coordinates.OPTs[(int)opt].BarcodeReadingStartPoint;
+                if (target == null)
+                {
+                    _logger.LogError("Cannot move to the barcode position: option {Option} has no start point.", opt);
+                    return false;
+                }
+
+                const string destination = "the barcode position";
+                var targetCoordinates = getPointCoordinates(target);
+                if (!await steppersMoveInParallel([0, 1, 3, 4], currentCoordinates, targetCoordinates, destination))
+                    return false;
+
+                succeeded = await steppersMoveInParallel([2], currentCoordinates, targetCoordinates, destination);
+                return succeeded;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to move to the barcode position using option {Option}.", opt);
+                return false;
+            }
+            finally
+            {
+                lock (_dataLock)
+                {
+                    _position = succeeded ? Position.BarCode : Position.Unknown;
+                }
+            }
+        }
+
+        private async Task<bool>showBarcode(uint opt)
+        {
+            const int barcodeDisplayDelayMs = 500;
+
+            lock (_dataLock)
+            {
+                if (_position != Position.BarCode)
+                {
+                    _logger.LogError("Cannot show barcode: current position {Position} is not the barcode position.", _position);
+                    return false;
+                }
+            }
+
+            try
+            {
+                var coordinates = _coordinateStore.GetCoordinates();
+                if (opt >= (uint)coordinates.OPTs.Length)
+                {
+                    _logger.LogError("Cannot show barcode: option {Option} is invalid.", opt);
+                    return false;
+                }
+
+                var settings = coordinates.OPTs[(int)opt];
+                if (settings.BarcodeReadingStartPoint == null || settings.BarcodeReadingStopPoint == null)
+                {
+                    _logger.LogError("Cannot show barcode: option {Option} has no start or stop point.", opt);
+                    return false;
+                }
+
+                var currentCoordinates = await getCurrentStepperCoordinates();
+                if (currentCoordinates == null)
+                {
+                    _logger.LogError("Cannot show barcode: failed to retrieve current stepper coordinates for option {Option}.", opt);
+                    return false;
+                }
+
+                var startCoordinates = getPointCoordinates(settings.BarcodeReadingStartPoint);
+                for (var index = 0; index < startCoordinates.Length; index++)
+                {
+                    if (currentCoordinates[index] != startCoordinates[index])
+                    {
+                        _logger.LogError("Cannot show barcode: current coordinates do not match the start point for option {Option}.", opt);
+                        return false;
+                    }
+                }
+
+                var stopCoordinates = getPointCoordinates(settings.BarcodeReadingStopPoint);
+                lock (_dataLock)
+                {
+                    _position = Position.Unknown;
+                }
+
+                if (!await steppersMoveInParallel([1], currentCoordinates, stopCoordinates, "the barcode stop point"))
+                {
+                    _logger.LogError("Failed to move to the barcode stop point for option {Option}.", opt);
+                    return false;
+                }
+
+                await Task.Delay(barcodeDisplayDelayMs);
+
+                if (!await steppersMoveInParallel([1], stopCoordinates, startCoordinates, "the barcode start point"))
+                {
+                    _logger.LogError("Failed to return to the barcode start point for option {Option}.", opt);
+                    return false;
+                }
+
+                lock (_dataLock)
+                {
+                    _position = Position.BarCode;
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to show barcode using option {Option}.", opt);
+                return false;
+            }
+        }
+
         private async Task barCode(string cardName, uint opt)
         {
-            await Task.CompletedTask;
+            try
+            {
+                byte bayIndex;
+                byte cardIndex;
+
+                if (!hasCard(cardName, opt, out bayIndex, out cardIndex))
+                {
+                    _logger.LogError("Cannot show barcode {CardName}: no card is present in the slot.", cardName);
+                    return;
+                }
+
+                if (!await toCardBay(bayIndex, cardIndex))
+                {
+                    _logger.LogError("Failed to move to card bay {BayIndex}, slot {CardIndex} while showing barcode {CardName}.", bayIndex, cardIndex, cardName);
+                    return;
+                }
+
+                if (!await fetchCard())
+                {
+                    _logger.LogError("Failed to fetch card {CardName} from card bay {BayIndex}, slot {CardIndex}.", cardName, bayIndex, cardIndex);
+                    return;
+                }
+                
+                if (!await toBarcode(opt))
+                {
+                    _logger.LogError("Failed to move to barcode in OPT: {OPT}.", opt);
+                    return;
+                }
+
+                if (!await showBarcode(opt))
+                {
+                    _logger.LogError("Failed to show barcode in OPT:{OPT}.", opt);
+                    return;
+                }
+
+                if (!await toCardBay(bayIndex, cardIndex))
+                {
+                    _logger.LogError("Failed to move back to card bay {BayIndex}, slot {CardIndex} after showing barcode {CardName}.", bayIndex, cardIndex, cardName);
+                    return;
+                }
+
+                if (!await replaceCard())
+                {
+                    _logger.LogError("Failed to replace card {CardName} in card bay {BayIndex}, slot {CardIndex}.", cardName, bayIndex, cardIndex);
+                    return;
+                }
+
+                {
+                    lock (_dataLock)
+                    {
+                        _cardSlotsOccupied[bayIndex, cardIndex] = true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to show barcode {CardName}.", cardName);
+                return;
+            }
+            finally
+            {
+                lock (_dataLock)
+                {
+                    _action = Action.Idle;
+                }
+            }
         }
 
         public bool StartTouching(uint opt, IReadOnlyList<(int x, int y)> coordinates)
