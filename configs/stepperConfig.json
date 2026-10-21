@@ -34,6 +34,7 @@
     "stepsPerRotation": 400,
     "encoderCountsPerRotation": 400,
     "encoderOffsetErrorThreshold": 32,
+    "encoderCodirectional": true,
     "crossBoundary": {
       "enabled": false,
       "negativeRange": -10,
@@ -96,6 +97,7 @@
     "stepsPerRotation": 400,
     "encoderCountsPerRotation": 400,
     "encoderOffsetErrorThreshold": 32,
+    "encoderCodirectional": false,
     "crossBoundary": {
       "enabled": false,
       "negativeRange": 0,
@@ -158,6 +160,7 @@
     "stepsPerRotation": 500,
     "encoderCountsPerRotation": 200,
     "encoderOffsetErrorThreshold": 10,
+    "encoderCodirectional": true,
     "crossBoundary": {
       "enabled": false,
       "negativeRange": 0,
@@ -220,6 +223,7 @@
     "stepsPerRotation": 800,
     "encoderCountsPerRotation": 2000,
     "encoderOffsetErrorThreshold": 20,
+    "encoderCodirectional": false,
     "crossBoundary": {
       "enabled": true,
       "negativeRange": -16,
@@ -252,14 +256,14 @@
     "encoder": 6,
     "mode": 0,
     "forcedModeConfig": {
-      "pulseWidth": 1200
+      "pulseWidth": 60000
     },
     "activeModeConfig": {
-      "startingPulseWidth": 1200,
-      "acceleratingSteps": 20,
-      "cruisingPulseWidth": 1000,
-      "deacceleratingSteps": 20,
-      "endingPulseWidth": 1200
+      "startingPulseWidth": 60000,
+      "acceleratingSteps": 1,
+      "cruisingPulseWidth": 60000,
+      "deacceleratingSteps": 1,
+      "endingPulseWidth": 60000
     },
     "passiveModeConfig": {
       "activeStepper": 255
@@ -281,7 +285,8 @@
     "range": 240,
     "stepsPerRotation": 800,
     "encoderCountsPerRotation": 2000,
-    "encoderOffsetErrorThreshold": 16,
+    "encoderOffsetErrorThreshold": 4,
+    "encoderCodirectional": true,
     "crossBoundary": {
       "enabled": true,
       "negativeRange": -80,
@@ -344,6 +349,7 @@
     "stepsPerRotation": 200,
     "encoderCountsPerRotation": 100,
     "encoderOffsetErrorThreshold": 2,
+    "encoderCodirectional": true,
     "crossBoundary": {
       "enabled": true,
       "negativeRange": -1200,
@@ -406,6 +412,7 @@
     "stepsPerRotation": 200,
     "encoderCountsPerRotation": 100,
     "encoderOffsetErrorThreshold": 2,
+    "encoderCodirectional": true,
     "crossBoundary": {
       "enabled": false,
       "negativeRange": 0,
@@ -468,6 +475,7 @@
     "stepsPerRotation": 200,
     "encoderCountsPerRotation": 1000,
     "encoderOffsetErrorThreshold": 2,
+    "encoderCodirectional": true,
     "crossBoundary": {
       "enabled": false,
       "negativeRange": 0,
@@ -530,6 +538,7 @@
     "stepsPerRotation": 200,
     "encoderCountsPerRotation": 100,
     "encoderOffsetErrorThreshold": 2,
+    "encoderCodirectional": true,
     "crossBoundary": {
       "enabled": false,
       "negativeRange": 0,
@@ -592,6 +601,7 @@
     "stepsPerRotation": 200,
     "encoderCountsPerRotation": 100,
     "encoderOffsetErrorThreshold": 2,
+    "encoderCodirectional": true,
     "crossBoundary": {
       "enabled": false,
       "negativeRange": 0,

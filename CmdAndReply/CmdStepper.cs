@@ -284,7 +284,8 @@ namespace VirtualOperatorServer.CommandAndReply
                                 ushort stepsPerRotation,
                                 byte encoderId,
                                 ushort encoderCountsPerRotation,
-                                ushort encoderOffsetErrorThreshold) :
+                                ushort encoderOffsetErrorThreshold,
+                                bool encoderCodirectional) :
                 CommandAndReply(CreateCommand(stepperId,
                                 isRisingEdgeDriven,
                                 isForwardHigh,
@@ -304,7 +305,8 @@ namespace VirtualOperatorServer.CommandAndReply
                                 stepsPerRotation,
                                 encoderId,
                                 encoderCountsPerRotation,
-                                encoderOffsetErrorThreshold))
+                                encoderOffsetErrorThreshold,
+                                encoderCodirectional))
     {
         private const int REPLY_LENGTH = 2;
 
@@ -327,7 +329,8 @@ namespace VirtualOperatorServer.CommandAndReply
                                             ushort stepsPerRotation,
                                             byte encoderId,
                                             ushort encoderCountsPerRotation,
-                                            ushort encoderOffsetErrorThreshold)
+                                            ushort encoderOffsetErrorThreshold,
+                                            bool encoderCodirectional)
         {
             /**
             * cmd is in the format:
@@ -359,8 +362,9 @@ namespace VirtualOperatorServer.CommandAndReply
             * 	25: 2/2 of counts when the encoder turns a round
             * 	26: 1/2 of max allowable difference between actual position and ideal position
             * 	27: 2/2 of max allowable difference between actual position and ideal position
+            *   28: encoderCodirectional
             */
-            byte[] cmd = new byte[28];
+            byte[] cmd = new byte[29];
 
             cmd[0] = (byte)CommandEnum.SET_STEPPER_CONTROLS;
             cmd[1] = stepperId;
@@ -390,6 +394,7 @@ namespace VirtualOperatorServer.CommandAndReply
             cmd[25] = (byte)(encoderCountsPerRotation >> 8);
             cmd[26] = (byte)encoderOffsetErrorThreshold;
             cmd[27] = (byte)(encoderOffsetErrorThreshold >> 8);
+            cmd[28] = (byte)(encoderCodirectional ? 1 : 0);
 
             return cmd;
         }
@@ -437,6 +442,8 @@ namespace VirtualOperatorServer.CommandAndReply
                     return (false, "invalid encoder id");
                 case 13:
                     return (false, "stepper_set_controls() failed");
+                case 14:
+                    return (false, "invalid command length");
                 default:
                     return (false, $"unknown error code {errorCode}");
             }

@@ -1053,7 +1053,8 @@ internal sealed class LowLevelAccessHandlers
                                             config.stepsPerRotation,
                                             (byte)config.encoder,
                                             config.encoderCountsPerRotation,
-                                            config.encoderOffsetErrorThreshold);
+                                            config.encoderOffsetErrorThreshold,
+                                            config.encoderCodirectional);
         string result = await RunCommand(cmd);
 
         return Results.Text(result, "text/html");

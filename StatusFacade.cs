@@ -279,6 +279,7 @@ namespace VirtualOperatorServer.Facade
                     public ushort stepsPerRotation { get; set; }
                     public ushort encoderCountsPerRotation { get; set; }
                     public ushort encoderOffsetErrorThreshold { get; set; }
+                    public bool encoderCodirectional { get; set; }
                     public CrossBoundary crossBoundary { get; set; } = new();
                 }
 

@@ -282,7 +282,8 @@ namespace VirtualOperatorServer.Operation
                                                     config.stepsPerRotation,
                                                     (byte)config.encoder,
                                                     config.encoderCountsPerRotation,
-                                                    config.encoderOffsetErrorThreshold);
+                                                    config.encoderOffsetErrorThreshold,
+                                                    config.encoderCodirectional);
             command.Reply = await _backSocket.SendAndReceiveAsync(command.Command);
             return command.ParseReply().result;
         }
