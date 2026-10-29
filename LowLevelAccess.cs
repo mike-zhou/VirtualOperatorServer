@@ -39,87 +39,87 @@ internal sealed class LowLevelAccessHandlers
                 command == "clockStepper" ||
                 command == "setTimerPrescaler")
             {
-                return await HandleMiscPostCommands(command, jsonRoot);
+                return await handleMiscPostCommands(command, jsonRoot);
             }
             else if (command == "saveTimerPrescaler")
             {
-                return SaveTimerPrescaler(jsonRoot);
+                return saveTimerPrescaler(jsonRoot);
             }
             else if (command == "saveStepperConfigTimer")
             {
-                return SaveStepperConfigTimer(command, jsonRoot);
+                return saveStepperConfigTimer(command, jsonRoot);
             }
             else if (command == "saveStepperConfigEncoder")
             {
-                return SaveStepperConfigEncoder(command, jsonRoot);
+                return saveStepperConfigEncoder(command, jsonRoot);
             }
             else if (command == "saveStepperConfigMode")
             {
-                return SaveStepperConfigMode(command, jsonRoot);
+                return saveStepperConfigMode(command, jsonRoot);
             }
             else if (command == "saveStepperConfig")
             {
-                return SaveStepperConfig(command, jsonRoot);
+                return saveStepperConfig(command, jsonRoot);
             }
             else if (command == "setActivePeriods")
             {
-                return await SetActivePeriods(jsonRoot);
+                return await setActivePeriods(jsonRoot);
             }
             else if (command == "setStepperControls")
             {
-                return await SetStepperControls(jsonRoot);
+                return await setStepperControls(jsonRoot);
             }
             else if (command == "setStepperEnable")
             {
-                return await SetStepperEnable(jsonRoot);
+                return await setStepperEnable(jsonRoot);
             }
             else if (command == "setStepperForward")
             {
-                return await SetStepperForward(jsonRoot);
+                return await setStepperForward(jsonRoot);
             }
             else if (command == "startStepperHomePositioning")
             {
-                return await StartStepperHomePositioning(jsonRoot);
+                return await startStepperHomePositioning(jsonRoot);
             }
             else if (command == "setActiveSteps")
             {
-                return await SetActiveSteps(jsonRoot);
+                return await setActiveSteps(jsonRoot);
             }
             else if (command == "runStepper")
             {
-                return await RunStepper(jsonRoot);
+                return await runStepper(jsonRoot);
             }
             else if (command == "testTimer")
             {
-                return await TestTimer(jsonRoot);
+                return await testTimer(jsonRoot);
             }
             else if (command == "testStepperEnable")
             {
-                return await TestStepperEnable(jsonRoot);
+                return await testStepperEnable(jsonRoot);
             }
             else if (command == "testStepperForward")
             {
-                return await TestStepperForward(jsonRoot);
+                return await testStepperForward(jsonRoot);
             }
             else if (command == "testStepperClock")
             {
-                return await TestStepperClock(jsonRoot);
+                return await testStepperClock(jsonRoot);
             }
             else if (command == "testStepperForce")
             {
-                return await TestStepperForce(jsonRoot);
+                return await testStepperForce(jsonRoot);
             }
             else if (command == "testStepperPulseEnd")
             {
-                return await TestStepperPulseEnd(jsonRoot);
+                return await testStepperPulseEnd(jsonRoot);
             }
             else if (command == "testStepperStateReady")
             {
-                return await TestStepperStateReady(jsonRoot);
+                return await testStepperStateReady(jsonRoot);
             }
             else if (command == "testStepperActive")
             {
-                return await TestStepperActive(jsonRoot);
+                return await testStepperActive(jsonRoot);
             }
         }
         catch (InvalidRequestBodyException e)
@@ -134,14 +134,16 @@ internal sealed class LowLevelAccessHandlers
         return TypedResults.NotFound(new { error = "Item not found", command });
     }
 
-    private async Task<string> RunCommand(CommandAndReply cmd)
+    private Task<string> runCommand(CommandAndReply cmd) => runCommand(cmd, _backSocket);
+
+    private static async Task<string> runCommand(CommandAndReply cmd, BackSocket backSocket)
     {
         if (cmd.Command.Length < 1)
         {
             throw new Exception("Invalid command length");
         }
 
-        cmd.Reply = await _backSocket.SendAndReceiveAsync(cmd.Command);
+        cmd.Reply = await backSocket.SendAndReceiveAsync(cmd.Command);
 
         bool success;
         string reason;
@@ -157,7 +159,7 @@ internal sealed class LowLevelAccessHandlers
         }
     }
 
-    private async Task<IResult> RunStepperForced(byte stepperId, uint steps)
+    private async Task<IResult> runStepperForced(byte stepperId, uint steps)
     {
         if (stepperId >= StatusFacade.Facade.StepperCount)
         {
@@ -179,7 +181,7 @@ internal sealed class LowLevelAccessHandlers
         string result;
 
         var cmd = new CmdRunStepperForce(stepperId, (byte)stepperConfig.timer, pulseWidth, (ushort)steps);
-        result = await RunCommand(cmd);
+        result = await runCommand(cmd);
         if (result != "success")
         {
             return Results.Text($"failure: RunStepperForced: {result}", "text/html");
@@ -188,7 +190,7 @@ internal sealed class LowLevelAccessHandlers
         return Results.Text(result, "text/html");
     }
 
-    private async Task<string> SetStepperCrossBoudnary(byte stepperId)
+    private async Task<string> setStepperCrossBoudnary(byte stepperId)
     {
         var stepperConfig = StaticConfig.Instance.StepperConfigs[stepperId];
 
@@ -209,7 +211,7 @@ internal sealed class LowLevelAccessHandlers
         }
 
         var cmdSetCrossBoundary = new CmdSetStepperCrossBoundary(stepperId, crossBoudanry);
-        string result = await RunCommand(cmdSetCrossBoundary);
+        string result = await runCommand(cmdSetCrossBoundary);
 
         if (result != "success")
         {
@@ -219,7 +221,7 @@ internal sealed class LowLevelAccessHandlers
         return "success";
     }
 
-    private async Task<IResult> RunStepperActive(byte stepperId, uint steps)
+    private async Task<IResult> runStepperActive(byte stepperId, uint steps)
     {
         if (stepperId >= StatusFacade.Facade.StepperCount)
         {
@@ -233,27 +235,27 @@ internal sealed class LowLevelAccessHandlers
             throw new Exception($"Timer must be selected in RunStepperActive");
         }
 
-        string result = await SetStepperCrossBoudnary(stepperId);
+        string result = await setStepperCrossBoudnary(stepperId);
         if (result != "success")
         {
             return Results.Text($"{result}", "text/html");
         }
 
-        result = await SetActivePeriods(stepperId, steps);
+        result = await SetActivePeriods(stepperId, steps, _backSocket);
         if (result != "success")
         {
             return Results.Text(result, "text/html");
         }
 
         var cmdSetActive = new CmdSetStepperActive(stepperId, steps);
-        result = await RunCommand(cmdSetActive);
+        result = await runCommand(cmdSetActive);
         if (result != "success")
         {
             return Results.Text($"failure: CmdSetStepperActive: {result}", "text/html");
         }
 
         var cmdRunActive = new CmdRunStepperActive(stepperId, (byte)stepperConfig.timer);
-        result = await RunCommand(cmdRunActive);
+        result = await runCommand(cmdRunActive);
         if (result != "success")
         {
             return Results.Text($"failure: RunStepperActive: {result}", "text/html");
@@ -262,7 +264,7 @@ internal sealed class LowLevelAccessHandlers
         return Results.Text(result, "text/html");
     }
 
-    private async Task<IResult> RunStepperPassive(byte stepperId, uint steps, byte activeStepperId, uint activeSteps)
+    private async Task<IResult> runStepperPassive(byte stepperId, uint steps, byte activeStepperId, uint activeSteps)
     {
 
         if (activeSteps >= ushort.MaxValue)
@@ -272,7 +274,7 @@ internal sealed class LowLevelAccessHandlers
 
         string result;
 
-        result = await SetStepperCrossBoudnary(stepperId);
+        result = await setStepperCrossBoudnary(stepperId);
         if (result != "success")
         {
             return Results.Text($"{result}", "text/html");
@@ -325,7 +327,7 @@ internal sealed class LowLevelAccessHandlers
             if (indexList.Count == indexesPerBatch)
             {
                 cmd = new CmdSetStepperPassiveStepIndexes(stepperId, batchIndex, totalBatches, indexList.ToArray());
-                result = await RunCommand(cmd);
+                result = await runCommand(cmd);
                 if (result != "success")
                 {
                     return Results.Text($"failure: RunStepperPassive: failed to set passive steps: batchIndex: {batchIndex}, totalBatches: {totalBatches}, result: {result}", "text/html");
@@ -338,7 +340,7 @@ internal sealed class LowLevelAccessHandlers
         if (indexList.Count > 0)
         {
             cmd = new CmdSetStepperPassiveStepIndexes(stepperId, batchIndex, totalBatches, indexList.ToArray());
-            result = await RunCommand(cmd);
+            result = await runCommand(cmd);
             if (result != "success")
             {
                 return Results.Text($"failure: RunStepperPassive: failed to set passive steps: batchIndex: {batchIndex}, totalBatches: {totalBatches}, result: {result}", "text/html");
@@ -347,7 +349,7 @@ internal sealed class LowLevelAccessHandlers
 
         // couple active and passive steppers
         cmd = new CmdRunStepperPasive(stepperId, activeStepperId);
-        result = await RunCommand(cmd);
+        result = await runCommand(cmd);
         if (result != "success")
         {
             return Results.Text($"failure: RunStepperPassive: failed to couple active stepper: {result}", "text/html");
@@ -361,7 +363,7 @@ internal sealed class LowLevelAccessHandlers
 
         // start clocking active stepper
         cmd = new CmdRunStepperActive(activeStepperId, (byte)activeStepperConfig.timer);
-        result = await RunCommand(cmd);
+        result = await runCommand(cmd);
         if (result != "success")
         {
             return Results.Text($"failure: RunStepperPassive: failed to couple active stepper: {result}", "text/html");
@@ -370,7 +372,7 @@ internal sealed class LowLevelAccessHandlers
         return Results.Text(result, "text/html");
     }
 
-    private async Task<IResult> RunStepper(JsonElement payload)
+    private async Task<IResult> runStepper(JsonElement payload)
     {
         var stepperId = payload.GetProperty("stepperId").GetByte();
         var mode = payload.GetProperty("mode").GetString();
@@ -388,9 +390,9 @@ internal sealed class LowLevelAccessHandlers
         switch (mode)
         {
             case "forced":
-                return await RunStepperForced(stepperId, steps);
+                return await runStepperForced(stepperId, steps);
             case "active":
-                return await RunStepperActive(stepperId, steps);
+                return await runStepperActive(stepperId, steps);
             case "passive":
                 {
                     byte activeStepperId = payload.GetProperty("activeStepperId").GetByte();
@@ -407,7 +409,7 @@ internal sealed class LowLevelAccessHandlers
                         return Results.Text($"failure: invalid steps '{steps}'", "text/html");
                     }
 
-                    return await RunStepperPassive(stepperId, steps, activeStepperId, activeSteps);
+                    return await runStepperPassive(stepperId, steps, activeStepperId, activeSteps);
                 }
             default:
                 return Results.Text($"failure: unknown mode '{mode}'", "text/html");
@@ -415,15 +417,15 @@ internal sealed class LowLevelAccessHandlers
     }
 
 
-    private async Task<IResult> HandleMiscPostCommands(string command, JsonElement jsonRoot)
+    private async Task<IResult> handleMiscPostCommands(string command, JsonElement jsonRoot)
     {
         CommandAndReply cmd = CommandFactory.BuildPostCommand(command, jsonRoot);
 
-        var result = await RunCommand(cmd);
+        var result = await runCommand(cmd);
         return Results.Text(result, "text/html"); ;
     }
 
-    private static IResult SaveTimerPrescaler(JsonElement jsonRoot)
+    private static IResult saveTimerPrescaler(JsonElement jsonRoot)
     {
         var timerId = jsonRoot.GetProperty("timerId").GetByte();
         var prescaler = jsonRoot.GetProperty("prescaler").GetUInt16();
@@ -440,7 +442,7 @@ internal sealed class LowLevelAccessHandlers
         return Results.Text("success", "text/html"); ;
     }
 
-    private static IResult SaveStepperConfigTimer(string command, JsonElement jsonRoot)
+    private static IResult saveStepperConfigTimer(string command, JsonElement jsonRoot)
     {
         var stepperIndex = jsonRoot.GetProperty("stepperId").GetByte();
         var timer = jsonRoot.GetProperty("timer").GetString();
@@ -486,7 +488,7 @@ internal sealed class LowLevelAccessHandlers
         return Results.Text("success", "text/html");
     }
 
-    private static IResult SaveStepperConfigEncoder(string command, JsonElement jsonRoot)
+    private static IResult saveStepperConfigEncoder(string command, JsonElement jsonRoot)
     {
         var stepperIndex = jsonRoot.GetProperty("stepperId").GetByte();
         var encoder = jsonRoot.GetProperty("encoder").GetString();
@@ -538,7 +540,7 @@ internal sealed class LowLevelAccessHandlers
         return Results.Text("success", "text/html");
     }
 
-    private static IResult SaveStepperConfigMode(string command, JsonElement jsonRoot)
+    private static IResult saveStepperConfigMode(string command, JsonElement jsonRoot)
     {
         var stepperIndex = jsonRoot.GetProperty("stepperId").GetByte();
         var mode = jsonRoot.GetProperty("mode").GetString();
@@ -592,7 +594,7 @@ internal sealed class LowLevelAccessHandlers
         return Results.Text("success", "text/html");
     }
 
-    private static IResult SaveStepperConfig(string command, JsonElement jsonRoot)
+    private static IResult saveStepperConfig(string command, JsonElement jsonRoot)
     {
         var stepperIndex = jsonRoot.GetProperty("stepperId").GetByte();
         var classification = jsonRoot.GetProperty("classification").GetString();
@@ -749,7 +751,7 @@ internal sealed class LowLevelAccessHandlers
         return Results.Text("success", "text/html");
     }
 
-    private async Task<IResult> SetActivePeriods(JsonElement jsonRoot)
+    private async Task<IResult> setActivePeriods(JsonElement jsonRoot)
     {
         byte stepperIndex = jsonRoot.GetProperty("stepperId").GetByte();
 
@@ -775,7 +777,7 @@ internal sealed class LowLevelAccessHandlers
 
             var steps = config.activeModeConfig.acceleratingSteps + config.activeModeConfig.deacceleratingSteps;
 
-            string result = await SetActivePeriods(stepperIndex, (uint)steps);
+            string result = await SetActivePeriods(stepperIndex, (uint)steps, _backSocket);
 
             return Results.Text(result, "text/html");
         }
@@ -785,7 +787,7 @@ internal sealed class LowLevelAccessHandlers
         }
     }
 
-    private async Task<string> SetActivePeriods(byte stepperIndex, uint steps)
+    public static async Task<string> SetActivePeriods(byte stepperIndex, uint steps, BackSocket backSocket)
     {
         try
         {
@@ -878,19 +880,19 @@ internal sealed class LowLevelAccessHandlers
                     deacceleratingPeriods[i] = shortDistancePulses[deaccelerationStartIndex + i];
                 }
 
-                var result = await SendActiveAccelerationPeriods(stepperIndex, acceleratingPeriods);
+                var result = await sendActiveAccelerationPeriods(backSocket, stepperIndex, acceleratingPeriods);
                 if (result != "success")
                 {
                     return result;
                 }
 
-                result = await SendActiveCruisingPeriod(stepperIndex, cruisingPulseWidth);
+                result = await sendActiveCruisingPeriod(backSocket, stepperIndex, cruisingPulseWidth);
                 if (result != "success")
                 {
                     return result;
                 }
 
-                result = await SendActiveDeaccelerationPeriods(stepperIndex, deacceleratingPeriods);
+                result = await sendActiveDeaccelerationPeriods(backSocket, stepperIndex, deacceleratingPeriods);
                 if (result != "success")
                 {
                     return result;
@@ -900,7 +902,7 @@ internal sealed class LowLevelAccessHandlers
             }
 
             {
-                var result = await SendActiveAccelerationPeriods(stepperIndex, accelerationStepsBuilder.SCurvePulsesRampup);
+                var result = await sendActiveAccelerationPeriods(backSocket, stepperIndex, accelerationStepsBuilder.SCurvePulsesRampup);
                 if (result != "success")
                 {
                     return result;
@@ -908,7 +910,7 @@ internal sealed class LowLevelAccessHandlers
             }
 
             {
-                var result = await SendActiveCruisingPeriod(stepperIndex, config.activeModeConfig.cruisingPulseWidth);
+                var result = await sendActiveCruisingPeriod(backSocket, stepperIndex, config.activeModeConfig.cruisingPulseWidth);
                 if (result != "success")
                 {
                     return result;
@@ -929,7 +931,7 @@ internal sealed class LowLevelAccessHandlers
                     throw new InvalidRequestBodyException($"Invalid rampdown pulse configuration: {ex.Message}");
                 }
 
-                var result = await SendActiveDeaccelerationPeriods(stepperIndex, deaccelerationStepsBuilder.SCurvePulsesRampdown);
+                var result = await sendActiveDeaccelerationPeriods(backSocket, stepperIndex, deaccelerationStepsBuilder.SCurvePulsesRampdown);
                 if (result != "success")
                 {
                     return result;
@@ -944,7 +946,7 @@ internal sealed class LowLevelAccessHandlers
         }
     }
 
-    private async Task<string> SendActiveAccelerationPeriods(byte stepperIndex,
+    private static async Task<string> sendActiveAccelerationPeriods(BackSocket backSocket, byte stepperIndex,
                                                             IReadOnlyList<ushort> acceleratingPeriods)
     {
         var totalBatches = (acceleratingPeriods.Count + MaxAmountOfPulseInBatch - 1) / MaxAmountOfPulseInBatch;
@@ -967,7 +969,7 @@ internal sealed class LowLevelAccessHandlers
             }
 
             var cmd = new CmdSetStepperActiveRampupPulseWidth(stepperIndex, (byte)batchIndex, (byte)totalBatches, batch);
-            var result = await RunCommand(cmd);
+            var result = await runCommand(cmd, backSocket);
             if (result != "success")
             {
                 return $"Failed in set rampup periods: '{result}'";
@@ -977,11 +979,11 @@ internal sealed class LowLevelAccessHandlers
         return "success";
     }
 
-    private async Task<string> SendActiveCruisingPeriod(byte stepperIndex,
+    private static async Task<string> sendActiveCruisingPeriod(BackSocket backSocket, byte stepperIndex,
                                                         ushort cruisingPulseWidth)
     {
         var cmd = new CmdSetStepperActiveCruisePulseWidth(stepperIndex, cruisingPulseWidth);
-        var result = await RunCommand(cmd);
+        var result = await runCommand(cmd, backSocket);
         if (result != "success")
         {
             return $"Failed in set cruising period: '{result}'";
@@ -990,7 +992,7 @@ internal sealed class LowLevelAccessHandlers
         return "success";
     }
 
-    private async Task<string> SendActiveDeaccelerationPeriods(byte stepperIndex,
+    private static async Task<string> sendActiveDeaccelerationPeriods(BackSocket backSocket, byte stepperIndex,
                                                                 IReadOnlyList<ushort> deacceleratingPeriods)
     {
         var totalBatches = (deacceleratingPeriods.Count + MaxAmountOfPulseInBatch - 1) / MaxAmountOfPulseInBatch;
@@ -1013,7 +1015,7 @@ internal sealed class LowLevelAccessHandlers
             }
 
             var cmd = new CmdSetStepperActiveRampdownPulseWidth(stepperIndex, (byte)batchIndex, (byte)totalBatches, batch);
-            var result = await RunCommand(cmd);
+            var result = await runCommand(cmd, backSocket);
             if (result != "success")
             {
                 return $"Failed in set rampdown periods: '{result}'";
@@ -1023,7 +1025,7 @@ internal sealed class LowLevelAccessHandlers
         return "success";
     }
 
-    private async Task<IResult> SetStepperControls(JsonElement jsonRoot)
+    private async Task<IResult> setStepperControls(JsonElement jsonRoot)
     {
         byte stepperIndex = jsonRoot.GetProperty("stepperId").GetByte();
         var configs = StaticConfig.Instance.StepperConfigs;
@@ -1055,12 +1057,12 @@ internal sealed class LowLevelAccessHandlers
                                             config.encoderCountsPerRotation,
                                             config.encoderOffsetErrorThreshold,
                                             config.encoderCodirectional);
-        string result = await RunCommand(cmd);
+        string result = await runCommand(cmd);
 
         return Results.Text(result, "text/html");
     }
 
-    private async Task<IResult> SetStepperEnable(JsonElement jsonRoot)
+    private async Task<IResult> setStepperEnable(JsonElement jsonRoot)
     {
         byte stepperIndex = jsonRoot.GetProperty("stepperId").GetByte();
         bool isEnable = jsonRoot.GetProperty("enable").GetBoolean();
@@ -1071,12 +1073,12 @@ internal sealed class LowLevelAccessHandlers
         }
 
         var cmd = new CmdSetStepperEnable(stepperIndex, isEnable);
-        string result = await RunCommand(cmd);
+        string result = await runCommand(cmd);
 
         return Results.Text(result, "text/html");
     }
 
-    private async Task<IResult> SetStepperForward(JsonElement jsonRoot)
+    private async Task<IResult> setStepperForward(JsonElement jsonRoot)
     {
         byte stepperIndex = jsonRoot.GetProperty("stepperId").GetByte();
         bool isForward = jsonRoot.GetProperty("forward").GetBoolean();
@@ -1087,12 +1089,12 @@ internal sealed class LowLevelAccessHandlers
         }
 
         var cmd = new CmdSetStepperForward(stepperIndex, isForward);
-        string result = await RunCommand(cmd);
+        string result = await runCommand(cmd);
 
         return Results.Text(result, "text/html");
     }
 
-    private async Task<IResult> StartStepperHomePositioning(JsonElement jsonRoot)
+    private async Task<IResult> startStepperHomePositioning(JsonElement jsonRoot)
     {
         byte stepperId = jsonRoot.GetProperty("stepperId").GetByte();
 
@@ -1109,12 +1111,12 @@ internal sealed class LowLevelAccessHandlers
         }
 
         var cmd = new CmdStartStepperHomePositioning(stepperId, (byte)stepperConfig.timer);
-        string result = await RunCommand(cmd);
+        string result = await runCommand(cmd);
 
         return Results.Text(result, "text/html");
     }
 
-    private async Task<IResult> SetActiveSteps(JsonElement jsonRoot)
+    private async Task<IResult> setActiveSteps(JsonElement jsonRoot)
     {
         byte stepperId = jsonRoot.GetProperty("stepperId").GetByte();
         if (stepperId >= StatusFacade.Facade.StepperCount)
@@ -1125,12 +1127,12 @@ internal sealed class LowLevelAccessHandlers
         uint steps = jsonRoot.GetProperty("steps").GetUInt32();
 
         var cmd = new CmdSetStepperActive(stepperId, steps);
-        string result = await RunCommand(cmd);
+        string result = await runCommand(cmd);
 
         return Results.Text(result, "text/html");
     }
 
-    private async Task<IResult> TestTimer(JsonElement jsonRoot)
+    private async Task<IResult> testTimer(JsonElement jsonRoot)
     {
         byte timerId = jsonRoot.GetProperty("timerId").GetByte();
         ushort pulseWidth = jsonRoot.GetProperty("pulseWidth").GetUInt16();
@@ -1143,12 +1145,12 @@ internal sealed class LowLevelAccessHandlers
         }
 
         var cmd = new CmdTestTimer(timerId, pulseWidth, totalPulse, logPeriod);
-        string result = await RunCommand(cmd);
+        string result = await runCommand(cmd);
 
         return Results.Text(result, "text/html");
     }
 
-    private async Task<IResult> TestStepperEnable(JsonElement jsonRoot)
+    private async Task<IResult> testStepperEnable(JsonElement jsonRoot)
     {
         byte stepperId = jsonRoot.GetProperty("stepperId").GetByte();
         bool isEnable = jsonRoot.GetProperty("isEnable").GetBoolean();
@@ -1159,12 +1161,12 @@ internal sealed class LowLevelAccessHandlers
         }
 
         var cmd = new CmdTestStepperSignalEnable(stepperId, isEnable);
-        string result = await RunCommand(cmd);
+        string result = await runCommand(cmd);
 
         return Results.Text(result, "text/html");
     }
 
-    private async Task<IResult> TestStepperForward(JsonElement jsonRoot)
+    private async Task<IResult> testStepperForward(JsonElement jsonRoot)
     {
         byte stepperId = jsonRoot.GetProperty("stepperId").GetByte();
         bool isForward = jsonRoot.GetProperty("isForward").GetBoolean();
@@ -1175,12 +1177,12 @@ internal sealed class LowLevelAccessHandlers
         }
 
         var cmd = new CmdTestStepperSignalForward(stepperId, isForward);
-        string result = await RunCommand(cmd);
+        string result = await runCommand(cmd);
 
         return Results.Text(result, "text/html");
     }
 
-    private async Task<IResult> TestStepperClock(JsonElement jsonRoot)
+    private async Task<IResult> testStepperClock(JsonElement jsonRoot)
     {
         byte stepperId = jsonRoot.GetProperty("stepperId").GetByte();
         bool isFirstHalf = jsonRoot.GetProperty("isFirstHalf").GetBoolean();
@@ -1191,12 +1193,12 @@ internal sealed class LowLevelAccessHandlers
         }
 
         var cmd = new CmdTestStepperSignalClock(stepperId, isFirstHalf);
-        string result = await RunCommand(cmd);
+        string result = await runCommand(cmd);
 
         return Results.Text(result, "text/html");
     }
 
-    private async Task<IResult> TestStepperForce(JsonElement jsonRoot)
+    private async Task<IResult> testStepperForce(JsonElement jsonRoot)
     {
         byte stepperId = jsonRoot.GetProperty("stepperId").GetByte();
         ushort pulseWidth = jsonRoot.GetProperty("pulseWidth").GetUInt16();
@@ -1208,12 +1210,12 @@ internal sealed class LowLevelAccessHandlers
         }
 
         var cmd = new CmdTestStepperStateRunningForce(stepperId, pulseWidth, steps);
-        string result = await RunCommand(cmd);
+        string result = await runCommand(cmd);
 
         return Results.Text(result, "text/html");
     }
 
-    private async Task<IResult> TestStepperPulseEnd(JsonElement jsonRoot)
+    private async Task<IResult> testStepperPulseEnd(JsonElement jsonRoot)
     {
         byte stepperId = jsonRoot.GetProperty("stepperId").GetByte();
 
@@ -1223,12 +1225,12 @@ internal sealed class LowLevelAccessHandlers
         }
 
         var cmd = new CmdTestStepperPulseEnd(stepperId);
-        string result = await RunCommand(cmd);
+        string result = await runCommand(cmd);
 
         return Results.Text(result, "text/html");
     }
 
-    private async Task<IResult> TestStepperStateReady(JsonElement jsonRoot)
+    private async Task<IResult> testStepperStateReady(JsonElement jsonRoot)
     {
         byte stepperId = jsonRoot.GetProperty("stepperId").GetByte();
 
@@ -1238,12 +1240,12 @@ internal sealed class LowLevelAccessHandlers
         }
 
         var cmd = new CmdTestStepperStateReady(stepperId);
-        string result = await RunCommand(cmd);
+        string result = await runCommand(cmd);
 
         return Results.Text(result, "text/html");
     }
 
-    private async Task<IResult> TestStepperActive(JsonElement jsonRoot)
+    private async Task<IResult> testStepperActive(JsonElement jsonRoot)
     {
         byte stepperId = jsonRoot.GetProperty("stepperId").GetByte();
         uint steps = jsonRoot.GetProperty("steps").GetUInt32();
@@ -1254,7 +1256,7 @@ internal sealed class LowLevelAccessHandlers
         }
 
         var cmd = new CmdTestStepperStateRunningActive(stepperId, steps);
-        string result = await RunCommand(cmd);
+        string result = await runCommand(cmd);
 
         return Results.Text(result, "text/html");
     }

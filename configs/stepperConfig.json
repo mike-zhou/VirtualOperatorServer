@@ -33,7 +33,7 @@
     "range": 5680,
     "stepsPerRotation": 400,
     "encoderCountsPerRotation": 400,
-    "encoderOffsetErrorThreshold": 32,
+    "encoderOffsetErrorThreshold": 5,
     "encoderCodirectional": true,
     "crossBoundary": {
       "enabled": false,
@@ -96,7 +96,7 @@
     "range": 2500,
     "stepsPerRotation": 400,
     "encoderCountsPerRotation": 400,
-    "encoderOffsetErrorThreshold": 32,
+    "encoderOffsetErrorThreshold": 5,
     "encoderCodirectional": false,
     "crossBoundary": {
       "enabled": false,
@@ -159,8 +159,8 @@
     "range": 2380,
     "stepsPerRotation": 500,
     "encoderCountsPerRotation": 200,
-    "encoderOffsetErrorThreshold": 10,
-    "encoderCodirectional": true,
+    "encoderOffsetErrorThreshold": 4,
+    "encoderCodirectional": false,
     "crossBoundary": {
       "enabled": false,
       "negativeRange": 0,
@@ -222,7 +222,7 @@
     "range": 1500,
     "stepsPerRotation": 800,
     "encoderCountsPerRotation": 2000,
-    "encoderOffsetErrorThreshold": 20,
+    "encoderOffsetErrorThreshold": 5,
     "encoderCodirectional": false,
     "crossBoundary": {
       "enabled": true,
@@ -256,14 +256,14 @@
     "encoder": 6,
     "mode": 0,
     "forcedModeConfig": {
-      "pulseWidth": 60000
+      "pulseWidth": 1200
     },
     "activeModeConfig": {
-      "startingPulseWidth": 60000,
-      "acceleratingSteps": 1,
-      "cruisingPulseWidth": 60000,
-      "deacceleratingSteps": 1,
-      "endingPulseWidth": 60000
+      "startingPulseWidth": 1200,
+      "acceleratingSteps": 20,
+      "cruisingPulseWidth": 1000,
+      "deacceleratingSteps": 20,
+      "endingPulseWidth": 1200
     },
     "passiveModeConfig": {
       "activeStepper": 255
@@ -292,12 +292,12 @@
       "negativeRange": -80,
       "boundaries": [
         {
-          "enabled": true,
+          "enabled": false,
           "value": -11,
           "error": 2
         },
         {
-          "enabled": true,
+          "enabled": false,
           "value": -16,
           "error": 2
         },

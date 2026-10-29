@@ -730,6 +730,13 @@ namespace VirtualOperatorServer.Operation
                 return false;
             }
 
+            var result = await LowLevelAccessHandlers.SetActivePeriods(index, (uint)Math.Abs(distance), _backSocket);
+            if (result != "success")
+            {
+                _logger.LogError("Failed to set active periods for stepper {StepperIndex} while moving to {Destination}: {Result}", index, destination, result);
+                return false;
+            }
+
             if (!await stepperRunActive(index, (uint)Math.Abs(distance)))
             {
                 _logger.LogError("Failed to start stepper {StepperIndex} while moving to {Destination}.", index, destination);
