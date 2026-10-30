@@ -655,11 +655,11 @@ namespace VirtualOperatorServer.Operation
 
             return
             [
-                facade.steppers[0].status.offset,
-                facade.steppers[1].status.offset,
-                facade.steppers[2].status.offset,
-                facade.steppers[3].status.offset,
-                facade.steppers[4].status.offset
+                facade.steppers[X].status.offset,
+                facade.steppers[Y].status.offset,
+                facade.steppers[Z].status.offset,
+                facade.steppers[U].status.offset,
+                facade.steppers[V].status.offset
             ];
         }
 
@@ -827,14 +827,13 @@ namespace VirtualOperatorServer.Operation
                 return false;
             }
 
-            const byte zIndex = 2;
-            if (!await steppersMoveInParallel([zIndex], currentCoordinates, targetCoordinates, destination))
+            if (!await steppersMoveInParallel([Z], currentCoordinates, targetCoordinates, destination))
             {
                 _logger.LogError("Failed to move the Z stepper from idle to card bay {BayIndex}, slot {CardIndex}.", bayIndex, cardIndex);
                 return false;
             }
 
-            if (!await steppersMoveInParallel([0, 1, 3, 4], currentCoordinates, targetCoordinates, destination))
+            if (!await steppersMoveInParallel([X, Y, U, V], currentCoordinates, targetCoordinates, destination))
             {
                 _logger.LogError("Failed to move the X, Y, U, V steppers from idle to card bay {BayIndex}, slot {CardIndex}.", bayIndex, cardIndex);
                 return false;
@@ -894,7 +893,7 @@ namespace VirtualOperatorServer.Operation
                 return false;
             }
 
-            if (!await steppersMoveInParallel([0, 1], currentCoordinates, targetCoordinates, destination))
+            if (!await steppersMoveInParallel([X, Y], currentCoordinates, targetCoordinates, destination))
             {
                 _logger.LogError("Failed to move the X, Y steppers from card bay to card bay {BayIndex}, slot {CardIndex}.", bayIndex, cardIndex);
                 return false;
@@ -921,13 +920,13 @@ namespace VirtualOperatorServer.Operation
                 return false;
             }
 
-            if (!await steppersMoveInParallel([2], currentCoordinates, targetCoordinates, destination))
+            if (!await steppersMoveInParallel([Z], currentCoordinates, targetCoordinates, destination))
             {
                 _logger.LogError("Failed to move the Z stepper from barcode to card bay {BayIndex}, slot {CardIndex}.", bayIndex, cardIndex);
                 return false;
             }
 
-            if (!await steppersMoveInParallel([4, 3, 1, 0], currentCoordinates, targetCoordinates, destination))
+            if (!await steppersMoveInParallel([V, U, Y, X], currentCoordinates, targetCoordinates, destination))
             {
                 _logger.LogError("Failed to move the U, V, X, Y steppers from barcode to card bay {BayIndex}, slot {CardIndex}.", bayIndex, cardIndex);
                 return false;
@@ -954,13 +953,13 @@ namespace VirtualOperatorServer.Operation
                 return false;
             }
 
-            if (!await steppersMoveInParallel([2], currentCoordinates, targetCoordinates, destination))
+            if (!await steppersMoveInParallel([Z], currentCoordinates, targetCoordinates, destination))
             {
                 _logger.LogError("Failed to move the Z stepper from barcode to card bay {BayIndex}, slot {CardIndex}.", bayIndex, cardIndex);
                 return false;
             }
 
-            if (!await steppersMoveInParallel([4, 3, 1, 0], currentCoordinates, targetCoordinates, destination))
+            if (!await steppersMoveInParallel([V, U, Y, X], currentCoordinates, targetCoordinates, destination))
             {
                 _logger.LogError("Failed to move the U, V, X, Y steppers from barcode to card bay {BayIndex}, slot {CardIndex}.", bayIndex, cardIndex);
                 return false;
@@ -1396,10 +1395,10 @@ namespace VirtualOperatorServer.Operation
 
                 const string destination = "the tap position";
                 var targetCoordinates = getPointCoordinates(target);
-                if (!await steppersMoveInParallel([0, 1, 3, 4], currentCoordinates, targetCoordinates, destination))
+                if (!await steppersMoveInParallel([X, Y, U, V], currentCoordinates, targetCoordinates, destination))
                     return false;
 
-                succeeded = await steppersMoveInParallel([2], currentCoordinates, targetCoordinates, destination);
+                succeeded = await steppersMoveInParallel([Z], currentCoordinates, targetCoordinates, destination);
                 return succeeded;
             }
             catch (Exception ex)
@@ -1468,7 +1467,7 @@ namespace VirtualOperatorServer.Operation
                     _position = Position.Unknown;
                 }
 
-                if (!await steppersMoveInParallel([3], currentCoordinates, stopCoordinates, "the tap stop point"))
+                if (!await steppersMoveInParallel([U], currentCoordinates, stopCoordinates, "the tap stop point"))
                 {
                     _logger.LogError("Failed to move to the tap stop point for option {Option}.", opt);
                     return false;
@@ -1476,7 +1475,7 @@ namespace VirtualOperatorServer.Operation
 
                 await Task.Delay(tapDisplayDelayMs);
 
-                if (!await steppersMoveInParallel([3], stopCoordinates, startCoordinates, "the tap start point"))
+                if (!await steppersMoveInParallel([U], stopCoordinates, startCoordinates, "the tap start point"))
                 {
                     _logger.LogError("Failed to return to the tap start point for option {Option}.", opt);
                     return false;
@@ -1613,10 +1612,10 @@ namespace VirtualOperatorServer.Operation
 
                 const string destination = "the barcode position";
                 var targetCoordinates = getPointCoordinates(target);
-                if (!await steppersMoveInParallel([0, 1, 3, 4], currentCoordinates, targetCoordinates, destination))
+                if (!await steppersMoveInParallel([X, Y, U, V], currentCoordinates, targetCoordinates, destination))
                     return false;
 
-                succeeded = await steppersMoveInParallel([2], currentCoordinates, targetCoordinates, destination);
+                succeeded = await steppersMoveInParallel([Z], currentCoordinates, targetCoordinates, destination);
                 return succeeded;
             }
             catch (Exception ex)
@@ -1685,7 +1684,7 @@ namespace VirtualOperatorServer.Operation
                     _position = Position.Unknown;
                 }
 
-                if (!await steppersMoveInParallel([1], currentCoordinates, stopCoordinates, "the barcode stop point"))
+                if (!await steppersMoveInParallel([Y], currentCoordinates, stopCoordinates, "the barcode stop point"))
                 {
                     _logger.LogError("Failed to move to the barcode stop point for option {Option}.", opt);
                     return false;
@@ -1693,7 +1692,7 @@ namespace VirtualOperatorServer.Operation
 
                 await Task.Delay(barcodeDisplayDelayMs);
 
-                if (!await steppersMoveInParallel([1], stopCoordinates, startCoordinates, "the barcode start point"))
+                if (!await steppersMoveInParallel([Y], stopCoordinates, startCoordinates, "the barcode start point"))
                 {
                     _logger.LogError("Failed to return to the barcode start point for option {Option}.", opt);
                     return false;
