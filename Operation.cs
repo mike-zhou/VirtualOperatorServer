@@ -339,6 +339,28 @@ namespace VirtualOperatorServer.Operation
                 return false;
             }
 
+            while (true)
+            {
+                await Task.Delay(200);
+
+                var (result, state) = await stepperGetStatus(index);
+                if (!result)
+                {
+                    _logger.LogError("Failed to retrieve the state of stepper {StepperIndex} during home positioning.", index);
+                    return false;
+                }
+
+                if (state == Facade.StatusFacade.Facade.Stepper.Status.State.READY)
+                    break;
+
+                if (state != Facade.StatusFacade.Facade.Stepper.Status.State.RETURN_TO_HOME_BOUNDARY &&
+                    state != Facade.StatusFacade.Facade.Stepper.Status.State.HOME_BOUNDARY_TO_READY)
+                {
+                    _logger.LogError("Stepper {StepperIndex} entered unexpected state {StepperState} while home positioning.", index, state);
+                    return false;
+                }
+            }
+
             return true;
         }
 
@@ -442,6 +464,29 @@ namespace VirtualOperatorServer.Operation
             return (true, facade.steppers[index].status.state);
         }
 
+        private async Task<bool> stepperMoveActive(byte index, long steps, string destination)
+        {
+            var stepperStarted = await stepperStartMoveActive(index, steps, destination);
+            if (stepperStarted != true)
+            {
+                _logger.LogError("Failed to start stepper {StepperIndex} to {Destination}", index, destination);
+                return false;
+            }
+
+            var singleIndex = new List<byte>(1);
+            singleIndex.Add(0);
+            singleIndex[0] = index;
+
+            var stepperArrived = await steppersWaitForMoveActive(singleIndex, destination);
+            if (stepperArrived != true)
+            {
+                _logger.LogError("Failed to move stepper {StepperIndex} to {Destination}", index, destination);
+                return false;
+            }
+
+            return true;
+        }
+
         private async Task<bool> initializeStepper()
         {
             var idle = _coordinateStore.GetCoordinates().Idle;
@@ -456,60 +501,14 @@ namespace VirtualOperatorServer.Operation
                     _logger.LogError("Failed to home stepper {StepperIndex} during initialization.", index);
                     return false;
                 }
-                while (true)
-                {
-                    await Task.Delay(200);
-
-                    var (result, state) = await stepperGetStatus(index);
-                    if (!result)
-                    {
-                        _logger.LogError("Failed to retrieve the state of stepper {StepperIndex} during initialization.", index);
-                        return false;
-                    }
-
-                    if (state == Facade.StatusFacade.Facade.Stepper.Status.State.READY)
-                        break;
-
-                    if (state != Facade.StatusFacade.Facade.Stepper.Status.State.RETURN_TO_HOME_BOUNDARY &&
-                        state != Facade.StatusFacade.Facade.Stepper.Status.State.HOME_BOUNDARY_TO_READY)
-                    {
-                        _logger.LogError("Stepper {StepperIndex} entered unexpected state {StepperState} while homing.", index, state);
-                        return false;
-                    }
-                }
 
                 var offset = idleOffsets[index];
-                if (!await stepperForward(index, offset >= 0))
+                var destination = "Idle position";
+
+                if (!await stepperMoveActive(index, offset, destination))
                 {
-                    _logger.LogError("Failed to set direction for stepper {StepperIndex} during initialization.", index);
+                    _logger.LogError("Failed to move stepper {StepperIndex} to {Destination}", index, destination);
                     return false;
-                }
-
-                if (!await stepperRunActive(index, (uint)Math.Abs((long)offset)))
-                {
-                    _logger.LogError("Failed to move stepper {StepperIndex} to idle offset {IdleOffset} during initialization.", index, offset);
-                    return false;
-                }
-
-                while (true)
-                {
-                    await Task.Delay(200);
-
-                    var (result, state) = await stepperGetStatus(index);
-                    if (!result)
-                    {
-                        _logger.LogError("Failed to retrieve the state of stepper {StepperIndex} while moving to its idle offset.", index);
-                        return false;
-                    }
-
-                    if (state == Facade.StatusFacade.Facade.Stepper.Status.State.READY)
-                        break;
-
-                    if (state != Facade.StatusFacade.Facade.Stepper.Status.State.RUNNING_ACTIVE)
-                    {
-                        _logger.LogError("Stepper {StepperIndex} entered unexpected state {StepperState} while moving to its idle offset.", index, state);
-                        return false;
-                    }
                 }
             }
 
@@ -522,60 +521,13 @@ namespace VirtualOperatorServer.Operation
                     return false;
                 }
 
-                while (true)
+                var offset = StaticConfig.Instance.StepperConfigs[clickerIndex].range - 1;;
+                var destination = "Idle position";
+
+                if (!await stepperMoveActive(clickerIndex, offset, destination))
                 {
-                    await Task.Delay(200);
-
-                    var (result, state) = await stepperGetStatus(clickerIndex);
-                    if (!result)
-                    {
-                        _logger.LogError("Failed to retrieve the state of the Clicker stepper during initialization.");
-                        return false;
-                    }
-
-                    if (state == Facade.StatusFacade.Facade.Stepper.Status.State.READY)
-                        break;
-
-                    if (state != Facade.StatusFacade.Facade.Stepper.Status.State.RETURN_TO_HOME_BOUNDARY &&
-                        state != Facade.StatusFacade.Facade.Stepper.Status.State.HOME_BOUNDARY_TO_READY)
-                    {
-                        _logger.LogError("Clicker stepper entered unexpected state {StepperState} while homing.", state);
-                        return false;
-                    }
-                }
-
-                var range = StaticConfig.Instance.StepperConfigs[clickerIndex].range - 1;
-                if (!await stepperForward(clickerIndex, range >= 0))
-                {
-                    _logger.LogError("Failed to set direction for Clicker stepper during initialization.");
+                    _logger.LogError("Failed to move stepper {StepperIndex} to {Destination}", clickerIndex, destination);
                     return false;
-                }
-
-                if (!await stepperRunActive(clickerIndex, range))
-                {
-                    _logger.LogError("Failed to move Clicker stepper to positive range {range} during initialization.", range);
-                    return false;
-                }
-
-                while (true)
-                {
-                    await Task.Delay(200);
-
-                    var (result, state) = await stepperGetStatus(clickerIndex);
-                    if (!result)
-                    {
-                        _logger.LogError("Failed to retrieve the state of the Clicker stepper while moving to its positive range.");
-                        return false;
-                    }
-
-                    if (state == Facade.StatusFacade.Facade.Stepper.Status.State.READY)
-                        break;
-
-                    if (state != Facade.StatusFacade.Facade.Stepper.Status.State.RUNNING_ACTIVE)
-                    {
-                        _logger.LogError("Clicker stepper entered unexpected state {StepperState} while moving to its positive range.", state);
-                        return false;
-                    }
                 }
             }
 
@@ -722,7 +674,7 @@ namespace VirtualOperatorServer.Operation
         /// then starts it moving for the corresponding number of steps.
         /// </summary>
         /// <returns><see langword="true"/> when the move starts successfully; otherwise, <see langword="false"/>.</returns>
-        private async Task<bool> stepperStartMove(byte index, long distance, string destination)
+        private async Task<bool> stepperStartMoveActive(byte index, long distance, string destination)
         {
             if (!await stepperForward(index, distance > 0))
             {
@@ -751,7 +703,7 @@ namespace VirtualOperatorServer.Operation
         /// or if any stepper enters a state other than ready or actively running.
         /// </summary>
         /// <returns><see langword="true"/> when every indexed stepper is ready; otherwise, <see langword="false"/>.</returns>
-        private async Task<bool> steppersWaitForMove(IReadOnlyList<byte> indices, string destination)
+        private async Task<bool> steppersWaitForMoveActive(IReadOnlyList<byte> indices, string destination)
         {
             while (true)
             {
@@ -823,26 +775,13 @@ namespace VirtualOperatorServer.Operation
             return await steppersWaitForMove(movingIndices, destination);
 
 #else
-            var singleIndex = new List<byte>(1);
-            singleIndex.Add(0);
-
             foreach (var index in indices)
             {
                 var distance = (long)targetCoordinates[index] - currentCoordinates[index];
                 if (distance == 0)
                     continue;
 
-                var stepperStarted = await stepperStartMove(index, distance, destination);
-                if (stepperStarted != true)
-                {
-                    _logger.LogError("Failed to start stepper {StepperIndex} to {Destination}", index, destination);
-                    return false;
-                }
-
-                singleIndex[0] = index;
-
-                var stepperArrived = await steppersWaitForMove(singleIndex, destination);
-                if (stepperArrived != true)
+                if (!await stepperMoveActive(index, distance, destination))
                 {
                     _logger.LogError("Failed to move stepper {StepperIndex} to {Destination}", index, destination);
                     return false;
