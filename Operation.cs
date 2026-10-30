@@ -44,6 +44,14 @@ namespace VirtualOperatorServer.Operation
         private Action _action = Action.Idle;
         private Position _position = Position.Unknown;
         private readonly bool[,] _cardSlotsOccupied;
+        private readonly Byte X = 0;
+        private readonly Byte Y = 1;
+        private readonly Byte Z = 2;
+        private readonly Byte U = 3;
+        private readonly Byte V = 4;
+        private readonly Byte W = 5;
+
+        
 
         public Operations(ILogger<Operations> logger, BackSocket backSocket, CoordinateStore coordinateStore,
             CardMappingStore cardMappingStore)
@@ -429,27 +437,42 @@ namespace VirtualOperatorServer.Operation
         /// </summary>
         private async Task<bool> stepperMoveActive(byte index, bool isForward, uint steps)
         {
-            if (!await stepperForward(index, isForward))
-                return false;
+            long distance = steps;
+            bool result;
+            string destination = "unspecified";
 
-            if (!await stepperRunActive(index, steps))
-                return false;
-
-            while (true)
-            {
-                await Task.Delay(200);
-
-                var facade = await refreshFacade();
-                if (facade == null)
-                    return false;
-
-                var state = facade.steppers[index].status.state;
-                if (state == Facade.StatusFacade.Facade.Stepper.Status.State.READY)
-                    return true;
-
-                if (state != Facade.StatusFacade.Facade.Stepper.Status.State.RUNNING_ACTIVE)
-                    return false;
+            if (isForward) {
+                result = await stepperMoveActive(index, distance, destination);
             }
+            else
+            {
+                result = await stepperMoveActive(index, -distance, destination);
+            }
+
+            return result;
+        }
+
+        private async Task<bool> stepperMoveActive(byte index, long steps, string destination)
+        {
+            var stepperStarted = await stepperStartMoveActive(index, steps, destination);
+            if (stepperStarted != true)
+            {
+                _logger.LogError("Failed to start active stepper {StepperIndex} to {Destination}", index, destination);
+                return false;
+            }
+
+            var singleIndex = new List<byte>(1);
+            singleIndex.Add(0);
+            singleIndex[0] = index;
+
+            var stepperArrived = await steppersWaitForMoveActive(singleIndex, destination);
+            if (stepperArrived != true)
+            {
+                _logger.LogError("Failed to move active stepper {StepperIndex} to {Destination}", index, destination);
+                return false;
+            }
+
+            return true;
         }
 
         private async Task<(bool result, Facade.StatusFacade.Facade.Stepper.Status.State state)> stepperGetStatus(byte index)
@@ -464,35 +487,12 @@ namespace VirtualOperatorServer.Operation
             return (true, facade.steppers[index].status.state);
         }
 
-        private async Task<bool> stepperMoveActive(byte index, long steps, string destination)
-        {
-            var stepperStarted = await stepperStartMoveActive(index, steps, destination);
-            if (stepperStarted != true)
-            {
-                _logger.LogError("Failed to start stepper {StepperIndex} to {Destination}", index, destination);
-                return false;
-            }
-
-            var singleIndex = new List<byte>(1);
-            singleIndex.Add(0);
-            singleIndex[0] = index;
-
-            var stepperArrived = await steppersWaitForMoveActive(singleIndex, destination);
-            if (stepperArrived != true)
-            {
-                _logger.LogError("Failed to move stepper {StepperIndex} to {Destination}", index, destination);
-                return false;
-            }
-
-            return true;
-        }
-
         private async Task<bool> initializeStepper()
         {
             var idle = _coordinateStore.GetCoordinates().Idle;
 
             int[] idleOffsets = [idle.X, idle.Y, idle.Z, idle.U, idle.V];
-            byte[] initializationOrder = [0, 2, 1, 3, 4];
+            byte[] initializationOrder = [X, Z, Y, U, V];
 
             foreach (var index in initializationOrder)
             {
@@ -514,19 +514,18 @@ namespace VirtualOperatorServer.Operation
 
             // clicker
             {
-                const byte clickerIndex = 5;
-                if (!await stepperGoHome(clickerIndex))
+                if (!await stepperGoHome(W))
                 {
                     _logger.LogError("Failed to home Clicker stepper during initialization.");
                     return false;
                 }
 
-                var offset = StaticConfig.Instance.StepperConfigs[clickerIndex].range - 1;;
+                var offset = StaticConfig.Instance.StepperConfigs[W].range - 1;;
                 var destination = "Idle position";
 
-                if (!await stepperMoveActive(clickerIndex, offset, destination))
+                if (!await stepperMoveActive(W, offset, destination))
                 {
-                    _logger.LogError("Failed to move stepper {StepperIndex} to {Destination}", clickerIndex, destination);
+                    _logger.LogError("Failed to move stepper {StepperIndex} to {Destination}", W, destination);
                     return false;
                 }
             }
@@ -748,7 +747,7 @@ namespace VirtualOperatorServer.Operation
             IReadOnlyList<int> targetCoordinates,
             string destination)
         {
-#if false
+#if true
             var movingIndices = new List<byte>(indices.Count);
             var startTasks = new List<Task<bool>>(indices.Count);
 
@@ -759,7 +758,7 @@ namespace VirtualOperatorServer.Operation
                     continue;
 
                 movingIndices.Add(index);
-                startTasks.Add(stepperStartMove(index, distance, destination));
+                startTasks.Add(stepperStartMoveActive(index, distance, destination));
             }
 
             if (startTasks.Count == 0)
@@ -772,7 +771,7 @@ namespace VirtualOperatorServer.Operation
                     return false;
             }
 
-            return await steppersWaitForMove(movingIndices, destination);
+            return await steppersWaitForMoveActive(movingIndices, destination);
 
 #else
             foreach (var index in indices)
@@ -862,24 +861,15 @@ namespace VirtualOperatorServer.Operation
                 return false;
             }
 
-            // move Z
-            if (!await steppersMoveInParallel([2], currentCoordinates, targetCoordinates, destination))
+            if (!await steppersMoveInParallel([Z], currentCoordinates, targetCoordinates, destination))
             {
                 _logger.LogError("Failed to move the Z stepper from swipe to card bay {BayIndex}, slot {CardIndex}.", bayIndex, cardIndex);
                 return false;
             }
 
-            // move U, V
-            if (!await steppersMoveInParallel([3, 4], currentCoordinates, targetCoordinates, destination))
+            if (!await steppersMoveInParallel([X, Y, U, V], currentCoordinates, targetCoordinates, destination))
             {
-                _logger.LogError("Failed to move the U, V steppers from swipe to card bay {BayIndex}, slot {CardIndex}.", bayIndex, cardIndex);
-                return false;
-            }
-
-            // move X, Y
-            if (!await steppersMoveInParallel([0, 1], currentCoordinates, targetCoordinates, destination))
-            {
-                _logger.LogError("Failed to move the X, Y steppers from swipe to card bay {BayIndex}, slot {CardIndex}.", bayIndex, cardIndex);
+                _logger.LogError("Failed to move X, Y, U, V from swipe to card bay {BayIndex}, slot {CardIndex}.", bayIndex, cardIndex);
                 return false;
             }
 
@@ -1053,11 +1043,10 @@ namespace VirtualOperatorServer.Operation
             }
 
             // going down to fetch the card
-            const byte zIndex = 2;
             var steps = (uint)Math.Abs((long)fetchDistance);
-            if (!await stepperMoveActive(zIndex, fetchDistance > 0, steps))
+            if (!await stepperMoveActive(Z, true, steps))
             {
-                _logger.LogError("Failed to move stepper {StepperIndex} by fetch distance {FetchDistance} while fetching card.", zIndex, fetchDistance);
+                _logger.LogError("Failed to move stepper {StepperIndex} by fetch distance {FetchDistance} while fetching card.", Z, fetchDistance);
                 return false;
             }
 
@@ -1065,9 +1054,9 @@ namespace VirtualOperatorServer.Operation
             await Task.Delay(500);
 
             // going up to card position
-            if (!await stepperMoveActive(zIndex, fetchDistance < 0, steps))
+            if (!await stepperMoveActive(Z, false, steps))
             {
-                _logger.LogError("Failed to reverse stepper {StepperIndex} by fetch distance {FetchDistance} while fetching card.", zIndex, fetchDistance);
+                _logger.LogError("Failed to reverse stepper {StepperIndex} by fetch distance {FetchDistance} while fetching card.", Z, fetchDistance);
                 return false;
             }            
 
@@ -1098,16 +1087,13 @@ namespace VirtualOperatorServer.Operation
                     return false;
                 var targetCoordinates = getPointCoordinates(target);
 
-                // move X, Y
-                if (!await steppersMoveInParallel([0, 1], currentCoordinates, targetCoordinates, destination))
+                if (!await steppersMoveInParallel([X, Y], currentCoordinates, targetCoordinates, destination))
                     return false;
 
-                // move U, V
-                if (!await steppersMoveInParallel([3, 4], currentCoordinates, targetCoordinates, destination))
+                if (!await steppersMoveInParallel([U, V], currentCoordinates, targetCoordinates, destination))
                     return false;
 
-                // move Z
-                return await steppersMoveInParallel([2], currentCoordinates, targetCoordinates, destination);
+                return await steppersMoveInParallel([Z], currentCoordinates, targetCoordinates, destination);
             }
             catch (Exception ex)
             {
@@ -1151,20 +1137,17 @@ namespace VirtualOperatorServer.Operation
                 return false;
             }
 
-            const byte xIndex = 0;
-            const byte yIndex = 1;
-
             var settings = coordinates.OPTs[(int)opt];
             var swipeDeltaX = (uint)Math.Abs((long)settings.SwipeDeltaX);
             var swipeDeltaY = (uint)Math.Abs((long)settings.SwipeDeltaY);
 
-            if (!await stepperMoveActive(yIndex, true, swipeDeltaY))
+            if (!await stepperMoveActive(Y, true, swipeDeltaY))
                 return false;
 
-            if (!await stepperMoveActive(xIndex, false, swipeDeltaX))
+            if (!await stepperMoveActive(X, false, swipeDeltaX))
                 return false;
 
-            return await stepperMoveActive(yIndex, false, swipeDeltaY);
+            return await stepperMoveActive(Y, false, swipeDeltaY);
         }
 
         private async Task<bool> replaceCard()
@@ -1175,33 +1158,32 @@ namespace VirtualOperatorServer.Operation
                 return false;
             }
 
-            const byte zIndex = 2;
             var coordinates = _coordinateStore.GetCoordinates();
             var replaceDistance = (uint)Math.Abs((long)coordinates.ReplaceDistance);
             var replaceDistanceSlow = (uint)Math.Abs((long)coordinates.ReplaceDistanceSlow);
-            var startingPulseWidth = StaticConfig.Instance.StepperConfigs[zIndex].activeModeConfig.startingPulseWidth;
+            var startingPulseWidth = StaticConfig.Instance.StepperConfigs[Z].activeModeConfig.startingPulseWidth;
 
-            if (!await stepperMoveActive(zIndex, true, replaceDistance))
+            if (!await stepperMoveActive(Z, true, replaceDistance))
             {
-                _logger.LogError("Failed to move stepper {StepperIndex} forward by replacement distance {ReplaceDistance}.", zIndex, coordinates.ReplaceDistance);
+                _logger.LogError("Failed to move stepper {StepperIndex} forward by replacement distance {ReplaceDistance}.", Z, coordinates.ReplaceDistance);
                 return false;
             }
 
-            if (!await stepperSetConstActivePeriod(zIndex, startingPulseWidth))
+            if (!await stepperSetConstActivePeriod(Z, startingPulseWidth))
             {
-                _logger.LogError("Failed to set the slow active period for stepper {StepperIndex} while replacing card.", zIndex);
+                _logger.LogError("Failed to set the slow active period for stepper {StepperIndex} while replacing card.", Z);
                 return false;
             }
 
-            if (!await stepperMoveActive(zIndex, true, replaceDistanceSlow))
+            if (!await stepperMoveActive(Z, true, replaceDistanceSlow))
             {
-                _logger.LogError("Failed to move stepper {StepperIndex} forward by slow replacement distance {ReplaceDistanceSlow}.", zIndex, coordinates.ReplaceDistanceSlow);
+                _logger.LogError("Failed to move stepper {StepperIndex} forward by slow replacement distance {ReplaceDistanceSlow}.", Z, coordinates.ReplaceDistanceSlow);
                 return false;
             }
 
-            if (!await stepperSetDefaultActivePeriods(zIndex))
+            if (!await stepperSetDefaultActivePeriods(Z))
             {
-                _logger.LogError("Failed to restore default active periods for stepper {StepperIndex} while replacing card.", zIndex);
+                _logger.LogError("Failed to restore default active periods for stepper {StepperIndex} while replacing card.", Z);
                 return false;
             }
 
@@ -1214,9 +1196,9 @@ namespace VirtualOperatorServer.Operation
             await Task.Delay(200);
 
             var returnDistance = (uint)Math.Abs((long)coordinates.ReplaceDistance + coordinates.ReplaceDistanceSlow);
-            if (!await stepperMoveActive(zIndex, false, returnDistance))
+            if (!await stepperMoveActive(Z, false, returnDistance))
             {
-                _logger.LogError("Failed to move stepper {StepperIndex} backward after replacing card.", zIndex);
+                _logger.LogError("Failed to move stepper {StepperIndex} backward after replacing card.", Z);
                 return false;
             }
 
