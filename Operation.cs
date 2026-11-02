@@ -1395,10 +1395,10 @@ namespace VirtualOperatorServer.Operation
 
                 const string destination = "the tap position";
                 var targetCoordinates = getPointCoordinates(target);
-                if (!await steppersMoveInParallel([X, Y, U, V], currentCoordinates, targetCoordinates, destination))
+                if (!await steppersMoveInParallel([X, U, V], currentCoordinates, targetCoordinates, destination))
                     return false;
 
-                succeeded = await steppersMoveInParallel([Z], currentCoordinates, targetCoordinates, destination);
+                succeeded = await steppersMoveInParallel([Y, Z], currentCoordinates, targetCoordinates, destination);
                 return succeeded;
             }
             catch (Exception ex)
@@ -1467,7 +1467,7 @@ namespace VirtualOperatorServer.Operation
                     _position = Position.Unknown;
                 }
 
-                if (!await steppersMoveInParallel([U], currentCoordinates, stopCoordinates, "the tap stop point"))
+                if (!await steppersMoveInParallel([Y, Z, U, V], startCoordinates, stopCoordinates, "the tap stop point"))
                 {
                     _logger.LogError("Failed to move to the tap stop point for option {Option}.", opt);
                     return false;
@@ -1475,7 +1475,7 @@ namespace VirtualOperatorServer.Operation
 
                 await Task.Delay(tapDisplayDelayMs);
 
-                if (!await steppersMoveInParallel([U], stopCoordinates, startCoordinates, "the tap start point"))
+                if (!await steppersMoveInParallel([Y, Z, U, V], stopCoordinates, startCoordinates, "the tap start point"))
                 {
                     _logger.LogError("Failed to return to the tap start point for option {Option}.", opt);
                     return false;
