@@ -18,84 +18,84 @@
         "0": {
           "X": 584,
           "Y": 152,
-          "Z": 1056,
+          "Z": 1024,
           "U": 8,
           "V": -58
         },
         "1": {
           "X": 708,
           "Y": 152,
-          "Z": 1056,
+          "Z": 1024,
           "U": 8,
           "V": -58
         },
         "2": {
           "X": 848,
           "Y": 152,
-          "Z": 1056,
+          "Z": 1024,
           "U": 8,
           "V": -58
         },
         "3": {
           "X": 976,
           "Y": 152,
-          "Z": 1056,
+          "Z": 1024,
           "U": 8,
           "V": -58
         },
         "4": {
           "X": 1104,
           "Y": 152,
-          "Z": 1056,
+          "Z": 1024,
           "U": 8,
           "V": -58
         },
         "5": {
           "X": 1232,
           "Y": 152,
-          "Z": 1056,
+          "Z": 1024,
           "U": 8,
           "V": -58
         },
         "6": {
           "X": 1360,
           "Y": 152,
-          "Z": 1056,
+          "Z": 1024,
           "U": 8,
           "V": -58
         },
         "7": {
           "X": 1480,
           "Y": 152,
-          "Z": 1056,
+          "Z": 1024,
           "U": 8,
           "V": -58
         },
         "8": {
           "X": 1608,
           "Y": 152,
-          "Z": 1056,
+          "Z": 1024,
           "U": 8,
           "V": -58
         },
         "9": {
           "X": 2368,
           "Y": 152,
-          "Z": 1056,
+          "Z": 1024,
           "U": 8,
           "V": -58
         },
         "10": {
           "X": 2496,
           "Y": 152,
-          "Z": 1056,
+          "Z": 1024,
           "U": 8,
           "V": -58
         },
         "11": {
           "X": 2620,
           "Y": 152,
-          "Z": 1056,
+          "Z": 1024,
           "U": 8,
           "V": -58
         }
@@ -109,12 +109,12 @@
     {
       "Name": "OPT 1",
       "SwipeDeltaX": 128,
-      "SwipeDeltaY": 1504,
+      "SwipeDeltaY": 1536,
       "ContactInsertDistance": 0,
       "ContactPushDistance": 0,
       "MsrSwipingStartPoint": {
         "X": 3036,
-        "Y": 300,
+        "Y": 268,
         "Z": 1764,
         "U": 1028,
         "V": -68
@@ -123,28 +123,28 @@
       "ContactInsertingStopPoint": null,
       "ContactlessTappingStartPoint": {
         "X": 1128,
-        "Y": 792,
+        "Y": 760,
         "Z": 1536,
         "U": 1488,
         "V": 150
       },
       "ContactlessTappingStopPoint": {
         "X": 1128,
-        "Y": 792,
+        "Y": 760,
         "Z": 1536,
         "U": 1032,
         "V": 150
       },
       "BarcodeReadingStartPoint": {
         "X": 2120,
-        "Y": 152,
+        "Y": 120,
         "Z": 1184,
         "U": 1032,
         "V": 150
       },
       "BarcodeReadingStopPoint": {
         "X": 2120,
-        "Y": 920,
+        "Y": 888,
         "Z": 1184,
         "U": 1032,
         "V": 150
@@ -157,12 +157,12 @@
     {
       "Name": "OPT 2",
       "SwipeDeltaX": 128,
-      "SwipeDeltaY": 1504,
+      "SwipeDeltaY": 1536,
       "ContactInsertDistance": 0,
       "ContactPushDistance": 0,
       "MsrSwipingStartPoint": {
         "X": 4780,
-        "Y": 300,
+        "Y": 268,
         "Z": 1764,
         "U": 1028,
         "V": -68
@@ -171,28 +171,28 @@
       "ContactInsertingStopPoint": null,
       "ContactlessTappingStartPoint": {
         "X": 3816,
-        "Y": 152,
+        "Y": 120,
         "Z": 1536,
         "U": 1488,
         "V": 150
       },
       "ContactlessTappingStopPoint": {
         "X": 3816,
-        "Y": 984,
+        "Y": 952,
         "Z": 1536,
         "U": 1032,
         "V": 150
       },
       "BarcodeReadingStartPoint": {
         "X": 3944,
-        "Y": 152,
+        "Y": 120,
         "Z": 1184,
         "U": 1032,
         "V": 150
       },
       "BarcodeReadingStopPoint": {
         "X": 3944,
-        "Y": 728,
+        "Y": 696,
         "Z": 1184,
         "U": 1032,
         "V": 150
